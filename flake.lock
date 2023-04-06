@@ -31,10 +31,27 @@
         "type": "github"
       }
     },
+    "nixpkgs-crate2nix": {
+      "locked": {
+        "lastModified": 1680864070,
+        "narHash": "sha256-YQ74bK6+3F2DTwr9M4xORwSUjl1vvtBYuYYu9ABbo1M=",
+        "owner": "erictapen",
+        "repo": "nixpkgs",
+        "rev": "49aa11887576a5aea50b0ccb7c20fae8410b7cc8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "erictapen",
+        "ref": "crate2nix",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "nixpkgs-crate2nix": "nixpkgs-crate2nix"
       }
     }
   },

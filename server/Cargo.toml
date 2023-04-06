@@ -1,0 +1,16 @@
+[package]
+name = "isre1late-server"
+version = "0.1.0"
+authors = ["Kerstin Humm <kerstin@erictapen.name>"]
+
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rocket = { version = "0.5.0-rc.3", features = [ "json" ] }
+rusqlite = "*"
+serde_derive = "*"
+serde = { version = "*", features = [ "derive" ] }
+docopt = "*"
+log = "*"

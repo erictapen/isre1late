@@ -17,9 +17,11 @@
       let pkgs = nixpkgs.legacyPackages.${system}; in
       {
         packages = rec {
-          server = let
-            crates = import ./server/Cargo.nix { inherit pkgs; };
-          in crates.workspaceMembers.isre1late-server.build;
+          server =
+            let
+              crates = import ./server/Cargo.nix { inherit pkgs; };
+            in
+            crates.workspaceMembers.isre1late-server.build;
           default = server;
         };
         apps = rec {

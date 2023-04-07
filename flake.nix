@@ -26,6 +26,9 @@
           hello = flake-utils.lib.mkApp { drv = self.packages.${system}.hello; };
           default = hello;
         };
+        checks.reuse = pkgs.runCommand "reuse-check" { } ''
+          ${pkgs.reuse}/bin/reuse --root ${self} lint && touch $out
+        '';
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             nodejs

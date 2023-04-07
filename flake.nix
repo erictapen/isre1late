@@ -25,8 +25,8 @@
           default = server;
         };
         apps = rec {
-          hello = flake-utils.lib.mkApp { drv = self.packages.${system}.hello; };
-          default = hello;
+          server = flake-utils.lib.mkApp { drv = self.packages.${system}.server; };
+          default = server;
         };
         checks.reuse = pkgs.runCommand "reuse-check" { } ''
           ${pkgs.reuse}/bin/reuse --root ${self} lint && touch $out

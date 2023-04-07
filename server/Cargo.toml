@@ -17,6 +17,10 @@ reqwest = { version = "*", features = [ "blocking", "json" ] }
 rusqlite = { version = "*", features = [ "time" ] }
 serde_derive = "*"
 serde = { version = "*", features = [ "derive" ] }
+serde_json = "*"
 docopt = "*"
 log = "*"
 time = { version = "*", features = [ "serde-well-known" ] }
+urlencoding = "*"
+simple_logger = "*"
+systemd-journal-logger = "*"

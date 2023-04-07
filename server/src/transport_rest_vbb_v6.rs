@@ -6,8 +6,15 @@ use serde::Deserialize;
 use time::OffsetDateTime;
 
 #[derive(Deserialize, Debug)]
-pub struct Trips {
+pub struct TripsOverview {
     pub trips: Vec<Trip>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct TripOverview {
+    pub trip: Trip,
+    #[serde(with = "time::serde::timestamp")]
+    pub realtimeDataUpdatedAt: OffsetDateTime,
 }
 
 #[derive(Deserialize, Debug)]
@@ -19,7 +26,7 @@ pub struct Trip {
     pub departure: OffsetDateTime,
     #[serde(with = "time::serde::rfc3339")]
     pub plannedDeparture: OffsetDateTime,
-    pub currentLocation: TripLocation,
+    pub currentLocation: Option<TripLocation>,
     pub stopovers: Vec<TripStopover>,
     pub departureDelay: Option<i64>,
     pub arrivalDelay: Option<i64>,

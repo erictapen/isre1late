@@ -31,6 +31,7 @@
         checks.reuse = pkgs.runCommand "reuse-check" { } ''
           ${pkgs.reuse}/bin/reuse --root ${self} lint && touch $out
         '';
+
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             nodejs
@@ -44,5 +45,41 @@
           ];
         };
       }
-    );
+    ) // {
+        nixosModules.default = {config, pkgs, lib, ... }: let
+          package = self.packages.${config.nixpkgs.localSystem.system}.server;
+          # A random port
+          port = "28448";
+          stateDir = "/var/lib/isre1late";
+        in {
+
+          systemd.services.isre1late = {
+            description = "Is RE1 late?";
+            after = [ "network.target" ];
+            wantedBy = [ "multi-user.target" ];
+
+            serviceConfig = {
+              Type = "simple";
+              ExecStart = ''
+                ${package}/bin/isre1late-server \
+                  --db ${stateDir}/db.sqlite \
+                  --port ${port}
+              '';
+              Restart = "always";
+              StateDirectory = "isre1late";
+              User = "isre1late";
+              Group = "isre1late";
+            };
+
+          };
+
+          users.users.isre1late = {
+            isSystemUser = true;
+            home = stateDir;
+            group = "isre1late";
+          };
+          users.groups.isre1late = { };
+
+        };
+    };
 }

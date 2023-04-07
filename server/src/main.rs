@@ -49,6 +49,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     if systemd_journal_logger::connected_to_journal() {
         // If journald is available.
         systemd_journal_logger::init().unwrap();
+        log::set_max_level(log::LevelFilter::Info);
     } else {
         // Otherwise fall back to logging to standard error.
         simple_logger::SimpleLogger::new().init().unwrap();

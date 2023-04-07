@@ -13,8 +13,10 @@ edition = "2021"
 
 [dependencies]
 rocket = { version = "0.5.0-rc.3", features = [ "json" ] }
+reqwest = { version = "*", features = [ "blocking", "json" ] }
 rusqlite = "*"
 serde_derive = "*"
 serde = { version = "*", features = [ "derive" ] }
 docopt = "*"
 log = "*"
+time = { version = "*", features = [ "serde-well-known" ] }

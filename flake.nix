@@ -32,6 +32,8 @@
             cargo
             rustc
             sqlite
+            pkg-config
+            openssl
             (import nixpkgs-crate2nix { inherit system; }).crate2nix
             reuse
           ];

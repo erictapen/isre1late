@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2020 Kerstin Humm <mail@erictapen.name>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 {
   description = "Is RE1 late?";
 
@@ -29,6 +33,7 @@
             rustc
             sqlite
             (import nixpkgs-crate2nix { inherit system; }).crate2nix
+            reuse
           ];
         };
       }

@@ -23,8 +23,8 @@ Options:
 
 #[derive(Deserialize)]
 struct CliArgs {
-    flag_db: Option<PathBuf>,
-    flag_port: Option<u16>,
+    flag_db: PathBuf,
+    flag_port: u16,
 }
 
 const trips_basepath: &'static str = "https://v6.vbb.transport.rest/trips";
@@ -34,8 +34,51 @@ fn main() -> Result<(), Box<dyn Error>> {
         .and_then(|d| d.deserialize())
         .unwrap_or_else(|e| e.exit());
 
-    let response = reqwest::blocking::get(trips_basepath)?;
-    println!("{:#?}", response.json::<Trips>());
+    let db = Connection::open(args.flag_db)?;
+
+    db.execute(
+        "CREATE TABLE IF NOT EXISTS trips
+          ( id INTEGER PRIMARY KEY AUTOINCREMENT
+          , first_observed TIMESTAMP NOT NULL
+          , text_id TEXT UNIQUE NOT NULL
+          , origin TEXT NOT NULL
+          , destination TEXT NOT NULL
+          , planned_departure_from_origin TIMESTAMP NOT NULL
+          )",
+        params![],
+    )?;
+    db.execute(
+        "CREATE TABLE IF NOT EXISTS delays
+          ( trip_id BIGSERIAL NOT NULL PRIMARY KEY
+          , observed_at TIMESTAMP NOT NULL
+          , generated_at TIMESTAMP NOT NULL
+          , latitude REAL NOT NULL
+          , longitude REAL NOT NULL
+          , delay INTEGER
+          )",
+        params![],
+    )?;
+
+    loop {
+        let response = reqwest::blocking::get(format!("{}?lineName=RE1", trips_basepath))?;
+
+        let fetched_trips = response.json::<Trips>()?;
+        println!("{:#?}", &fetched_trips);
+
+        for trip in fetched_trips.trips {
+            db.execute(
+                "INSERT OR IGNORE
+                 INTO trips(first_observed, text_id, origin, destination, planned_departure_from_origin)
+                 VALUES(CURRENT_TIMESTAMP, $1, $2, $3, $4);",
+                params![
+                    trip.id,
+                    trip.origin.name,
+                    trip.destination.name,
+                    trip.plannedDeparture
+                ],
+            )?;
+        }
+    }
 
     Ok(())
 }

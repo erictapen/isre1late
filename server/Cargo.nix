@@ -1694,6 +1694,7 @@ rec {
           {
             name = "rusqlite";
             packageId = "rusqlite";
+            features = [ "time" ];
           }
           {
             name = "serde";
@@ -3478,6 +3479,12 @@ rec {
             name = "smallvec";
             packageId = "smallvec";
           }
+          {
+            name = "time";
+            packageId = "time";
+            optional = true;
+            features = [ "formatting" "macros" "parsing" ];
+          }
         ];
         features = {
           "array" = [ "vtab" ];
@@ -3506,6 +3513,7 @@ rec {
           "winsqlite3" = [ "libsqlite3-sys/winsqlite3" ];
           "with-asan" = [ "libsqlite3-sys/with-asan" ];
         };
+        resolvedDefaultFeatures = [ "time" ];
       };
       "rustix" = rec {
         crateName = "rustix";

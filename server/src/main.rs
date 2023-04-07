@@ -7,6 +7,8 @@ use rusqlite::{params, Connection};
 use serde::Deserialize;
 use std::error::Error;
 use std::path::PathBuf;
+use std::time::{Duration, Instant};
+use std::thread::sleep;
 
 mod transport_rest_vbb_v6;
 use transport_rest_vbb_v6::Trips;
@@ -59,6 +61,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         params![],
     )?;
 
+    // It looks like, HAFAS is only cabable of showing new state every 30seconds anyway.
+    let loop_interval = Duration::from_secs(30);
+    let mut next_execution = Instant::now() + loop_interval;
+
     loop {
         let response = reqwest::blocking::get(format!("{}?lineName=RE1", trips_basepath))?;
 
@@ -78,6 +84,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 ],
             )?;
         }
+        sleep(next_execution - Instant::now());
+        next_execution += loop_interval;
     }
 
     Ok(())

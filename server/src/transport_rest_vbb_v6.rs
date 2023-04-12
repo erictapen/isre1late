@@ -22,8 +22,8 @@ pub struct Trip {
     pub id: String,
     pub origin: TripOrigin,
     pub destination: TripDestination,
-    #[serde(with = "time::serde::rfc3339")]
-    pub departure: OffsetDateTime,
+    #[serde(with = "time::serde::rfc3339::option")]
+    pub departure: Option<OffsetDateTime>,
     #[serde(with = "time::serde::rfc3339")]
     pub plannedDeparture: OffsetDateTime,
     pub currentLocation: Option<TripLocation>,

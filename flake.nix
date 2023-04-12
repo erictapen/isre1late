@@ -66,6 +66,7 @@
                   --port ${port}
               '';
               Restart = "always";
+              RestartSec = "30s";
               StateDirectory = "isre1late";
               User = "isre1late";
               Group = "isre1late";

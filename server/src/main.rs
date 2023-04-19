@@ -34,7 +34,7 @@ struct CliArgs {
     cmd_validate_hafas_schema: bool,
 }
 
-const trips_basepath: &'static str = "https://v6.vbb.transport.rest/trips";
+const TRIPS_BASEPATH: &'static str = "https://v6.vbb.transport.rest/trips";
 
 fn fetch_json_and_store_in_db(db: &Connection, url: String) -> String {
     let response_text = reqwest::blocking::get(url.clone()).unwrap().text().unwrap();
@@ -128,7 +128,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     loop {
         info!("Fetching currently running trips.");
-        let trips_overview_url = format!("{}?lineName=RE1&operatorNames=ODEG", trips_basepath);
+        let trips_overview_url = format!("{}?lineName=RE1&operatorNames=ODEG", TRIPS_BASEPATH);
         let trips_overview: TripsOverview =
             serde_json::from_str(&fetch_json_and_store_in_db(&db, trips_overview_url))?;
 
@@ -151,7 +151,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             )?;
             let current_trip_id = db.last_insert_rowid();
             // With this endpoint, we can access the delay data per trip.
-            let trip_url = format!("{}/{}", trips_basepath, urlencoding::encode(&trip.id));
+            let trip_url = format!("{}/{}", TRIPS_BASEPATH, urlencoding::encode(&trip.id));
             info!("Fetching trip data from {}", trip_url);
             let trip_overview: TripOverview =
                 serde_json::from_str(&fetch_json_and_store_in_db(&db, trip_url))?;
@@ -176,5 +176,4 @@ fn main() -> Result<(), Box<dyn Error>> {
         next_execution += loop_interval;
     }
 
-    Ok(())
 }

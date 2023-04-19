@@ -203,6 +203,7 @@ fn rocket() -> _ {
 
     std::thread::spawn(move || {
         crawler(&db, &args);
+        std::process::exit(1);
     });
 
     // let rocket_config = rocket::config::Config::figment()

@@ -18,6 +18,7 @@ use transport_rest_vbb_v6::{TripOverview, TripsOverview};
 
 const USAGE: &'static str = "
 Usage: isre1late-server --db <db> --port <port>
+       isre1late-server validate-hafas-schema
        isre1late-server --help
 
 Options:
@@ -30,6 +31,7 @@ Options:
 struct CliArgs {
     flag_db: PathBuf,
     flag_port: u16,
+    cmd_validate_hafas_schema: bool,
 }
 
 const trips_basepath: &'static str = "https://v6.vbb.transport.rest/trips";
@@ -42,6 +44,28 @@ fn fetch_json_and_store_in_db(db: &Connection, url: String) -> String {
     )
     .unwrap();
     response_text
+}
+
+fn validate_hafas_schema(db: &Connection) -> () {
+    info!("Validating Hafas schema");
+    let mut query = db.prepare("SELECT id, body from fetched_json;").unwrap();
+    let body_iter = query.query_map([], |row| Ok((row.get_unwrap::<usize, usize>(0), row.get_unwrap::<usize, String>(1)))).unwrap();
+
+    let mut error_count: i64 = 0;
+
+    for res in body_iter {
+        let (id, body) = res.unwrap();
+        match serde_json::from_str::<TripOverview>(&body.as_ref()) {
+            Ok(_) => {},
+            Err(err) => {
+                // error!("Couldn't deserialize: {}", body.unwrap());
+                error!("{}: {}", id, err);
+                error_count += 1;
+            }
+        }
+
+    }
+    error!("Encountered {} errors.", error_count);
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -60,6 +84,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         .unwrap_or_else(|e| e.exit());
 
     let db = Connection::open(args.flag_db)?;
+
+    if args.cmd_validate_hafas_schema {
+        validate_hafas_schema(&db);
+        std::process::exit(0);
+    }
 
     db.execute(
         "CREATE TABLE IF NOT EXISTS trips

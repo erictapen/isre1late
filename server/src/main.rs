@@ -4,8 +4,11 @@
 
 #[macro_use]
 extern crate log;
+#[macro_use]
+extern crate rocket;
 
 use docopt::Docopt;
+use rocket::futures::{SinkExt, StreamExt};
 use rusqlite::{params, Connection};
 use serde::Deserialize;
 use std::error::Error;
@@ -49,47 +52,45 @@ fn fetch_json_and_store_in_db(db: &Connection, url: String) -> String {
 fn validate_hafas_schema(db: &Connection) -> () {
     info!("Validating Hafas schema");
     let mut query = db.prepare("SELECT id, body from fetched_json;").unwrap();
-    let body_iter = query.query_map([], |row| Ok((row.get_unwrap::<usize, usize>(0), row.get_unwrap::<usize, String>(1)))).unwrap();
+    let body_iter = query
+        .query_map([], |row| {
+            Ok((
+                row.get_unwrap::<usize, usize>(0),
+                row.get_unwrap::<usize, String>(1),
+            ))
+        })
+        .unwrap();
 
     let mut error_count: i64 = 0;
 
     for res in body_iter {
         let (id, body) = res.unwrap();
         match serde_json::from_str::<TripOverview>(&body.as_ref()) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(err) => {
                 // error!("Couldn't deserialize: {}", body.unwrap());
                 error!("{}: {}", id, err);
                 error_count += 1;
             }
         }
-
     }
     error!("Encountered {} errors.", error_count);
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
-    // Setup logging
-    if systemd_journal_logger::connected_to_journal() {
-        // If journald is available.
-        systemd_journal_logger::init().unwrap();
-        log::set_max_level(log::LevelFilter::Info);
-    } else {
-        // Otherwise fall back to logging to standard error.
-        simple_logger::SimpleLogger::new().init().unwrap();
-    }
+#[get("/echo")]
+fn echo(ws: ws::WebSocket) -> ws::Channel<'static> {
+    ws.channel(move |mut stream| {
+        Box::pin(async move {
+            while let Some(message) = stream.next().await {
+                let _ = stream.send(message?).await;
+            }
 
-    let args: CliArgs = Docopt::new(USAGE)
-        .and_then(|d| d.deserialize())
-        .unwrap_or_else(|e| e.exit());
+            Ok(())
+        })
+    })
+}
 
-    let db = Connection::open(args.flag_db)?;
-
-    if args.cmd_validate_hafas_schema {
-        validate_hafas_schema(&db);
-        std::process::exit(0);
-    }
-
+fn crawler(db: &Connection, args: &CliArgs) -> Result<(), Box<dyn Error>> {
     db.execute(
         "CREATE TABLE IF NOT EXISTS trips
           ( id INTEGER PRIMARY KEY AUTOINCREMENT
@@ -175,5 +176,38 @@ fn main() -> Result<(), Box<dyn Error>> {
         sleep(next_execution - Instant::now());
         next_execution += loop_interval;
     }
+}
 
+#[launch]
+fn rocket() -> _ {
+    // Setup logging
+    if systemd_journal_logger::connected_to_journal() {
+        // If journald is available.
+        systemd_journal_logger::init().unwrap();
+        log::set_max_level(log::LevelFilter::Info);
+    } else {
+        // Otherwise fall back to logging to standard error.
+        simple_logger::SimpleLogger::new().env().init().unwrap();
+    }
+
+    let args: CliArgs = Docopt::new(USAGE)
+        .and_then(|d| d.deserialize())
+        .unwrap_or_else(|e| e.exit());
+
+    let db = Connection::open(&args.flag_db).unwrap();
+
+    if args.cmd_validate_hafas_schema {
+        validate_hafas_schema(&db);
+        std::process::exit(0);
+    }
+
+    std::thread::spawn(move || {
+        crawler(&db, &args);
+    });
+
+    // let rocket_config = rocket::config::Config::figment()
+    //     .merge(("port", args.flag_port))
+    //     .merge(("address", "::1"));
+
+    rocket::build().mount("/", routes![echo])
 }

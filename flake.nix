@@ -44,6 +44,7 @@
             reuse
             python3
             qgis
+            websocat
           ];
         };
       }

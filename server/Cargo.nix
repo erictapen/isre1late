@@ -252,7 +252,21 @@ rec {
         ];
 
       };
-      "base64" = rec {
+      "base64 0.13.1" = rec {
+        crateName = "base64";
+        version = "0.13.1";
+        edition = "2018";
+        sha256 = "1s494mqmzjb766fy1kqlccgfg2sdcjb6hzbvzqv2jw65fdi5h6wy";
+        authors = [
+          "Alice Maz <alice@alicemaz.com>"
+          "Marshall Pierce <marshall@mpierce.org>"
+        ];
+        features = {
+          "default" = [ "std" ];
+        };
+        resolvedDefaultFeatures = [ "default" "std" ];
+      };
+      "base64 0.21.0" = rec {
         crateName = "base64";
         version = "0.21.0";
         edition = "2021";
@@ -337,6 +351,19 @@ rec {
         features = {
         };
         resolvedDefaultFeatures = [ "default" ];
+      };
+      "byteorder" = rec {
+        crateName = "byteorder";
+        version = "1.4.3";
+        edition = "2018";
+        sha256 = "0456lv9xi1a5bcm32arknf33ikv76p3fr9yzki4lb2897p2qkh8l";
+        authors = [
+          "Andrew Gallant <jamslam@gmail.com>"
+        ];
+        features = {
+          "default" = [ "std" ];
+        };
+        resolvedDefaultFeatures = [ "default" "std" ];
       };
       "bytes" = rec {
         crateName = "bytes";
@@ -1956,6 +1983,11 @@ rec {
             features = [ "json" ];
           }
           {
+            name = "rocket_ws";
+            packageId = "rocket_ws";
+            rename = "ws";
+          }
+          {
             name = "rusqlite";
             packageId = "rusqlite";
             features = [ "time" ];
@@ -3364,7 +3396,7 @@ rec {
         dependencies = [
           {
             name = "base64";
-            packageId = "base64";
+            packageId = "base64 0.21.0";
           }
           {
             name = "bytes";
@@ -3594,7 +3626,12 @@ rec {
         crateName = "rocket";
         version = "0.5.0-rc.3";
         edition = "2021";
-        sha256 = "1jcwrkqvmbh1gwvg55kv6mdp8c9331hqzd45jq9gsp5f05s4ywsq";
+        workspace_member = null;
+        src = pkgs.fetchgit {
+          url = "https://github.com/SergioBenitez/Rocket";
+          rev = "9b0564ed27f90686b333337d9f6ed76484a84b27";
+          sha256 = "01byqyh0i0mp2fm1hw3bzmk1kgxgc07mq2qfj732n7rydlkiks78";
+        };
         authors = [
           "Sergio Benitez <sb@sergio.bz>"
         ];
@@ -3767,7 +3804,12 @@ rec {
         crateName = "rocket_codegen";
         version = "0.5.0-rc.3";
         edition = "2021";
-        sha256 = "12shzkr9zmc0v3r190nhcfavly28nngja2g4h94p93122hzkb4vh";
+        workspace_member = null;
+        src = pkgs.fetchgit {
+          url = "https://github.com/SergioBenitez/Rocket";
+          rev = "9b0564ed27f90686b333337d9f6ed76484a84b27";
+          sha256 = "01byqyh0i0mp2fm1hw3bzmk1kgxgc07mq2qfj732n7rydlkiks78";
+        };
         procMacro = true;
         authors = [
           "Sergio Benitez <sb@sergio.bz>"
@@ -3813,7 +3855,12 @@ rec {
         crateName = "rocket_http";
         version = "0.5.0-rc.3";
         edition = "2021";
-        sha256 = "1x4h411ldb59c6bq05r7dzi65xiqz7akd63zydkkm832j74i4q4k";
+        workspace_member = null;
+        src = pkgs.fetchgit {
+          url = "https://github.com/SergioBenitez/Rocket";
+          rev = "9b0564ed27f90686b333337d9f6ed76484a84b27";
+          sha256 = "01byqyh0i0mp2fm1hw3bzmk1kgxgc07mq2qfj732n7rydlkiks78";
+        };
         authors = [
           "Sergio Benitez <sb@sergio.bz>"
         ];
@@ -3921,6 +3968,38 @@ rec {
           "x509-parser" = [ "dep:x509-parser" ];
         };
         resolvedDefaultFeatures = [ "default" "http2" "serde" "serde_" ];
+      };
+      "rocket_ws" = rec {
+        crateName = "rocket_ws";
+        version = "0.1.0-rc.3";
+        edition = "2021";
+        workspace_member = null;
+        src = pkgs.fetchgit {
+          url = "https://github.com/SergioBenitez/Rocket";
+          rev = "9b0564ed27f90686b333337d9f6ed76484a84b27";
+          sha256 = "01byqyh0i0mp2fm1hw3bzmk1kgxgc07mq2qfj732n7rydlkiks78";
+        };
+        authors = [
+          "Sergio Benitez <sb@sergio.bz>"
+        ];
+        dependencies = [
+          {
+            name = "rocket";
+            packageId = "rocket";
+            usesDefaultFeatures = false;
+          }
+          {
+            name = "tokio-tungstenite";
+            packageId = "tokio-tungstenite";
+            optional = true;
+          }
+        ];
+        features = {
+          "default" = [ "tungstenite" ];
+          "tokio-tungstenite" = [ "dep:tokio-tungstenite" ];
+          "tungstenite" = [ "tokio-tungstenite" ];
+        };
+        resolvedDefaultFeatures = [ "default" "tokio-tungstenite" "tungstenite" ];
       };
       "rusqlite" = rec {
         crateName = "rusqlite";
@@ -4376,6 +4455,45 @@ rec {
           }
         ];
 
+      };
+      "sha1" = rec {
+        crateName = "sha1";
+        version = "0.10.5";
+        edition = "2018";
+        sha256 = "18zb80sxn31kxdpl1ly6w17hkrvyf08zbxnpy8ckb6f3h3f96hph";
+        authors = [
+          "RustCrypto Developers"
+        ];
+        dependencies = [
+          {
+            name = "cfg-if";
+            packageId = "cfg-if";
+          }
+          {
+            name = "cpufeatures";
+            packageId = "cpufeatures";
+            target = { target, features }: (("aarch64" == target."arch") || ("x86" == target."arch") || ("x86_64" == target."arch"));
+          }
+          {
+            name = "digest";
+            packageId = "digest";
+          }
+        ];
+        devDependencies = [
+          {
+            name = "digest";
+            packageId = "digest";
+            features = [ "dev" ];
+          }
+        ];
+        features = {
+          "asm" = [ "sha1-asm" ];
+          "default" = [ "std" ];
+          "oid" = [ "digest/oid" ];
+          "sha1-asm" = [ "dep:sha1-asm" ];
+          "std" = [ "digest/std" ];
+        };
+        resolvedDefaultFeatures = [ "default" "std" ];
       };
       "sha2" = rec {
         crateName = "sha2";
@@ -5199,6 +5317,65 @@ rec {
         };
         resolvedDefaultFeatures = [ "default" "signal" "time" ];
       };
+      "tokio-tungstenite" = rec {
+        crateName = "tokio-tungstenite";
+        version = "0.18.0";
+        edition = "2018";
+        sha256 = "1z8bxhq6d1ndh4x914wwk72l93ha1sl0jmnb6knvqiqi869rqcal";
+        authors = [
+          "Daniel Abramov <dabramov@snapview.de>"
+          "Alexey Galakhov <agalakhov@snapview.de>"
+        ];
+        dependencies = [
+          {
+            name = "futures-util";
+            packageId = "futures-util";
+            usesDefaultFeatures = false;
+            features = [ "sink" "std" ];
+          }
+          {
+            name = "log";
+            packageId = "log";
+          }
+          {
+            name = "tokio";
+            packageId = "tokio";
+            usesDefaultFeatures = false;
+            features = [ "io-util" ];
+          }
+          {
+            name = "tungstenite";
+            packageId = "tungstenite";
+            usesDefaultFeatures = false;
+          }
+        ];
+        devDependencies = [
+          {
+            name = "tokio";
+            packageId = "tokio";
+            usesDefaultFeatures = false;
+            features = [ "io-std" "macros" "net" "rt-multi-thread" "time" ];
+          }
+        ];
+        features = {
+          "__rustls-tls" = [ "rustls" "tokio-rustls" "stream" "tungstenite/__rustls-tls" "webpki" "handshake" ];
+          "connect" = [ "stream" "tokio/net" "handshake" ];
+          "default" = [ "connect" "handshake" ];
+          "handshake" = [ "tungstenite/handshake" ];
+          "native-tls" = [ "native-tls-crate" "tokio-native-tls" "stream" "tungstenite/native-tls" "handshake" ];
+          "native-tls-crate" = [ "dep:native-tls-crate" ];
+          "native-tls-vendored" = [ "native-tls" "native-tls-crate/vendored" "tungstenite/native-tls-vendored" ];
+          "rustls" = [ "dep:rustls" ];
+          "rustls-native-certs" = [ "dep:rustls-native-certs" ];
+          "rustls-tls-native-roots" = [ "__rustls-tls" "rustls-native-certs" ];
+          "rustls-tls-webpki-roots" = [ "__rustls-tls" "webpki-roots" ];
+          "tokio-native-tls" = [ "dep:tokio-native-tls" ];
+          "tokio-rustls" = [ "dep:tokio-rustls" ];
+          "webpki" = [ "dep:webpki" ];
+          "webpki-roots" = [ "dep:webpki-roots" ];
+        };
+        resolvedDefaultFeatures = [ "connect" "default" "handshake" "stream" ];
+      };
       "tokio-util" = rec {
         crateName = "tokio-util";
         version = "0.7.7";
@@ -5545,6 +5722,93 @@ rec {
         ];
 
       };
+      "tungstenite" = rec {
+        crateName = "tungstenite";
+        version = "0.18.0";
+        edition = "2018";
+        sha256 = "1207jv8ciklgnqwjhxc1c1xhplrfab231191apyz0k6d56vnmvih";
+        authors = [
+          "Alexey Galakhov"
+          "Daniel Abramov"
+        ];
+        dependencies = [
+          {
+            name = "base64";
+            packageId = "base64 0.13.1";
+            optional = true;
+          }
+          {
+            name = "byteorder";
+            packageId = "byteorder";
+          }
+          {
+            name = "bytes";
+            packageId = "bytes";
+          }
+          {
+            name = "http";
+            packageId = "http";
+            optional = true;
+          }
+          {
+            name = "httparse";
+            packageId = "httparse";
+            optional = true;
+          }
+          {
+            name = "log";
+            packageId = "log";
+          }
+          {
+            name = "rand";
+            packageId = "rand";
+          }
+          {
+            name = "sha1";
+            packageId = "sha1";
+            optional = true;
+          }
+          {
+            name = "thiserror";
+            packageId = "thiserror";
+          }
+          {
+            name = "url";
+            packageId = "url";
+            optional = true;
+          }
+          {
+            name = "utf-8";
+            packageId = "utf-8";
+          }
+        ];
+        devDependencies = [
+          {
+            name = "rand";
+            packageId = "rand";
+          }
+        ];
+        features = {
+          "__rustls-tls" = [ "rustls" "webpki" ];
+          "base64" = [ "dep:base64" ];
+          "default" = [ "handshake" ];
+          "handshake" = [ "base64" "http" "httparse" "sha1" "url" ];
+          "http" = [ "dep:http" ];
+          "httparse" = [ "dep:httparse" ];
+          "native-tls" = [ "native-tls-crate" ];
+          "native-tls-crate" = [ "dep:native-tls-crate" ];
+          "native-tls-vendored" = [ "native-tls" "native-tls-crate/vendored" ];
+          "rustls" = [ "dep:rustls" ];
+          "rustls-native-certs" = [ "dep:rustls-native-certs" ];
+          "rustls-tls-native-roots" = [ "__rustls-tls" "rustls-native-certs" ];
+          "rustls-tls-webpki-roots" = [ "__rustls-tls" "webpki-roots" ];
+          "sha1" = [ "dep:sha1" ];
+          "url" = [ "dep:url" ];
+          "webpki" = [ "dep:webpki" ];
+          "webpki-roots" = [ "dep:webpki-roots" ];
+        };
+        resolvedDefaultFeatures = [ "base64" "handshake" "http" "httparse" "sha1" "url" ];
+      };
       "typenum" = rec {
         crateName = "typenum";
         version = "1.16.0";
@@ -5710,6 +5974,17 @@ rec {
         authors = [
           "Kornel <kornel@geekhood.net>"
           "Bertram Truong <b@bertramtruong.com>"
+        ];
+
+      };
+      "utf-8" = rec {
+        crateName = "utf-8";
+        version = "0.7.6";
+        edition = "2015";
+        sha256 = "1a9ns3fvgird0snjkd3wbdhwd3zdpc2h5gpyybrfr6ra5pkqxk09";
+        libName = "utf8";
+        authors = [
+          "Simon Sapin <simon.sapin@exyr.org>"
         ];
 
       };

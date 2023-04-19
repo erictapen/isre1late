@@ -83,41 +83,6 @@ rec {
     #   inject test dependencies into the build
 
     crates = {
-      "ahash" = rec {
-        crateName = "ahash";
-        version = "0.7.6";
-        edition = "2018";
-        sha256 = "0isw672fiwx8cjl040jrck6pi85xcszkz6q0xsqkiy6qjl31mdgw";
-        authors = [
-          "Tom Kaitchuck <Tom.Kaitchuck@gmail.com>"
-        ];
-        dependencies = [
-          {
-            name = "getrandom";
-            packageId = "getrandom";
-            target = { target, features }: (("linux" == target."os") || ("android" == target."os") || ("windows" == target."os") || ("macos" == target."os") || ("ios" == target."os") || ("freebsd" == target."os") || ("openbsd" == target."os") || ("netbsd" == target."os") || ("dragonfly" == target."os") || ("solaris" == target."os") || ("illumos" == target."os") || ("fuchsia" == target."os") || ("redox" == target."os") || ("cloudabi" == target."os") || ("haiku" == target."os") || ("vxworks" == target."os") || ("emscripten" == target."os") || ("wasi" == target."os"));
-          }
-          {
-            name = "once_cell";
-            packageId = "once_cell";
-            usesDefaultFeatures = false;
-            target = { target, features }: (!(("arm" == target."arch") && ("none" == target."os")));
-            features = [ "alloc" ];
-          }
-        ];
-        buildDependencies = [
-          {
-            name = "version_check";
-            packageId = "version_check";
-          }
-        ];
-        features = {
-          "compile-time-rng" = [ "const-random" ];
-          "const-random" = [ "dep:const-random" ];
-          "default" = [ "std" ];
-          "serde" = [ "dep:serde" ];
-        };
-      };
       "async-stream" = rec {
         crateName = "async-stream";
         version = "0.3.5";
@@ -668,6 +633,142 @@ rec {
         ];
 
       };
+      "diesel" = rec {
+        crateName = "diesel";
+        version = "2.0.4";
+        edition = "2018";
+        sha256 = "0wz31qyyz576yz1dfxhqzsn78jrjz890gbjvm1fm191nd0wpgsvj";
+        dependencies = [
+          {
+            name = "bitflags";
+            packageId = "bitflags 1.3.2";
+            optional = true;
+          }
+          {
+            name = "byteorder";
+            packageId = "byteorder";
+            optional = true;
+          }
+          {
+            name = "diesel_derives";
+            packageId = "diesel_derives";
+          }
+          {
+            name = "itoa";
+            packageId = "itoa";
+            optional = true;
+          }
+          {
+            name = "pq-sys";
+            packageId = "pq-sys";
+            optional = true;
+          }
+          {
+            name = "time";
+            packageId = "time";
+            optional = true;
+            features = [ "macros" "formatting" "parsing" ];
+          }
+        ];
+        features = {
+          "128-column-tables" = [ "64-column-tables" "diesel_derives/128-column-tables" ];
+          "32-column-tables" = [ "diesel_derives/32-column-tables" ];
+          "64-column-tables" = [ "32-column-tables" "diesel_derives/64-column-tables" ];
+          "bigdecimal" = [ "dep:bigdecimal" ];
+          "bitflags" = [ "dep:bitflags" ];
+          "byteorder" = [ "dep:byteorder" ];
+          "chrono" = [ "dep:chrono" ];
+          "default" = [ "with-deprecated" "32-column-tables" ];
+          "extras" = [ "chrono" "time" "serde_json" "uuid" "network-address" "numeric" "r2d2" ];
+          "huge-tables" = [ "64-column-tables" ];
+          "ipnet" = [ "dep:ipnet" ];
+          "ipnet-address" = [ "ipnet" "libc" ];
+          "ipnetwork" = [ "dep:ipnetwork" ];
+          "itoa" = [ "dep:itoa" ];
+          "large-tables" = [ "32-column-tables" ];
+          "libc" = [ "dep:libc" ];
+          "libsqlite3-sys" = [ "dep:libsqlite3-sys" ];
+          "mysql" = [ "mysqlclient-sys" "url" "percent-encoding" "bitflags" "mysql_backend" ];
+          "mysql_backend" = [ "diesel_derives/mysql" "byteorder" ];
+          "mysqlclient-sys" = [ "dep:mysqlclient-sys" ];
+          "network-address" = [ "ipnetwork" "libc" ];
+          "num-bigint" = [ "dep:num-bigint" ];
+          "num-integer" = [ "dep:num-integer" ];
+          "num-traits" = [ "dep:num-traits" ];
+          "numeric" = [ "num-bigint" "bigdecimal" "num-traits" "num-integer" ];
+          "percent-encoding" = [ "dep:percent-encoding" ];
+          "postgres" = [ "pq-sys" "postgres_backend" ];
+          "postgres_backend" = [ "diesel_derives/postgres" "bitflags" "byteorder" "itoa" ];
+          "pq-sys" = [ "dep:pq-sys" ];
+          "quickcheck" = [ "dep:quickcheck" ];
+          "r2d2" = [ "dep:r2d2" ];
+          "serde_json" = [ "dep:serde_json" ];
+          "sqlite" = [ "libsqlite3-sys" "diesel_derives/sqlite" ];
+          "time" = [ "dep:time" ];
+          "unstable" = [ "diesel_derives/nightly" ];
+          "url" = [ "dep:url" ];
+          "uuid" = [ "dep:uuid" ];
+          "with-deprecated" = [ "diesel_derives/with-deprecated" ];
+          "without-deprecated" = [ "diesel_derives/without-deprecated" ];
+        };
+        resolvedDefaultFeatures = [ "32-column-tables" "bitflags" "byteorder" "default" "itoa" "postgres" "postgres_backend" "pq-sys" "time" "with-deprecated" ];
+      };
+      "diesel_derives" = rec {
+        crateName = "diesel_derives";
+        version = "2.0.2";
+        edition = "2015";
+        sha256 = "1i0hjhk8fxlyb442yfqw8gnn1zkqfs9nfbqlvm7kvgl6y3f4zmqa";
+        procMacro = true;
+        dependencies = [
+          {
+            name = "proc-macro-error";
+            packageId = "proc-macro-error";
+          }
+          {
+            name = "proc-macro2";
+            packageId = "proc-macro2";
+          }
+          {
+            name = "quote";
+            packageId = "quote";
+          }
+          {
+            name = "syn";
+            packageId = "syn 1.0.109";
+            features = [ "derive" "fold" ];
+          }
+        ];
+        features = {
+          "128-column-tables" = [ "64-column-tables" ];
+          "64-column-tables" = [ "32-column-tables" ];
+          "nightly" = [ "proc-macro2/nightly" ];
+        };
+        resolvedDefaultFeatures = [ "32-column-tables" "default" "postgres" "with-deprecated" ];
+      };
+      "diesel_migrations" = rec {
+        crateName = "diesel_migrations";
+        version = "2.0.0";
+        edition = "2018";
+        sha256 = "1qilvid5q7hxl5frs0fmvskaghf6q5rv1p95jamnz7ayxyz25bp9";
+        dependencies = [
+          {
+            name = "diesel";
+            packageId = "diesel";
+            usesDefaultFeatures = false;
+          }
+          {
+            name = "migrations_internals";
+            packageId = "migrations_internals";
+          }
+          {
+            name = "migrations_macros";
+            packageId = "migrations_macros";
+          }
+        ];
+        features = {
+        };
+        resolvedDefaultFeatures = [ "default" "postgres" ];
+      };
       "digest" = rec {
         crateName = "digest";
         version = "0.10.6";
@@ -839,30 +940,6 @@ rec {
           }
         ];
 
-      };
-      "fallible-iterator" = rec {
-        crateName = "fallible-iterator";
-        version = "0.2.0";
-        edition = "2018";
-        sha256 = "1xq759lsr8gqss7hva42azn3whgrbrs2sd9xpn92c5ickxm1fhs4";
-        authors = [
-          "Steven Fackler <sfackler@gmail.com>"
-        ];
-        features = {
-          "default" = [ "std" ];
-        };
-        resolvedDefaultFeatures = [ "default" "std" ];
-      };
-      "fallible-streaming-iterator" = rec {
-        crateName = "fallible-streaming-iterator";
-        version = "0.1.9";
-        edition = "2015";
-        sha256 = "0nj6j26p71bjy8h42x6jahx1hn0ng6mc2miwpgwnp8vnwqf4jq3k";
-        authors = [
-          "Steven Fackler <sfackler@gmail.com>"
-        ];
-        features = {
-        };
       };
       "fastrand" = rec {
         crateName = "fastrand";
@@ -1403,14 +1480,6 @@ rec {
         authors = [
           "Amanieu d'Antras <amanieu@gmail.com>"
         ];
-        dependencies = [
-          {
-            name = "ahash";
-            packageId = "ahash";
-            optional = true;
-            usesDefaultFeatures = false;
-          }
-        ];
         features = {
           "ahash" = [ "dep:ahash" ];
           "ahash-compile-time-rng" = [ "ahash/compile-time-rng" ];
@@ -1423,26 +1492,7 @@ rec {
           "rustc-dep-of-std" = [ "nightly" "core" "compiler_builtins" "alloc" "rustc-internal-api" ];
           "serde" = [ "dep:serde" ];
         };
-        resolvedDefaultFeatures = [ "ahash" "default" "inline-more" "raw" ];
-      };
-      "hashlink" = rec {
-        crateName = "hashlink";
-        version = "0.8.1";
-        edition = "2018";
-        sha256 = "1yhgpv6k8pr7d3gp89gqcgxk2diai6gk4j05mmhdhy22ig7izzk9";
-        authors = [
-          "kyren <kerriganw@gmail.com>"
-        ];
-        dependencies = [
-          {
-            name = "hashbrown";
-            packageId = "hashbrown";
-          }
-        ];
-        features = {
-          "serde" = [ "dep:serde" ];
-          "serde_impl" = [ "serde" ];
-        };
+        resolvedDefaultFeatures = [ "raw" ];
       };
       "hermit-abi 0.1.19" = rec {
         crateName = "hermit-abi";
@@ -1965,6 +2015,16 @@ rec {
         ];
         dependencies = [
           {
+            name = "diesel";
+            packageId = "diesel";
+            features = [ "postgres" "postgres_backend" "time" ];
+          }
+          {
+            name = "diesel_migrations";
+            packageId = "diesel_migrations";
+            features = [ "postgres" ];
+          }
+          {
             name = "docopt";
             packageId = "docopt";
           }
@@ -1986,11 +2046,6 @@ rec {
             name = "rocket_ws";
             packageId = "rocket_ws";
             rename = "ws";
-          }
-          {
-            name = "rusqlite";
-            packageId = "rusqlite";
-            features = [ "time" ];
           }
           {
             name = "serde";
@@ -2016,7 +2071,7 @@ rec {
           {
             name = "time";
             packageId = "time";
-            features = [ "serde-well-known" ];
+            features = [ "serde-well-known" "local-offset" ];
           }
           {
             name = "urlencoding";
@@ -2081,44 +2136,6 @@ rec {
           "use_std" = [ "std" ];
         };
         resolvedDefaultFeatures = [ "default" "extra_traits" "std" ];
-      };
-      "libsqlite3-sys" = rec {
-        crateName = "libsqlite3-sys";
-        version = "0.26.0";
-        edition = "2018";
-        sha256 = "09j3v5nhgvjdyskgwajhg9g6v3b2ij0lxiz8qqav2cxic7zjxhmg";
-        authors = [
-          "The rusqlite developers"
-        ];
-        buildDependencies = [
-          {
-            name = "pkg-config";
-            packageId = "pkg-config";
-            optional = true;
-          }
-          {
-            name = "vcpkg";
-            packageId = "vcpkg";
-            optional = true;
-          }
-        ];
-        features = {
-          "bindgen" = [ "dep:bindgen" ];
-          "buildtime_bindgen" = [ "bindgen" "pkg-config" "vcpkg" ];
-          "bundled" = [ "cc" "bundled_bindings" ];
-          "bundled-sqlcipher" = [ "bundled" ];
-          "bundled-sqlcipher-vendored-openssl" = [ "bundled-sqlcipher" "openssl-sys/vendored" ];
-          "bundled-windows" = [ "cc" "bundled_bindings" ];
-          "cc" = [ "dep:cc" ];
-          "default" = [ "min_sqlite_version_3_14_0" ];
-          "min_sqlite_version_3_14_0" = [ "pkg-config" "vcpkg" ];
-          "openssl-sys" = [ "dep:openssl-sys" ];
-          "pkg-config" = [ "dep:pkg-config" ];
-          "preupdate_hook" = [ "buildtime_bindgen" ];
-          "session" = [ "preupdate_hook" "buildtime_bindgen" ];
-          "vcpkg" = [ "dep:vcpkg" ];
-        };
-        resolvedDefaultFeatures = [ "default" "min_sqlite_version_3_14_0" "pkg-config" "vcpkg" ];
       };
       "libsystemd" = rec {
         crateName = "libsystemd";
@@ -2355,6 +2372,48 @@ rec {
           {
             name = "autocfg";
             packageId = "autocfg";
+          }
+        ];
+        features = {
+        };
+        resolvedDefaultFeatures = [ "default" ];
+      };
+      "migrations_internals" = rec {
+        crateName = "migrations_internals";
+        version = "2.0.0";
+        edition = "2015";
+        sha256 = "1g4gl1p816b0zpxncdswfccr5kww3aj7spv89kjh33064f9w14y4";
+        dependencies = [
+          {
+            name = "serde";
+            packageId = "serde";
+            features = [ "derive" ];
+          }
+          {
+            name = "toml";
+            packageId = "toml";
+          }
+        ];
+
+      };
+      "migrations_macros" = rec {
+        crateName = "migrations_macros";
+        version = "2.0.0";
+        edition = "2018";
+        sha256 = "0n1bzfphrwx2prx9a7a5w01fydhwa13p3dxbrlqdw4856mxg53wa";
+        procMacro = true;
+        dependencies = [
+          {
+            name = "migrations_internals";
+            packageId = "migrations_internals";
+          }
+          {
+            name = "proc-macro2";
+            packageId = "proc-macro2";
+          }
+          {
+            name = "quote";
+            packageId = "quote";
           }
         ];
         features = {
@@ -3055,6 +3114,91 @@ rec {
           "default" = [ "std" ];
         };
         resolvedDefaultFeatures = [ "simd" "std" ];
+      };
+      "pq-sys" = rec {
+        crateName = "pq-sys";
+        version = "0.4.8";
+        edition = "2015";
+        sha256 = "1gfygvp69i5i6vxbi9qp2xaf75x09js9wy1hpl67r6fz4qj0bh1i";
+        libName = "pq_sys";
+        buildDependencies = [
+          {
+            name = "vcpkg";
+            packageId = "vcpkg";
+            target = {target, features}: ("msvc" == target."env");
+          }
+        ];
+        features = {
+          "pkg-config" = [ "dep:pkg-config" ];
+        };
+      };
+      "proc-macro-error" = rec {
+        crateName = "proc-macro-error";
+        version = "1.0.4";
+        edition = "2018";
+        sha256 = "1373bhxaf0pagd8zkyd03kkx6bchzf6g0dkwrwzsnal9z47lj9fs";
+        authors = [
+          "CreepySkeleton <creepy-skeleton@yandex.ru>"
+        ];
+        dependencies = [
+          {
+            name = "proc-macro-error-attr";
+            packageId = "proc-macro-error-attr";
+          }
+          {
+            name = "proc-macro2";
+            packageId = "proc-macro2";
+          }
+          {
+            name = "quote";
+            packageId = "quote";
+          }
+          {
+            name = "syn";
+            packageId = "syn 1.0.109";
+            optional = true;
+            usesDefaultFeatures = false;
+          }
+        ];
+        buildDependencies = [
+          {
+            name = "version_check";
+            packageId = "version_check";
+          }
+        ];
+        features = {
+          "default" = [ "syn-error" ];
+          "syn" = [ "dep:syn" ];
+          "syn-error" = [ "syn" ];
+        };
+        resolvedDefaultFeatures = [ "default" "syn" "syn-error" ];
+      };
+      "proc-macro-error-attr" = rec {
+        crateName = "proc-macro-error-attr";
+        version = "1.0.4";
+        edition = "2018";
+        sha256 = "0sgq6m5jfmasmwwy8x4mjygx5l7kp8s4j60bv25ckv2j1qc41gm1";
+        procMacro = true;
+        authors = [
+          "CreepySkeleton <creepy-skeleton@yandex.ru>"
+        ];
+        dependencies = [
+          {
+            name = "proc-macro2";
+            packageId = "proc-macro2";
+          }
+          {
+            name = "quote";
+            packageId = "quote";
+          }
+        ];
+        buildDependencies = [
+          {
+            name = "version_check";
+            packageId = "version_check";
+          }
+        ];
+
       };
       "proc-macro2" = rec {
         crateName = "proc-macro2";
@@ -4001,75 +4145,6 @@ rec {
         };
         resolvedDefaultFeatures = [ "default" "tokio-tungstenite" "tungstenite" ];
       };
-      "rusqlite" = rec {
-        crateName = "rusqlite";
-        version = "0.29.0";
-        edition = "2018";
-        sha256 = "1wj12rmwa8g0bfhsk307fl84k0xcw8ji872xx3k447apdl1rv6sl";
-        authors = [
-          "The rusqlite developers"
-        ];
-        dependencies = [
-          {
-            name = "bitflags";
-            packageId = "bitflags 2.1.0";
-          }
-          {
-            name = "fallible-iterator";
-            packageId = "fallible-iterator";
-          }
-          {
-            name = "fallible-streaming-iterator";
-            packageId = "fallible-streaming-iterator";
-          }
-          {
-            name = "hashlink";
-            packageId = "hashlink";
-          }
-          {
-            name = "libsqlite3-sys";
-            packageId = "libsqlite3-sys";
-          }
-          {
-            name = "smallvec";
-            packageId = "smallvec";
-          }
-          {
-            name = "time";
-            packageId = "time";
-            optional = true;
-            features = [ "formatting" "macros" "parsing" ];
-          }
-        ];
-        features = {
-          "array" = [ "vtab" ];
-          "buildtime_bindgen" = [ "libsqlite3-sys/buildtime_bindgen" ];
-          "bundled" = [ "libsqlite3-sys/bundled" "modern_sqlite" ];
-          "bundled-full" = [ "modern-full" "bundled" ];
-          "bundled-sqlcipher" = [ "libsqlite3-sys/bundled-sqlcipher" "bundled" ];
-          "bundled-sqlcipher-vendored-openssl" = [ "libsqlite3-sys/bundled-sqlcipher-vendored-openssl" "bundled-sqlcipher" ];
-          "bundled-windows" = [ "libsqlite3-sys/bundled-windows" ];
-          "chrono" = [ "dep:chrono" ];
-          "csv" = [ "dep:csv" ];
-          "csvtab" = [ "csv" "vtab" ];
-          "in_gecko" = [ "modern_sqlite" "libsqlite3-sys/in_gecko" ];
-          "modern-full" = [ "array" "backup" "blob" "modern_sqlite" "chrono" "collation" "column_decltype" "csvtab" "extra_check" "functions" "hooks" "i128_blob" "limits" "load_extension" "serde_json" "series" "time" "trace" "unlock_notify" "url" "uuid" "vtab" "window" ];
-          "modern_sqlite" = [ "libsqlite3-sys/bundled_bindings" ];
-          "serde_json" = [ "dep:serde_json" ];
-          "series" = [ "vtab" ];
-          "session" = [ "libsqlite3-sys/session" "hooks" ];
-          "sqlcipher" = [ "libsqlite3-sys/sqlcipher" ];
-          "time" = [ "dep:time" ];
-          "unlock_notify" = [ "libsqlite3-sys/unlock_notify" ];
-          "url" = [ "dep:url" ];
-          "uuid" = [ "dep:uuid" ];
-          "wasm32-wasi-vfs" = [ "libsqlite3-sys/wasm32-wasi-vfs" ];
-          "window" = [ "functions" ];
-          "winsqlite3" = [ "libsqlite3-sys/winsqlite3" ];
-          "with-asan" = [ "libsqlite3-sys/with-asan" ];
-        };
-        resolvedDefaultFeatures = [ "time" ];
-      };
       "rustix" = rec {
         crateName = "rustix";
         version = "0.37.8";
@@ -4807,7 +4882,7 @@ rec {
           "quote" = [ "dep:quote" ];
           "test" = [ "syn-test-suite/all-features" ];
         };
-        resolvedDefaultFeatures = [ "clone-impls" "default" "derive" "extra-traits" "full" "parsing" "printing" "proc-macro" "quote" "visit" "visit-mut" ];
+        resolvedDefaultFeatures = [ "clone-impls" "default" "derive" "extra-traits" "fold" "full" "parsing" "printing" "proc-macro" "quote" "visit" "visit-mut" ];
       };
       "syn 2.0.13" = rec {
         crateName = "syn";

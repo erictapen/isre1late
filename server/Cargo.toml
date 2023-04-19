@@ -15,13 +15,14 @@ edition = "2021"
 rocket = { version = "0.5.0-rc.3", features = [ "json" ], git = "https://github.com/SergioBenitez/Rocket" }
 ws = { package = "rocket_ws", version ="=0.1.0-rc.3", git = "https://github.com/SergioBenitez/Rocket" }
 reqwest = { version = "*", features = [ "blocking", "json" ] }
-rusqlite = { version = "*", features = [ "time" ] }
+diesel = { version = "2.0.0", features = [ "postgres", "postgres_backend", "time" ] }
+diesel_migrations = { version = "2.0.0", features = [ "postgres" ] }
 serde_derive = "*"
 serde = { version = "*", features = [ "derive" ] }
 serde_json = "*"
 docopt = "*"
 log = "*"
-time = { version = "*", features = [ "serde-well-known" ] }
+time = { version = "*", features = [ "serde-well-known", "local-offset" ] }
 urlencoding = "*"
 simple_logger = "*"
 systemd-journal-logger = "*"

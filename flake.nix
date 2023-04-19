@@ -37,15 +37,18 @@
             nodejs
             cargo
             rustc
-            sqlite
+            diesel-cli
             pkg-config
             openssl
+            postgresql
             (import nixpkgs-crate2nix { inherit system; }).crate2nix
             reuse
             python3
             qgis
             websocat
           ];
+          DATABASE_URL = "postgres://localhost/isre1late?host=/run/postgresql";
+          PGDATABASE = "isre1late";
         };
       }
     ) // {

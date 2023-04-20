@@ -59,16 +59,27 @@
           stateDir = "/var/lib/isre1late";
         in {
 
+          services.postgresql = {
+            enable = true;
+            ensureDatabases = [ "isre1late" ];
+            ensureUsers = [
+              {
+                name = "isre1late";
+                ensurePermissions."DATABASE isre1late" = "ALL PRIVILEGES";
+              }
+            ];
+          };
+
           systemd.services.isre1late = {
             description = "Is RE1 late?";
             after = [ "network.target" ];
             wantedBy = [ "multi-user.target" ];
+            environment.DATABASE_URL = "postgres://localhost/isre1late?host=/run/postgresql";
 
             serviceConfig = {
               Type = "simple";
               ExecStart = ''
                 ${package}/bin/isre1late-server \
-                  --db ${stateDir}/db.sqlite \
                   --port ${port}
               '';
               Restart = "always";
@@ -84,6 +95,7 @@
             isSystemUser = true;
             home = stateDir;
             group = "isre1late";
+            packages = [ package ];
           };
           users.groups.isre1late = { };
 

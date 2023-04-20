@@ -30,6 +30,7 @@ pub mod schema;
 const USAGE: &'static str = "
 Usage: isre1late-server --port <port>
        isre1late-server validate-hafas-schema
+       isre1late-server run-db-migrations
        isre1late-server --help
 
 Options:
@@ -41,6 +42,7 @@ Options:
 struct CliArgs {
     flag_port: u16,
     cmd_validate_hafas_schema: bool,
+    cmd_run_db_migrations: bool,
 }
 
 const TRIPS_BASEPATH: &'static str = "https://v6.vbb.transport.rest/trips";
@@ -81,6 +83,18 @@ fn validate_hafas_schema(db: &mut PgConnection) -> () {
         }
     }
     error!("Encountered {} errors.", error_count);
+}
+
+fn run_db_migrations(db: &mut PgConnection) -> () {
+    info!("Runnung migrations...");
+    let migrations_run = db
+        .run_pending_migrations(MIGRATIONS)
+        .expect("Failed to run migrations.");
+    info!(
+        "Ran {} pending migrations: {:?}",
+        migrations_run.len(),
+        migrations_run
+    );
 }
 
 #[get("/echo")]
@@ -184,20 +198,15 @@ fn rocket() -> _ {
     let mut db: PgConnection = PgConnection::establish(&db_url)
         .unwrap_or_else(|_| panic!("Error connecting to {}", db_url));
 
-    info!("Runnung migrations...");
-    let migrations_run = db
-        .run_pending_migrations(MIGRATIONS)
-        .expect("Failed to run migrations");
-    info!(
-        "Ran {} pending migrations: {:?}",
-        migrations_run.len(),
-        migrations_run
-    );
-
     if args.cmd_validate_hafas_schema {
         validate_hafas_schema(&mut db);
         std::process::exit(0);
+    } else if args.cmd_run_db_migrations {
+        run_db_migrations(&mut db);
+        std::process::exit(0);
     }
+
+    run_db_migrations(&mut db);
 
     std::thread::spawn(move || {
         crawler(&mut db);

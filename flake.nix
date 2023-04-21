@@ -13,7 +13,8 @@
   };
 
   outputs = { self, nixpkgs, flake-utils, nixpkgs-crate2nix }:
-    flake-utils.lib.eachDefaultSystem
+    flake-utils.lib.eachSystem
+      [ "x86_64-linux" "aarch64-linux" ]
       (system:
         let pkgs = nixpkgs.legacyPackages.${system}; in
         {

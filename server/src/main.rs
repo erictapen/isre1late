@@ -74,11 +74,19 @@ fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
     diesel::delete(delays).execute(db)?;
     diesel::delete(trips).execute(db)?;
 
-    let bodies = fetched_json.load::<SelectFetchedJson>(db)?;
+    let bodies_iter =
+        fetched_json.load_iter::<SelectFetchedJson, diesel::pg::PgRowByRowLoadingMode>(db)?;
 
     let mut error_count: i64 = 0;
 
-    for SelectFetchedJson { id, body, .. } in bodies {
+    for fj_res in bodies_iter {
+        let SelectFetchedJson { id, body, .. } = match fj_res {
+            Ok(fj) => fj,
+            Err(e) => {
+                error!("{}", e);
+                continue;
+            }
+        };
         match serde_json::from_str::<TripOverview>(&body.as_ref()) {
             Ok(_) => {}
             Err(err) => {

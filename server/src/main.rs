@@ -64,11 +64,17 @@ fn fetch_json_and_store_in_db(
     Ok(response_text)
 }
 
-fn validate_hafas_schema(db: &mut PgConnection) -> () {
-    info!("Validating Hafas schema");
-    let bodies = self::schema::fetched_json::dsl::fetched_json
-        .load::<SelectFetchedJson>(db)
-        .expect("Error loading fetched JSON.");
+/// Validate our representation of HAFAS types and also delete and refill delays and trips table.
+fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
+    use self::schema::fetched_json::dsl::fetched_json;
+    use crate::schema::delays::dsl::delays;
+    use crate::schema::trips::dsl::trips;
+
+    info!("Validating HAFAS schema..");
+    diesel::delete(delays).execute(db)?;
+    diesel::delete(trips).execute(db)?;
+
+    let bodies = fetched_json.load::<SelectFetchedJson>(db)?;
 
     let mut error_count: i64 = 0;
 
@@ -83,6 +89,7 @@ fn validate_hafas_schema(db: &mut PgConnection) -> () {
         }
     }
     error!("Encountered {} errors.", error_count);
+    Ok(())
 }
 
 fn run_db_migrations(db: &mut PgConnection) -> () {
@@ -108,6 +115,35 @@ fn echo(ws: ws::WebSocket) -> ws::Channel<'static> {
             Ok(())
         })
     })
+}
+
+fn insert_trip(db: &mut PgConnection, new_trip: Trip) -> Result<i64, diesel::result::Error> {
+    use crate::schema::trips;
+
+    diesel::insert_into(trips::table)
+        .values(new_trip)
+        .on_conflict(trips::text_id)
+        .do_update()
+        .set((
+            trips::text_id.eq(trips::text_id),
+            trips::first_observed.eq(trips::first_observed),
+        ))
+        .get_result(db)
+        .map(|t| {
+            let SelectTrip {
+                id: current_trip_id,
+                ..
+            } = t;
+            current_trip_id
+        })
+}
+fn insert_delay(db: &mut PgConnection, new_delay: Delay) -> Result<(), diesel::result::Error> {
+    use crate::schema::delays;
+
+    diesel::insert_into(delays::table)
+        .values(new_delay)
+        .execute(db)
+        .map(|_| ())
 }
 
 fn crawler(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
@@ -139,34 +175,20 @@ fn crawler(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
         );
 
         for trip in trips_overview.trips {
-            use crate::schema::{delays, trips};
-
-            let new_trip = Trip {
-                first_observed: OffsetDateTime::now_utc(),
-                text_id: trip.id.clone(),
-                origin: trip.origin.name,
-                destination: trip.destination.name,
-                planned_departure_from_origin: trip.plannedDeparture,
-            };
-            let SelectTrip {
-                id: current_trip_id,
-                ..
-            } = match diesel::insert_into(trips::table)
-                .values(new_trip)
-                .on_conflict(trips::text_id)
-                .do_update()
-                .set((
-                    trips::text_id.eq(trips::text_id),
-                    trips::first_observed.eq(trips::first_observed),
-                ))
-                .get_result(db)
-            {
-                Ok(res) => res,
-                Err(e) => {
-                    error!("Error inserting into trips: {}", e);
-                    continue;
-                }
-            };
+            // let new_trip = Trip {
+            //     first_observed: OffsetDateTime::now_utc(),
+            //     text_id: trip.id.clone(),
+            //     origin: trip.origin.name,
+            //     destination: trip.destination.name,
+            //     planned_departure_from_origin: trip.plannedDeparture,
+            // };
+            // let current_trip_id = match insert_trip(db, new_trip) {
+            //     Ok(res) => res,
+            //     Err(e) => {
+            //         error!("Error inserting into trips: {}", e);
+            //         continue;
+            //     }
+            // };
 
             // With this endpoint, we can access the delay data per trip.
             let trip_url = format!("{}/{}", TRIPS_BASEPATH, urlencoding::encode(&trip.id));
@@ -185,22 +207,25 @@ fn crawler(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
                     continue;
                 }
             };
-            let (latitude, longitude) = trip_overview
-                .trip
-                .currentLocation
-                .map_or((None, None), |tl| (Some(tl.latitude), Some(tl.longitude)));
-            let new_delay = Delay {
-                trip_id: current_trip_id,
-                observed_at: OffsetDateTime::now_utc(),
-                generated_at: trip_overview.realtimeDataUpdatedAt,
-                latitude: latitude,
-                longitude: longitude,
-                delay: trip_overview.trip.arrivalDelay,
-            };
-            diesel::insert_into(delays::table)
-                .values(new_delay)
-                .execute(db)
-                .expect("Error inserting into delays.");
+            // let (latitude, longitude) = trip_overview
+            //     .trip
+            //     .currentLocation
+            //     .map_or((None, None), |tl| (Some(tl.latitude), Some(tl.longitude)));
+            // let new_delay = Delay {
+            //     trip_id: current_trip_id,
+            //     observed_at: OffsetDateTime::now_utc(),
+            //     generated_at: trip_overview.realtimeDataUpdatedAt,
+            //     latitude: latitude,
+            //     longitude: longitude,
+            //     delay: trip_overview.trip.arrivalDelay,
+            // };
+            // match insert_delay(db, new_delay) {
+            //     Ok(_) => (),
+            //     Err(e) => {
+            //         error!("{}", e);
+            //         continue;
+            //     }
+            // };
         }
         sleep(next_execution - Instant::now());
         next_execution += loop_interval;
@@ -228,7 +253,10 @@ fn rocket() -> _ {
         .unwrap_or_else(|_| panic!("Error connecting to {}", db_url));
 
     if args.cmd_validate_hafas_schema {
-        validate_hafas_schema(&mut db);
+        validate_hafas_schema(&mut db).unwrap_or_else(|e| {
+            error!("{}", e);
+            std::process::exit(1);
+        });
         std::process::exit(0);
     } else if args.cmd_run_db_migrations {
         run_db_migrations(&mut db);

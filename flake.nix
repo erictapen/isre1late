@@ -48,6 +48,7 @@
               qgis
               websocat
             ];
+            RUST_LOG = "info";
             DATABASE_URL = "postgres://localhost/isre1late?host=/run/postgresql";
             PGDATABASE = "isre1late";
           };

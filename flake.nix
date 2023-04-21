@@ -58,52 +58,63 @@
       nixosModules.default = { config, pkgs, lib, ... }:
         let
           package = self.packages.${config.nixpkgs.localSystem.system}.server;
-          # A random port
-          port = "28448";
           stateDir = "/var/lib/isre1late";
+          inherit (lib) mkEnableOption mkOption types;
+          cfg = config.services.isre1late;
         in
         {
 
-          services.postgresql = {
-            enable = true;
-            ensureDatabases = [ "isre1late" ];
-            ensureUsers = [
-              {
-                name = "isre1late";
-                ensurePermissions."DATABASE isre1late" = "ALL PRIVILEGES";
-              }
-            ];
+          options.services.isre1late = {
+            enable = mkEnableOption "IsRE1late server";
+            port = mkOption {
+              type = types.int;
+              example = 8080;
+              description = "TCP port to use.";
+            };
           };
 
-          systemd.services.isre1late = {
-            description = "Is RE1 late?";
-            after = [ "network.target" ];
-            wantedBy = [ "multi-user.target" ];
-            environment.DATABASE_URL = "postgres://localhost/isre1late?host=/run/postgresql";
-
-            serviceConfig = {
-              Type = "simple";
-              ExecStart = ''
-                ${package}/bin/isre1late-server \
-                  --port ${port}
-              '';
-              Restart = "always";
-              RestartSec = "30s";
-              StateDirectory = "isre1late";
-              User = "isre1late";
-              Group = "isre1late";
+          config = {
+            services.postgresql = {
+              enable = true;
+              ensureDatabases = [ "isre1late" ];
+              ensureUsers = [
+                {
+                  name = "isre1late";
+                  ensurePermissions."DATABASE isre1late" = "ALL PRIVILEGES";
+                }
+              ];
             };
 
-          };
+            systemd.services.isre1late = {
+              description = "Is RE1 late?";
+              after = [ "network.target" ];
+              wantedBy = [ "multi-user.target" ];
+              environment.DATABASE_URL = "postgres://localhost/isre1late?host=/run/postgresql";
 
-          users.users.isre1late = {
-            isSystemUser = true;
-            home = stateDir;
-            group = "isre1late";
-            packages = [ package ];
-          };
-          users.groups.isre1late = { };
+              serviceConfig = {
+                Type = "simple";
+                ExecStart = ''
+                  ${package}/bin/isre1late-server \
+                    --port ${builtins.toString cfg.port}
+                '';
+                Restart = "always";
+                RestartSec = "30s";
+                StateDirectory = "isre1late";
+                User = "isre1late";
+                Group = "isre1late";
+              };
 
+            };
+
+            users.users.isre1late = {
+              isSystemUser = true;
+              home = stateDir;
+              group = "isre1late";
+              packages = [ package ];
+            };
+            users.groups.isre1late = { };
+
+          };
         };
     };
 }

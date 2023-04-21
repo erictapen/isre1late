@@ -34,8 +34,4 @@ diesel::table! {
 
 diesel::joinable!(delays -> trips (trip_id));
 
-diesel::allow_tables_to_appear_in_same_query!(
-    delays,
-    fetched_json,
-    trips,
-);
+diesel::allow_tables_to_appear_in_same_query!(delays, fetched_json, trips,);

@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #[macro_use]
-extern crate log;
-#[macro_use]
 extern crate rocket;
 
 use self::models::*;
@@ -47,10 +45,13 @@ struct CliArgs {
 
 const TRIPS_BASEPATH: &'static str = "https://v6.vbb.transport.rest/trips";
 
-fn fetch_json_and_store_in_db(db: &mut PgConnection, url: String) -> String {
+fn fetch_json_and_store_in_db(
+    db: &mut PgConnection,
+    url: String,
+) -> Result<String, Box<dyn Error>> {
     use crate::schema::fetched_json;
 
-    let response_text = reqwest::blocking::get(url.clone()).unwrap().text().unwrap();
+    let response_text = reqwest::blocking::get(url.clone())?.text()?;
     let fetched_json = FetchedJson {
         fetched_at: OffsetDateTime::now_utc(),
         url: url,
@@ -58,10 +59,9 @@ fn fetch_json_and_store_in_db(db: &mut PgConnection, url: String) -> String {
     };
     diesel::insert_into(fetched_json::table)
         .values(&fetched_json)
-        .execute(db)
-        .expect("Error saving fetched json.");
+        .execute(db)?;
 
-    response_text
+    Ok(response_text)
 }
 
 fn validate_hafas_schema(db: &mut PgConnection) -> () {
@@ -118,8 +118,20 @@ fn crawler(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
     loop {
         info!("Fetching currently running trips.");
         let trips_overview_url = format!("{}?lineName=RE1&operatorNames=ODEG", TRIPS_BASEPATH);
-        let trips_overview: TripsOverview =
-            serde_json::from_str(&fetch_json_and_store_in_db(db, trips_overview_url))?;
+        let trips_overview_json = match fetch_json_and_store_in_db(db, trips_overview_url) {
+            Ok(fj) => fj,
+            Err(e) => {
+                error!("{}", e);
+                continue;
+            }
+        };
+        let trips_overview: TripsOverview = match serde_json::from_str(&trips_overview_json) {
+            Ok(res) => res,
+            Err(e) => {
+                error!("Failed to deserialize trips overview: {}", e);
+                continue;
+            }
+        };
 
         info!(
             "Fetched {:?} currently running trips.",
@@ -128,7 +140,6 @@ fn crawler(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
 
         for trip in trips_overview.trips {
             use crate::schema::{delays, trips};
-            use diesel::upsert::excluded;
 
             let new_trip = Trip {
                 first_observed: OffsetDateTime::now_utc(),
@@ -140,7 +151,7 @@ fn crawler(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
             let SelectTrip {
                 id: current_trip_id,
                 ..
-            } = diesel::insert_into(trips::table)
+            } = match diesel::insert_into(trips::table)
                 .values(new_trip)
                 .on_conflict(trips::text_id)
                 .do_update()
@@ -149,13 +160,31 @@ fn crawler(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
                     trips::first_observed.eq(trips::first_observed),
                 ))
                 .get_result(db)
-                .expect("Error inserting into trips.");
+            {
+                Ok(res) => res,
+                Err(e) => {
+                    error!("Error inserting into trips: {}", e);
+                    continue;
+                }
+            };
 
             // With this endpoint, we can access the delay data per trip.
             let trip_url = format!("{}/{}", TRIPS_BASEPATH, urlencoding::encode(&trip.id));
             info!("Fetching trip data from {}", trip_url);
-            let trip_overview: TripOverview =
-                serde_json::from_str(&fetch_json_and_store_in_db(db, trip_url))?;
+            let trip_overview_json = match fetch_json_and_store_in_db(db, trip_url) {
+                Ok(fj) => fj,
+                Err(e) => {
+                    error!("{}", e);
+                    continue;
+                }
+            };
+            let trip_overview: TripOverview = match serde_json::from_str(&trip_overview_json) {
+                Ok(res) => res,
+                Err(e) => {
+                    error!("Failed to deserialize trip overview: {}", e);
+                    continue;
+                }
+            };
             let (latitude, longitude) = trip_overview
                 .trip
                 .currentLocation
@@ -209,8 +238,10 @@ fn rocket() -> _ {
     run_db_migrations(&mut db);
 
     std::thread::spawn(move || {
-        crawler(&mut db);
-        std::process::exit(1);
+        crawler(&mut db).unwrap_or_else(|e| {
+            error!("{}", e);
+            std::process::exit(1);
+        });
     });
 
     // let rocket_config = rocket::config::Config::figment()

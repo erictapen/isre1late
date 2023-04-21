@@ -13,51 +13,54 @@
   };
 
   outputs = { self, nixpkgs, flake-utils, nixpkgs-crate2nix }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let pkgs = nixpkgs.legacyPackages.${system}; in
-      {
-        packages = rec {
-          server =
-            let
-              crates = import ./server/Cargo.nix { inherit pkgs; };
-            in
-            crates.workspaceMembers.isre1late-server.build;
-          default = server;
-        };
-        apps = rec {
-          server = flake-utils.lib.mkApp { drv = self.packages.${system}.server; };
-          default = server;
-        };
-        checks.reuse = pkgs.runCommand "reuse-check" { } ''
-          ${pkgs.reuse}/bin/reuse --root ${self} lint && touch $out
-        '';
+    flake-utils.lib.eachDefaultSystem
+      (system:
+        let pkgs = nixpkgs.legacyPackages.${system}; in
+        {
+          packages = rec {
+            server =
+              let
+                crates = import ./server/Cargo.nix { inherit pkgs; };
+              in
+              crates.workspaceMembers.isre1late-server.build;
+            default = server;
+          };
+          apps = rec {
+            server = flake-utils.lib.mkApp { drv = self.packages.${system}.server; };
+            default = server;
+          };
+          checks.reuse = pkgs.runCommand "reuse-check" { } ''
+            ${pkgs.reuse}/bin/reuse --root ${self} lint && touch $out
+          '';
 
-        devShells.default = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            nodejs
-            cargo
-            rustc
-            diesel-cli
-            pkg-config
-            openssl
-            postgresql
-            (import nixpkgs-crate2nix { inherit system; }).crate2nix
-            reuse
-            python3
-            qgis
-            websocat
-          ];
-          DATABASE_URL = "postgres://localhost/isre1late?host=/run/postgresql";
-          PGDATABASE = "isre1late";
-        };
-      }
-    ) // {
-        nixosModules.default = {config, pkgs, lib, ... }: let
+          devShells.default = pkgs.mkShell {
+            buildInputs = with pkgs; [
+              nodejs
+              cargo
+              rustc
+              diesel-cli
+              pkg-config
+              openssl
+              postgresql
+              (import nixpkgs-crate2nix { inherit system; }).crate2nix
+              reuse
+              python3
+              qgis
+              websocat
+            ];
+            DATABASE_URL = "postgres://localhost/isre1late?host=/run/postgresql";
+            PGDATABASE = "isre1late";
+          };
+        }
+      ) // {
+      nixosModules.default = { config, pkgs, lib, ... }:
+        let
           package = self.packages.${config.nixpkgs.localSystem.system}.server;
           # A random port
           port = "28448";
           stateDir = "/var/lib/isre1late";
-        in {
+        in
+        {
 
           services.postgresql = {
             enable = true;

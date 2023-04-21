@@ -1,0 +1,9 @@
+```sqlite
+.mode csv 
+-- use '.separator SOME_STRING' for something other than a comma.
+.headers on 
+.out fetched_json.csv 
+select * from fetched_json;
+```
+
+psql -d isre1late -c "copy fetched_json from '/var/lib/isre1late/fetched_json.csv' with (format csv, header true);"

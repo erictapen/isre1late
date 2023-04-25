@@ -51,6 +51,10 @@ pub struct TripLocation {
 #[derive(Deserialize, Debug)]
 pub struct TripStopover {
     pub stop: TripStop,
+    #[serde(with = "time::serde::rfc3339::option")]
+    pub plannedArrival: Option<OffsetDateTime>,
+    #[serde(with = "time::serde::rfc3339::option")]
+    pub plannedDeparture: Option<OffsetDateTime>,
 }
 
 #[derive(Deserialize, Debug)]

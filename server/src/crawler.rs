@@ -8,6 +8,8 @@ use std::thread::sleep;
 use std::time::{Duration, Instant};
 use time::OffsetDateTime;
 
+use crate::client::client_msg_from_trip_overview;
+
 const TRIPS_BASEPATH: &'static str = "https://v6.vbb.transport.rest/trips";
 
 fn fetch_json_and_store_in_db(
@@ -115,13 +117,14 @@ pub fn crawler(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
                     continue;
                 }
             };
-            let _trip_overview: TripOverview = match serde_json::from_str(&trip_overview_json) {
+            let trip_overview: TripOverview = match serde_json::from_str(&trip_overview_json) {
                 Ok(res) => res,
                 Err(e) => {
                     error!("Failed to deserialize trip overview: {}", e);
                     continue;
                 }
             };
+            info!("{:?}", client_msg_from_trip_overview(trip_overview));
             // let (latitude, longitude) = trip_overview
             //     .trip
             //     .currentLocation

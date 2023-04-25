@@ -6,6 +6,7 @@
 extern crate rocket;
 
 use self::models::*;
+use crate::client::client_msg_from_trip_overview;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use docopt::Docopt;
@@ -19,6 +20,7 @@ pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
 mod transport_rest_vbb_v6;
 use transport_rest_vbb_v6::TripOverview;
 
+pub mod client;
 pub mod crawler;
 pub mod models;
 pub mod schema;

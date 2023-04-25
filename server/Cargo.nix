@@ -127,7 +127,7 @@ rec {
           }
           {
             name = "syn";
-            packageId = "syn 2.0.13";
+            packageId = "syn 2.0.15";
             features = [ "full" "visit-mut" ];
           }
         ];
@@ -153,7 +153,7 @@ rec {
           }
           {
             name = "syn";
-            packageId = "syn 2.0.13";
+            packageId = "syn 2.0.15";
             features = [ "full" "visit-mut" ];
           }
         ];
@@ -273,16 +273,17 @@ rec {
         };
         resolvedDefaultFeatures = [ "default" ];
       };
-      "bitflags 2.1.0" = rec {
+      "bitflags 2.2.1" = rec {
         crateName = "bitflags";
-        version = "2.1.0";
+        version = "2.2.1";
         edition = "2021";
-        sha256 = "1cxcbx6mm1w2d7x9xd2vcqgr69a2ydw9k110ir7rrkmmrdwyn2y7";
+        sha256 = "04rqz3kkp687k6w5qy3446w1ifgggg7blzmi1bqkrmv4xx5919i4";
         authors = [
           "The Rust Project Developers"
         ];
         features = {
           "arbitrary" = [ "dep:arbitrary" ];
+          "bytemuck" = [ "dep:bytemuck" ];
           "compiler_builtins" = [ "dep:compiler_builtins" ];
           "core" = [ "dep:core" ];
           "rustc-dep-of-std" = [ "core" "compiler_builtins" ];
@@ -307,9 +308,9 @@ rec {
       };
       "bumpalo" = rec {
         crateName = "bumpalo";
-        version = "3.12.0";
+        version = "3.12.1";
         edition = "2021";
-        sha256 = "0damxqdgqqzp3zyfwvbrg5hzx39kqgxnxl3yyq3kk4ald0jiw9hd";
+        sha256 = "1j7hjszs00lgl1ddwg4369f4jh87cbpf1m3xzczz751n0scy274v";
         authors = [
           "Nick Fitzgerald <fitzgen@gmail.com>"
         ];
@@ -486,9 +487,9 @@ rec {
       };
       "cpufeatures" = rec {
         crateName = "cpufeatures";
-        version = "0.2.6";
+        version = "0.2.7";
         edition = "2018";
-        sha256 = "10g16lzbczzjig8c906sjznybrb5vf0gnila7hd8ff1sicnry2i8";
+        sha256 = "0n7y7ls0g1svrjr6ymjv338q8ajc91sv2amdpgn7pi0j42m1wk1y";
         authors = [
           "RustCrypto Developers"
         ];
@@ -611,7 +612,7 @@ rec {
         dependencies = [
           {
             name = "bitflags";
-            packageId = "bitflags 2.1.0";
+            packageId = "bitflags 2.2.1";
           }
           {
             name = "proc-macro2";
@@ -627,7 +628,7 @@ rec {
           }
           {
             name = "syn";
-            packageId = "syn 2.0.13";
+            packageId = "syn 2.0.15";
             features = [ "full" "parsing" "extra-traits" "visit-mut" ];
           }
         ];
@@ -880,9 +881,9 @@ rec {
       };
       "errno" = rec {
         crateName = "errno";
-        version = "0.3.0";
+        version = "0.3.1";
         edition = "2018";
-        sha256 = "185gqhl5389apaqki46wv5k57rc4lbaqin4sx0zlg7crdjbs1mjh";
+        sha256 = "0fp7qy6fwagrnmi45msqnl01vksqwdb2qbbv60n9cz7rf0xfrksb";
         authors = [
           "Chris Wong <lambda.fairy@gmail.com>"
         ];
@@ -909,7 +910,7 @@ rec {
           }
           {
             name = "windows-sys";
-            packageId = "windows-sys 0.45.0";
+            packageId = "windows-sys 0.48.0";
             target = { target, features }: (target."windows" or false);
             features = [ "Win32_Foundation" "Win32_System_Diagnostics_Debug" ];
           }
@@ -1290,9 +1291,9 @@ rec {
       };
       "generator" = rec {
         crateName = "generator";
-        version = "0.7.3";
+        version = "0.7.4";
         edition = "2021";
-        sha256 = "0vipv16kksc4ck619rcmq9vlmjcmw3dyrbd09mgkys4li8l0m8ik";
+        sha256 = "12kab40dc2k5f2shmm1whl2ly5ijvh5mabl99mmrc0kwmvcj7qgk";
         authors = [
           "Xudong Huang <huangxu008@hotmail.com>"
         ];
@@ -1401,9 +1402,9 @@ rec {
       };
       "h2" = rec {
         crateName = "h2";
-        version = "0.3.16";
+        version = "0.3.18";
         edition = "2018";
-        sha256 = "0kcjammvjdmxnqh8fljidirxpcdsna75vgv6yljgd0dmi52vbrsv";
+        sha256 = "08ffidcaswjn30c63whc17s93nr1afh8l4xmd21nhywqq8aaky0p";
         authors = [
           "Carl Lerche <me@carllerche.com>"
           "Sean McArthur <sean@seanmonstar.com>"
@@ -1658,9 +1659,9 @@ rec {
       };
       "hyper" = rec {
         crateName = "hyper";
-        version = "0.14.25";
+        version = "0.14.26";
         edition = "2018";
-        sha256 = "16cqihimhv50gq1nz5dw71icxmbwsws8fzfmzw4j70hryr7mapnc";
+        sha256 = "1m27s4p6kv5rbzqkw2lzfs60fwz7wym97zri0j8kn6pilrr2sc5b";
         authors = [
           "Sean McArthur <sean@seanmonstar.com>"
         ];
@@ -2123,9 +2124,9 @@ rec {
       };
       "libc" = rec {
         crateName = "libc";
-        version = "0.2.141";
+        version = "0.2.142";
         edition = "2015";
-        sha256 = "1dgl8sxpj94v2hwrcr5k2lcp8wk9s8a7l6vlk6z69fcv356sc11k";
+        sha256 = "05skrzy55wl60n5y4syjkgql5g2626mf30hrsnkgyq2bypppp63a";
         authors = [
           "The Rust Project Developers"
         ];
@@ -2196,9 +2197,9 @@ rec {
       };
       "linux-raw-sys" = rec {
         crateName = "linux-raw-sys";
-        version = "0.3.1";
+        version = "0.3.4";
         edition = "2018";
-        sha256 = "0brj1kcwch9i2hiwi971mwn8wwak5s5bqmpvfbld4lr805sqr7fm";
+        sha256 = "1ky2x0b21d060k31llhidprzwxq81n4l71rrchgax241fz0k3srn";
         authors = [
           "Dan Gohman <dev@sunfishcode.online>"
         ];
@@ -2808,9 +2809,9 @@ rec {
       };
       "openssl" = rec {
         crateName = "openssl";
-        version = "0.10.49";
+        version = "0.10.52";
         edition = "2018";
-        sha256 = "0cssygqbgdim10y7qrgz0rj5k839jqiv2n9ccw1lx8ipp1m10bsd";
+        sha256 = "0mldyz9w6d5bf3004m7kyjry7944m0pkkifzbywgg06z0935gf01";
         authors = [
           "Steven Fackler <sfackler@gmail.com>"
         ];
@@ -2869,7 +2870,7 @@ rec {
           }
           {
             name = "syn";
-            packageId = "syn 2.0.13";
+            packageId = "syn 2.0.15";
             features = [ "full" ];
           }
         ];
@@ -2887,9 +2888,9 @@ rec {
       };
       "openssl-sys" = rec {
         crateName = "openssl-sys";
-        version = "0.9.84";
+        version = "0.9.87";
         edition = "2018";
-        sha256 = "1ym0vcfnyp8bf8lidz8w0yx0n6pva37nvdww0c22kn62kp7fl81s";
+        sha256 = "0znc0q7a2gi2pmkscv0d6wzpfd64mgmy3w4lmrvrv05jcj9ga5wf";
         build = "build/main.rs";
         authors = [
           "Alex Crichton <alex@alexcrichton.com>"
@@ -3056,7 +3057,7 @@ rec {
           }
           {
             name = "syn";
-            packageId = "syn 2.0.13";
+            packageId = "syn 2.0.15";
             features = [ "full" "extra-traits" "visit-mut" ];
           }
         ];
@@ -3239,7 +3240,7 @@ rec {
           }
           {
             name = "syn";
-            packageId = "syn 2.0.13";
+            packageId = "syn 2.0.15";
           }
           {
             name = "yansi";
@@ -3452,23 +3453,23 @@ rec {
           }
           {
             name = "syn";
-            packageId = "syn 2.0.13";
+            packageId = "syn 2.0.15";
           }
         ];
 
       };
       "regex" = rec {
         crateName = "regex";
-        version = "1.7.3";
-        edition = "2018";
-        sha256 = "07cxfkk935hcjmpa9wfjh1s0ddkh9lj0ivwk90pr3b7n4hxnj7wb";
+        version = "1.8.1";
+        edition = "2021";
+        sha256 = "0w2kgdvs2fsv39hrsb912zjq3bx5vw1cchslvbi6mk1iycbyd0xg";
         authors = [
           "The Rust Project Developers"
         ];
         dependencies = [
           {
             name = "regex-syntax";
-            packageId = "regex-syntax";
+            packageId = "regex-syntax 0.7.1";
             usesDefaultFeatures = false;
           }
         ];
@@ -3502,7 +3503,7 @@ rec {
         dependencies = [
           {
             name = "regex-syntax";
-            packageId = "regex-syntax";
+            packageId = "regex-syntax 0.6.29";
             optional = true;
           }
         ];
@@ -3515,7 +3516,7 @@ rec {
         };
         resolvedDefaultFeatures = [ "default" "regex-syntax" "std" ];
       };
-      "regex-syntax" = rec {
+      "regex-syntax 0.6.29" = rec {
         crateName = "regex-syntax";
         version = "0.6.29";
         edition = "2018";
@@ -3528,6 +3529,20 @@ rec {
           "unicode" = [ "unicode-age" "unicode-bool" "unicode-case" "unicode-gencat" "unicode-perl" "unicode-script" "unicode-segment" ];
         };
         resolvedDefaultFeatures = [ "default" "unicode" "unicode-age" "unicode-bool" "unicode-case" "unicode-gencat" "unicode-perl" "unicode-script" "unicode-segment" ];
+      };
+      "regex-syntax 0.7.1" = rec {
+        crateName = "regex-syntax";
+        version = "0.7.1";
+        edition = "2021";
+        sha256 = "0g1s6ra0ra8xy1fxscspd406c3pn53bjm1is8phamlwvy6a656d5";
+        authors = [
+          "The Rust Project Developers"
+        ];
+        features = {
+          "default" = [ "std" "unicode" ];
+          "unicode" = [ "unicode-age" "unicode-bool" "unicode-case" "unicode-gencat" "unicode-perl" "unicode-script" "unicode-segment" ];
+        };
+        resolvedDefaultFeatures = [ "unicode" "unicode-age" "unicode-bool" "unicode-case" "unicode-gencat" "unicode-perl" "unicode-script" "unicode-segment" ];
       };
       "reqwest" = rec {
         crateName = "reqwest";
@@ -3985,7 +4000,7 @@ rec {
           }
           {
             name = "syn";
-            packageId = "syn 2.0.13";
+            packageId = "syn 2.0.15";
             features = [ "full" "visit" "visit-mut" "extra-traits" ];
           }
           {
@@ -4147,9 +4162,9 @@ rec {
       };
       "rustix" = rec {
         crateName = "rustix";
-        version = "0.37.8";
+        version = "0.37.14";
         edition = "2018";
-        sha256 = "0dd67v5pnzqd7f6cmiv571521lhl3i4swzqlc8dd695y4h1idvqs";
+        sha256 = "0grn3zapj07km6xnk3pi63nkgjid7vcyxbakb6h8amwaq79n9f6r";
         authors = [
           "Dan Gohman <dev@sunfishcode.online>"
           "Jakub Konka <kubkon@jakubkonka.com>"
@@ -4408,9 +4423,9 @@ rec {
       };
       "serde" = rec {
         crateName = "serde";
-        version = "1.0.159";
+        version = "1.0.160";
         edition = "2015";
-        sha256 = "0r9hd539dzp9b7h13w9akwh33pv8f3bvk449ym0yrbix7hsfh11w";
+        sha256 = "0v11q6pjdjivw24cv98zv9dkdx50d6h9748lgvdbrqxwr1q3fbxv";
         authors = [
           "Erick Tryzelaar <erick.tryzelaar@gmail.com>"
           "David Tolnay <dtolnay@gmail.com>"
@@ -4437,9 +4452,9 @@ rec {
       };
       "serde_derive" = rec {
         crateName = "serde_derive";
-        version = "1.0.159";
+        version = "1.0.160";
         edition = "2015";
-        sha256 = "11c59pxvq01mv12ixflzymgg0jz4wwwi7da7n7s3s2avh0blsqac";
+        sha256 = "1pvpiml328jhsz5h3pdc7x7wcyaagab6l5hb2q07wjfqcdy0j6i9";
         procMacro = true;
         authors = [
           "Erick Tryzelaar <erick.tryzelaar@gmail.com>"
@@ -4456,7 +4471,7 @@ rec {
           }
           {
             name = "syn";
-            packageId = "syn 2.0.13";
+            packageId = "syn 2.0.15";
           }
         ];
         features = {
@@ -4465,9 +4480,9 @@ rec {
       };
       "serde_json" = rec {
         crateName = "serde_json";
-        version = "1.0.95";
+        version = "1.0.96";
         edition = "2018";
-        sha256 = "0i273701q76j01rkcl962ky51n84h1y8f0dpfxvsl0n8galyq8fp";
+        sha256 = "1waj3qwpa610vmksnzcmkll6vaw7nf7v3ckj4v0wlfs0a153jz85";
         authors = [
           "Erick Tryzelaar <erick.tryzelaar@gmail.com>"
           "David Tolnay <dtolnay@gmail.com>"
@@ -4882,13 +4897,13 @@ rec {
           "quote" = [ "dep:quote" ];
           "test" = [ "syn-test-suite/all-features" ];
         };
-        resolvedDefaultFeatures = [ "clone-impls" "default" "derive" "extra-traits" "fold" "full" "parsing" "printing" "proc-macro" "quote" "visit" "visit-mut" ];
+        resolvedDefaultFeatures = [ "clone-impls" "default" "derive" "fold" "full" "parsing" "printing" "proc-macro" "quote" "visit" ];
       };
-      "syn 2.0.13" = rec {
+      "syn 2.0.15" = rec {
         crateName = "syn";
-        version = "2.0.13";
+        version = "2.0.15";
         edition = "2021";
-        sha256 = "1v68ggs5q0addc3z49kqzqfac5xcdnppdl7b6vww2ni8qmbs97ac";
+        sha256 = "08n8c235bj7f86a5jg561s5zjfijdn8jw6ih2im7xxb0iczcykx3";
         authors = [
           "David Tolnay <dtolnay@gmail.com>"
         ];
@@ -5023,7 +5038,7 @@ rec {
           }
           {
             name = "syn";
-            packageId = "syn 2.0.13";
+            packageId = "syn 2.0.15";
           }
         ];
 
@@ -5315,7 +5330,7 @@ rec {
           }
           {
             name = "syn";
-            packageId = "syn 2.0.13";
+            packageId = "syn 2.0.15";
             features = [ "full" ];
           }
         ];
@@ -5585,9 +5600,9 @@ rec {
       };
       "tracing-attributes" = rec {
         crateName = "tracing-attributes";
-        version = "0.1.23";
+        version = "0.1.24";
         edition = "2018";
-        sha256 = "06h80cy0i1kilvnj8j9dw2kcfwbwj49n2s3jwskhr1rra7sgh5s0";
+        sha256 = "0x3spb5h4m56035lrvrchbyhg8pxrg4sk0qij8d0ni815b5f6mqg";
         procMacro = true;
         authors = [
           "Tokio Contributors <team@tokio.rs>"
@@ -5605,9 +5620,9 @@ rec {
           }
           {
             name = "syn";
-            packageId = "syn 1.0.109";
+            packageId = "syn 2.0.15";
             usesDefaultFeatures = false;
-            features = [ "full" "parsing" "printing" "visit" "visit-mut" "clone-impls" "extra-traits" "proc-macro" ];
+            features = [ "full" "parsing" "printing" "visit-mut" "clone-impls" "extra-traits" "proc-macro" ];
           }
         ];
         features = {
@@ -5677,9 +5692,9 @@ rec {
       };
       "tracing-subscriber" = rec {
         crateName = "tracing-subscriber";
-        version = "0.3.16";
+        version = "0.3.17";
         edition = "2018";
-        sha256 = "0w2sdf97g1ynbmk3j4q6sxmjgaalgf4pg4vl374x0w6x4sp6w5x6";
+        sha256 = "0xvwfpmb943hdy4gzyn7a2azgigf30mfd1kx10gyh5gr6yy539ih";
         authors = [
           "Eliza Weisman <eliza@buoyant.io>"
           "David Barsky <me@davidbarsky.com>"
@@ -5706,7 +5721,7 @@ rec {
             packageId = "regex";
             optional = true;
             usesDefaultFeatures = false;
-            features = [ "std" ];
+            features = [ "std" "unicode-case" "unicode-perl" ];
           }
           {
             name = "sharded-slab";
@@ -6065,9 +6080,9 @@ rec {
       };
       "uuid" = rec {
         crateName = "uuid";
-        version = "1.3.0";
+        version = "1.3.1";
         edition = "2018";
-        sha256 = "0ygxkj6bgfjkbhpdj1s0607zi9l8886pcw04lryd647f4r9q8x0n";
+        sha256 = "1nwgjb3rzbr3gmjsqxhm118kq3c2304n8y781jhb7qx1ybza6mav";
         authors = [
           "Ashley Mannix<ashleymannix@live.com.au>"
           "Christopher Armstrong"
@@ -6897,17 +6912,16 @@ rec {
       };
       "windows" = rec {
         crateName = "windows";
-        version = "0.44.0";
+        version = "0.48.0";
         edition = "2018";
-        sha256 = "0ax1ip82dhszxz4hhsrdj3b0681xw6axahnfldxcgi506nmmsx4y";
+        sha256 = "03vh89ilnxdxdh0n9np4ns4m10fvm93h3b0cc05ipg3qq1mqi1p6";
         authors = [
           "Microsoft"
         ];
         dependencies = [
           {
             name = "windows-targets";
-            packageId = "windows-targets 0.42.2";
-            target = { target, features }: (!(target."windows_raw_dylib" or false));
+            packageId = "windows-targets 0.48.0";
           }
         ];
         features = {
@@ -7218,6 +7232,8 @@ rec {
           "UI_WebUI_Core" = [ "UI_WebUI" ];
           "UI_WindowManagement" = [ "UI" ];
           "UI_WindowManagement_Preview" = [ "UI_WindowManagement" ];
+          "Wdk_System" = [ "Wdk" ];
+          "Wdk_System_OfflineRegistry" = [ "Wdk_System" ];
           "Web_AtomPub" = [ "Web" ];
           "Web_Http" = [ "Web" ];
           "Web_Http_Diagnostics" = [ "Web_Http" ];
@@ -7302,6 +7318,7 @@ rec {
           "Win32_Media_Audio_XAudio2" = [ "Win32_Media_Audio" ];
           "Win32_Media_DeviceManager" = [ "Win32_Media" ];
           "Win32_Media_DirectShow" = [ "Win32_Media" ];
+          "Win32_Media_DirectShow_Tv" = [ "Win32_Media_DirectShow" ];
           "Win32_Media_DirectShow_Xml" = [ "Win32_Media_DirectShow" ];
           "Win32_Media_DxMediaObjects" = [ "Win32_Media" ];
           "Win32_Media_KernelStreaming" = [ "Win32_Media" ];
@@ -7408,6 +7425,7 @@ rec {
           "Win32_System_ApplicationInstallationAndServicing" = [ "Win32_System" ];
           "Win32_System_ApplicationVerifier" = [ "Win32_System" ];
           "Win32_System_AssessmentTool" = [ "Win32_System" ];
+          "Win32_System_ClrHosting" = [ "Win32_System" ];
           "Win32_System_Com" = [ "Win32_System" ];
           "Win32_System_Com_CallObj" = [ "Win32_System_Com" ];
           "Win32_System_Com_ChannelCredentials" = [ "Win32_System_Com" ];
@@ -7426,7 +7444,10 @@ rec {
           "Win32_System_DeveloperLicensing" = [ "Win32_System" ];
           "Win32_System_Diagnostics" = [ "Win32_System" ];
           "Win32_System_Diagnostics_Ceip" = [ "Win32_System_Diagnostics" ];
+          "Win32_System_Diagnostics_ClrProfiling" = [ "Win32_System_Diagnostics" ];
           "Win32_System_Diagnostics_Debug" = [ "Win32_System_Diagnostics" ];
+          "Win32_System_Diagnostics_Debug_ActiveScript" = [ "Win32_System_Diagnostics_Debug" ];
+          "Win32_System_Diagnostics_Debug_Extensions" = [ "Win32_System_Diagnostics_Debug" ];
           "Win32_System_Diagnostics_Etw" = [ "Win32_System_Diagnostics" ];
           "Win32_System_Diagnostics_ProcessSnapshotting" = [ "Win32_System_Diagnostics" ];
           "Win32_System_Diagnostics_ToolHelp" = [ "Win32_System_Diagnostics" ];
@@ -7508,6 +7529,7 @@ rec {
           "Win32_System_WinRT_Isolation" = [ "Win32_System_WinRT" ];
           "Win32_System_WinRT_ML" = [ "Win32_System_WinRT" ];
           "Win32_System_WinRT_Media" = [ "Win32_System_WinRT" ];
+          "Win32_System_WinRT_Metadata" = [ "Win32_System_WinRT" ];
           "Win32_System_WinRT_Pdf" = [ "Win32_System_WinRT" ];
           "Win32_System_WinRT_Printing" = [ "Win32_System_WinRT" ];
           "Win32_System_WinRT_Shell" = [ "Win32_System_WinRT" ];
@@ -7543,6 +7565,8 @@ rec {
           "Win32_UI_TextServices" = [ "Win32_UI" ];
           "Win32_UI_WindowsAndMessaging" = [ "Win32_UI" ];
           "Win32_UI_Wpf" = [ "Win32_UI" ];
+          "Win32_Web" = [ "Win32" ];
+          "Win32_Web_InternetExplorer" = [ "Win32_Web" ];
           "implement" = [ "windows-implement" "windows-interface" ];
           "windows-implement" = [ "dep:windows-implement" ];
           "windows-interface" = [ "dep:windows-interface" ];
@@ -8226,7 +8250,7 @@ rec {
           "Win32_UI_WindowsAndMessaging" = [ "Win32_UI" ];
           "Win32_UI_Wpf" = [ "Win32_UI" ];
         };
-        resolvedDefaultFeatures = [ "Win32" "Win32_Foundation" "Win32_Networking" "Win32_Networking_WinSock" "Win32_Security" "Win32_Security_Authorization" "Win32_Storage" "Win32_Storage_FileSystem" "Win32_System" "Win32_System_Console" "Win32_System_Diagnostics" "Win32_System_Diagnostics_Debug" "Win32_System_IO" "Win32_System_LibraryLoader" "Win32_System_Pipes" "Win32_System_SystemServices" "Win32_System_WindowsProgramming" "default" ];
+        resolvedDefaultFeatures = [ "Win32" "Win32_Foundation" "Win32_Networking" "Win32_Networking_WinSock" "Win32_Security" "Win32_Security_Authorization" "Win32_Storage" "Win32_Storage_FileSystem" "Win32_System" "Win32_System_Console" "Win32_System_IO" "Win32_System_LibraryLoader" "Win32_System_Pipes" "Win32_System_SystemServices" "Win32_System_WindowsProgramming" "default" ];
       };
       "windows-sys 0.48.0" = rec {
         crateName = "windows-sys";
@@ -8519,7 +8543,7 @@ rec {
           "Win32_Web" = [ "Win32" ];
           "Win32_Web_InternetExplorer" = [ "Win32_Web" ];
         };
-        resolvedDefaultFeatures = [ "Win32" "Win32_Foundation" "Win32_NetworkManagement" "Win32_NetworkManagement_IpHelper" "Win32_Networking" "Win32_Networking_WinSock" "Win32_Security" "Win32_Storage" "Win32_Storage_FileSystem" "Win32_System" "Win32_System_Console" "Win32_System_IO" "Win32_System_Threading" "default" ];
+        resolvedDefaultFeatures = [ "Win32" "Win32_Foundation" "Win32_NetworkManagement" "Win32_NetworkManagement_IpHelper" "Win32_Networking" "Win32_Networking_WinSock" "Win32_Security" "Win32_Storage" "Win32_Storage_FileSystem" "Win32_System" "Win32_System_Console" "Win32_System_Diagnostics" "Win32_System_Diagnostics_Debug" "Win32_System_IO" "Win32_System_Threading" "default" ];
       };
       "windows-targets 0.42.2" = rec {
         crateName = "windows-targets";

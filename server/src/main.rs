@@ -208,7 +208,7 @@ fn crawler(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
                     continue;
                 }
             };
-            let trip_overview: TripOverview = match serde_json::from_str(&trip_overview_json) {
+            let _trip_overview: TripOverview = match serde_json::from_str(&trip_overview_json) {
                 Ok(res) => res,
                 Err(e) => {
                     error!("Failed to deserialize trip overview: {}", e);

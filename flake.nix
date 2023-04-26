@@ -24,6 +24,9 @@
                 crates = import ./server/Cargo.nix { inherit pkgs; };
               in
               crates.workspaceMembers.isre1late-server.build;
+            client = import ./client {
+              inherit pkgs;
+            };
             default = server;
           };
           apps = rec {
@@ -36,6 +39,7 @@
 
           devShells.default = pkgs.mkShell {
             buildInputs = with pkgs; [
+              # Server
               nodejs
               cargo
               rustc
@@ -48,7 +52,18 @@
               python3
               qgis
               websocat
-            ];
+            ] ++
+
+            # Client
+            (with pkgs.elmPackages; [
+              elm
+              elm-format
+              elm-test
+              elm-json
+              elm2nix
+              (python3.withPackages (ps: with ps; [ requests ]))
+
+            ]);
             RUST_LOG = "info";
             DATABASE_URL = "postgres://localhost/isre1late?host=/run/postgresql";
             PGDATABASE = "isre1late";
@@ -57,7 +72,8 @@
       ) // {
       nixosModules.default = { config, pkgs, lib, ... }:
         let
-          package = self.packages.${config.nixpkgs.localSystem.system}.server;
+          server = self.packages.${config.nixpkgs.localSystem.system}.server;
+          client = self.packages.${config.nixpkgs.localSystem.system}.client;
           stateDir = "/var/lib/isre1late";
           inherit (lib) mkEnableOption mkOption types;
           cfg = config.services.isre1late;
@@ -94,7 +110,7 @@
               serviceConfig = {
                 Type = "simple";
                 ExecStart = ''
-                  ${package}/bin/isre1late-server \
+                  ${server}/bin/isre1late-server \
                     --port ${builtins.toString cfg.port}
                 '';
                 Restart = "always";
@@ -110,7 +126,7 @@
               isSystemUser = true;
               home = stateDir;
               group = "isre1late";
-              packages = [ package ];
+              packages = [ server ];
             };
             users.groups.isre1late = { };
 
@@ -119,6 +135,7 @@
               enableACME = true;
               forceSSL = true;
               locations = {
+                "/".alias = "${client}/";
                 "/api".return = "301 /api/";
                 "/api/" = {
                   proxyPass = "http://[::1]:${toString cfg.port}";

@@ -3,21 +3,21 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use self::models::*;
-use crate::client::{ClientMsg, client_msg_from_trip_overview};
+use crate::client::{client_msg_from_trip_overview, ClientMsg};
+use bus::{Bus, BusReadHandle};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use docopt::Docopt;
+use log::{error, info, warn};
 use serde::Deserialize;
 use std::error::Error;
-use bus::{BusReadHandle, Bus};
-use log::{info, warn, error};
 use std::sync::Arc;
 
 use axum::{
-    extract::ws::{WebSocketUpgrade, WebSocket},
+    extract::ws::{WebSocket, WebSocketUpgrade},
     extract::State,
-    routing::get,
     response::{IntoResponse, Response},
+    routing::get,
     Router,
 };
 
@@ -109,26 +109,34 @@ fn run_db_migrations(db: &mut PgConnection) -> () {
 //                 let json_msg = serde_json::to_string(&msg).unwrap();
 //                 let _ = stream.send(ws::Message::Text(json_msg)).await;
 //             }
-// 
+//
 //             Ok(())
 //         })
 //     })
 // }
 
-async fn delays_handler(ws: WebSocketUpgrade, State(state): State<Arc<BusReadHandle<ClientMsg>>>) -> Response {
-     info!("Receiving websocket upgrade request");
+async fn delays_handler(
+    ws: WebSocketUpgrade,
+    State(state): State<Arc<BusReadHandle<ClientMsg>>>,
+) -> Response {
+    info!("Receiving websocket upgrade request");
     ws.on_upgrade(|socket| handle_delays_socket(socket, state))
 }
 
-async fn handle_delays_socket(mut socket: WebSocket, bus_read_handle: Arc<BusReadHandle<ClientMsg>>) {
-     info!("Receiving websocket request");
-     let mut rx = Arc::clone(&bus_read_handle).clone().add_rx();
+async fn handle_delays_socket(
+    mut socket: WebSocket,
+    bus_read_handle: Arc<BusReadHandle<ClientMsg>>,
+) {
+    info!("Receiving websocket request");
+    let mut rx = Arc::clone(&bus_read_handle).clone().add_rx();
 
-     while let Ok(msg) = rx.recv() {
-         // We don't expect JSON serialisation to fail.
-         let json_msg = serde_json::to_string(&msg).unwrap();
-         let _ = socket.send(axum::extract::ws::Message::Text(json_msg)).await;
-     }
+    while let Ok(msg) = rx.recv() {
+        // We don't expect JSON serialisation to fail.
+        let json_msg = serde_json::to_string(&msg).unwrap();
+        let _ = socket
+            .send(axum::extract::ws::Message::Text(json_msg))
+            .await;
+    }
 }
 
 #[tokio::main]
@@ -164,7 +172,7 @@ async fn main() {
 
     run_db_migrations(&mut db);
 
-    let bus: Bus<client::ClientMsg> = bus::Bus::new(10*1024);
+    let bus: Bus<client::ClientMsg> = bus::Bus::new(10 * 1024);
     let bus_read_handle = bus.read_handle();
 
     std::thread::spawn(move || {
@@ -174,7 +182,8 @@ async fn main() {
         });
     });
 
-    let app = axum::Router::new().route("/delays", get(delays_handler))
+    let app = axum::Router::new()
+        .route("/delays", get(delays_handler))
         .with_state(Arc::new(bus_read_handle));
 
     // run it with hyper on localhost:3000
@@ -182,5 +191,4 @@ async fn main() {
         .serve(app.into_make_service())
         .await
         .unwrap();
-
 }

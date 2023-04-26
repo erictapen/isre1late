@@ -1,15 +1,15 @@
+use crate::client::ClientMsg;
 use crate::models::*;
 use crate::transport_rest_vbb_v6::{TripOverview, TripsOverview};
+use bus::Bus;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::ExpressionMethods;
+use log::{error, info, warn};
 use std::error::Error;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 use time::OffsetDateTime;
-use bus::Bus;
-use crate::client::ClientMsg;
-use log::{info,warn,error};
 
 use crate::client::client_msg_from_trip_overview;
 
@@ -131,8 +131,12 @@ pub fn crawler(db: &mut PgConnection, mut bus: Bus<ClientMsg>) -> Result<(), Box
             let client_msg_res = client_msg_from_trip_overview(trip_overview);
             info!("{:?}", client_msg_res);
             match client_msg_res {
-                Ok(client_msg) => { bus.broadcast(client_msg);},
-                Err(e) => { error!("{}", e); }
+                Ok(client_msg) => {
+                    bus.broadcast(client_msg);
+                }
+                Err(e) => {
+                    error!("{}", e);
+                }
             }
 
             // let (latitude, longitude) = trip_overview

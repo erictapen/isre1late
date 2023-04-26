@@ -183,7 +183,7 @@ async fn main() {
     });
 
     let app = axum::Router::new()
-        .route("/delays", get(delays_handler))
+        .route("/api/delays", get(delays_handler))
         .with_state(Arc::new(bus_read_handle));
 
     // run it with hyper on localhost:3000

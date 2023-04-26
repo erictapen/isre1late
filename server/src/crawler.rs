@@ -9,7 +9,7 @@ use bus::Bus;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::ExpressionMethods;
-use log::{error, info, warn};
+use log::{error, info, warn, debug};
 use std::error::Error;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
@@ -133,7 +133,7 @@ pub fn crawler(db: &mut PgConnection, mut bus: Bus<ClientMsg>) -> Result<(), Box
             };
 
             let client_msg_res = client_msg_from_trip_overview(trip_overview);
-            info!("{:?}", client_msg_res);
+            debug!("{:?}", client_msg_res);
             match client_msg_res {
                 Ok(client_msg) => {
                     bus.broadcast(client_msg);

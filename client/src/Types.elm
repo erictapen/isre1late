@@ -19,7 +19,7 @@ type alias Delay =
 decodeClientMsg : Decoder (Delay)
 decodeClientMsg =
     map5 Delay
-        (J.map millisToPosix <| field "time" int)
+        (J.map ((*) 1000 >> millisToPosix) <| field "time" int)
         (field "previous_station" string)
         (field "next_station" string)
         (field "percentageSegment" float)

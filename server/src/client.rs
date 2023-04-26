@@ -10,6 +10,7 @@ use time::OffsetDateTime;
 #[derive(Serialize, Debug, Clone)]
 pub struct ClientMsg {
     trip_id: String,
+    #[serde(with = "time::serde::rfc3339")]
     time: OffsetDateTime,
     previous_station: Option<String>,
     next_station: Option<String>,

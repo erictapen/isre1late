@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use crate::transport_rest_vbb_v6::TripOverview;
-use log::{debug, error, info, warn};
+use log::debug;
 use serde::Serialize;
 use time::OffsetDateTime;
 

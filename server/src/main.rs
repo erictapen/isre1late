@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use self::models::*;
-use crate::client::{client_msg_from_trip_overview, ClientMsg};
+use crate::client::ClientMsg;
 use bus::{Bus, BusReadHandle};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use docopt::Docopt;
-use log::{error, info, warn};
+use log::{error, info};
 use serde::Deserialize;
 use std::error::Error;
 use std::sync::Arc;
@@ -16,9 +16,8 @@ use std::sync::Arc;
 use axum::{
     extract::ws::{WebSocket, WebSocketUpgrade},
     extract::State,
-    response::{IntoResponse, Response},
+    response::Response,
     routing::get,
-    Router,
 };
 
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};

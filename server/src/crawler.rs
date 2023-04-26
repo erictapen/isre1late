@@ -9,7 +9,7 @@ use bus::Bus;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::ExpressionMethods;
-use log::{error, info, warn, debug};
+use log::{debug, error, info};
 use std::error::Error;
 use std::thread::sleep;
 use std::time::{Duration, Instant};

@@ -12,8 +12,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rocket = { version = "0.5.0-rc.3", features = [ "json" ], git = "https://github.com/SergioBenitez/Rocket" }
-ws = { package = "rocket_ws", version ="=0.1.0-rc.3", git = "https://github.com/SergioBenitez/Rocket" }
+axum = { version = "*", features = [ "ws" ] }
+tokio = { version = "*", features = [ "macros", "rt-multi-thread" ] }
 reqwest = { version = "*", features = [ "blocking", "json" ] }
 diesel = { version = "2.0.0", features = [ "postgres", "postgres_backend", "time" ] }
 diesel_migrations = { version = "2.0.0", features = [ "postgres" ] }

@@ -9,6 +9,7 @@ use std::time::{Duration, Instant};
 use time::OffsetDateTime;
 use bus::Bus;
 use crate::client::ClientMsg;
+use log::{info,warn,error};
 
 use crate::client::client_msg_from_trip_overview;
 

@@ -1,6 +1,7 @@
 use crate::transport_rest_vbb_v6::TripOverview;
 use serde::Serialize;
 use time::OffsetDateTime;
+use log::{debug, warn, info, error};
 
 #[derive(Serialize, Debug, Clone)]
 pub struct ClientMsg {

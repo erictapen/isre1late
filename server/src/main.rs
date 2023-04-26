@@ -2,18 +2,24 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#[macro_use]
-extern crate rocket;
-
 use self::models::*;
 use crate::client::{ClientMsg, client_msg_from_trip_overview};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use docopt::Docopt;
-use rocket::futures::{SinkExt, StreamExt};
 use serde::Deserialize;
 use std::error::Error;
-use bus::Bus;
+use bus::{BusReadHandle, Bus};
+use log::{info, warn, error};
+use std::sync::Arc;
+
+use axum::{
+    extract::ws::{WebSocketUpgrade, WebSocket},
+    extract::State,
+    routing::get,
+    response::{IntoResponse, Response},
+    Router,
+};
 
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
@@ -92,40 +98,41 @@ fn run_db_migrations(db: &mut PgConnection) -> () {
     );
 }
 
-#[get("/delays")]
-fn delays(ws: ws::WebSocket, bus_read_handle: &rocket::State<bus::BusReadHandle<ClientMsg>>) -> ws::Channel<'static> {
-    info!("Receiving websocket request");
-    let mut rx = bus_read_handle.clone().add_rx();
-    ws.channel(move |mut stream| {
-        Box::pin(async move {
-            while let Ok(msg) = rx.recv() {
-                // We don't expect JSON serialisation to fail.
-                let json_msg = serde_json::to_string(&msg).unwrap();
-                let _ = stream.send(ws::Message::Text(json_msg)).await;
-            }
+// #[get("/delays")]
+// fn delays(ws: ws::WebSocket, bus_read_handle: &rocket::State<bus::BusReadHandle<ClientMsg>>) -> ws::Channel<'static> {
+//     info!("Receiving websocket request");
+//     let mut rx = bus_read_handle.clone().add_rx();
+//     ws.channel(move |mut stream| {
+//         Box::pin(async move {
+//             while let Ok(msg) = rx.recv() {
+//                 // We don't expect JSON serialisation to fail.
+//                 let json_msg = serde_json::to_string(&msg).unwrap();
+//                 let _ = stream.send(ws::Message::Text(json_msg)).await;
+//             }
+// 
+//             Ok(())
+//         })
+//     })
+// }
 
-            Ok(())
-        })
-    })
+async fn delays_handler(ws: WebSocketUpgrade, State(state): State<Arc<BusReadHandle<ClientMsg>>>) -> Response {
+     info!("Receiving websocket upgrade request");
+    ws.on_upgrade(|socket| handle_delays_socket(socket, state))
 }
 
+async fn handle_delays_socket(mut socket: WebSocket, bus_read_handle: Arc<BusReadHandle<ClientMsg>>) {
+     info!("Receiving websocket request");
+     let mut rx = Arc::clone(&bus_read_handle).clone().add_rx();
 
-#[get("/echo")]
-fn echo(ws: ws::WebSocket) -> ws::Channel<'static> {
-    ws.channel(move |mut stream| {
-        Box::pin(async move {
-            while let Some(message) = stream.next().await {
-                let _ = stream.send(message?).await;
-            }
-
-            Ok(())
-        })
-    })
+     while let Ok(msg) = rx.recv() {
+         // We don't expect JSON serialisation to fail.
+         let json_msg = serde_json::to_string(&msg).unwrap();
+         let _ = socket.send(axum::extract::ws::Message::Text(json_msg)).await;
+     }
 }
 
-
-#[launch]
-fn rocket() -> _ {
+#[tokio::main]
+async fn main() {
     // Setup logging
     if systemd_journal_logger::connected_to_journal() {
         // If journald is available.
@@ -167,9 +174,13 @@ fn rocket() -> _ {
         });
     });
 
-    // let rocket_config = rocket::config::Config::figment()
-    //     .merge(("port", args.flag_port))
-    //     .merge(("address", "::1"));
+    let app = axum::Router::new().route("/delays", get(delays_handler))
+        .with_state(Arc::new(bus_read_handle));
 
-    rocket::build().mount("/", routes![echo]).mount("/", routes![delays]).manage(bus_read_handle)
+    // run it with hyper on localhost:3000
+    axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
+
 }

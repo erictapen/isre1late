@@ -2,7 +2,7 @@ use crate::transport_rest_vbb_v6::TripOverview;
 use serde::Serialize;
 use time::OffsetDateTime;
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Clone)]
 pub struct ClientMsg {
     trip_id: String,
     time: OffsetDateTime,

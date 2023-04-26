@@ -6,13 +6,14 @@
 extern crate rocket;
 
 use self::models::*;
-use crate::client::client_msg_from_trip_overview;
+use crate::client::{ClientMsg, client_msg_from_trip_overview};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use docopt::Docopt;
 use rocket::futures::{SinkExt, StreamExt};
 use serde::Deserialize;
 use std::error::Error;
+use bus::Bus;
 
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
@@ -91,6 +92,24 @@ fn run_db_migrations(db: &mut PgConnection) -> () {
     );
 }
 
+#[get("/delays")]
+fn delays(ws: ws::WebSocket, bus_read_handle: &rocket::State<bus::BusReadHandle<ClientMsg>>) -> ws::Channel<'static> {
+    info!("Receiving websocket request");
+    let mut rx = bus_read_handle.clone().add_rx();
+    ws.channel(move |mut stream| {
+        Box::pin(async move {
+            while let Ok(msg) = rx.recv() {
+                // We don't expect JSON serialisation to fail.
+                let json_msg = serde_json::to_string(&msg).unwrap();
+                let _ = stream.send(ws::Message::Text(json_msg)).await;
+            }
+
+            Ok(())
+        })
+    })
+}
+
+
 #[get("/echo")]
 fn echo(ws: ws::WebSocket) -> ws::Channel<'static> {
     ws.channel(move |mut stream| {
@@ -103,6 +122,7 @@ fn echo(ws: ws::WebSocket) -> ws::Channel<'static> {
         })
     })
 }
+
 
 #[launch]
 fn rocket() -> _ {
@@ -137,8 +157,11 @@ fn rocket() -> _ {
 
     run_db_migrations(&mut db);
 
+    let bus: Bus<client::ClientMsg> = bus::Bus::new(10*1024);
+    let bus_read_handle = bus.read_handle();
+
     std::thread::spawn(move || {
-        crawler::crawler(&mut db).unwrap_or_else(|e| {
+        crawler::crawler(&mut db, bus).unwrap_or_else(|e| {
             error!("{}", e);
             std::process::exit(1);
         });
@@ -148,5 +171,5 @@ fn rocket() -> _ {
     //     .merge(("port", args.flag_port))
     //     .merge(("address", "::1"));
 
-    rocket::build().mount("/", routes![echo])
+    rocket::build().mount("/", routes![echo]).mount("/", routes![delays]).manage(bus_read_handle)
 }

@@ -7,6 +7,8 @@ use std::error::Error;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 use time::OffsetDateTime;
+use bus::Bus;
+use crate::client::ClientMsg;
 
 use crate::client::client_msg_from_trip_overview;
 
@@ -63,7 +65,7 @@ fn insert_delay(
         .map(|_| ())
 }
 
-pub fn crawler(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
+pub fn crawler(db: &mut PgConnection, mut bus: Bus<ClientMsg>) -> Result<(), Box<dyn Error>> {
     // It looks like, HAFAS is only cabable of showing new state every 30seconds anyway.
     let loop_interval = Duration::from_secs(30);
     let mut next_execution = Instant::now() + loop_interval;
@@ -124,7 +126,14 @@ pub fn crawler(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
                     continue;
                 }
             };
-            info!("{:?}", client_msg_from_trip_overview(trip_overview));
+
+            let client_msg_res = client_msg_from_trip_overview(trip_overview);
+            info!("{:?}", client_msg_res);
+            match client_msg_res {
+                Ok(client_msg) => { bus.broadcast(client_msg);},
+                Err(e) => { error!("{}", e); }
+            }
+
             // let (latitude, longitude) = trip_overview
             //     .trip
             //     .currentLocation

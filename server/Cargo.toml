@@ -26,3 +26,4 @@ time = { version = "*", features = [ "serde-well-known", "local-offset" ] }
 urlencoding = "*"
 simple_logger = "*"
 systemd-journal-logger = "*"
+bus = { version = "*", git = "https://github.com/agausmann/bus", rev = "faca2750f506896417067ee9d02fbd5f4ac55027" }

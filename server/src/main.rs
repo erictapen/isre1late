@@ -4,7 +4,7 @@
 
 use self::models::*;
 use crate::client::ClientMsg;
-use bus_queue::raw_bounded;
+use bus::{Bus, BusReadHandle};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use docopt::Docopt;
@@ -116,7 +116,7 @@ fn run_db_migrations(db: &mut PgConnection) -> () {
 
 async fn delays_handler(
     ws: WebSocketUpgrade,
-    State(state): State<bus_queue::flavors::arc_swap::Receiver<ClientMsg>>,
+    State(state): State<Arc<BusReadHandle<ClientMsg>>>,
 ) -> Response {
     info!("Receiving websocket upgrade request");
     ws.on_upgrade(|socket| handle_delays_socket(socket, state))
@@ -124,13 +124,14 @@ async fn delays_handler(
 
 async fn handle_delays_socket(
     mut socket: WebSocket,
-    subscriber: bus_queue::flavors::arc_swap::Receiver<ClientMsg>,
+    bus_read_handle: Arc<BusReadHandle<ClientMsg>>,
 ) {
     info!("Receiving websocket request");
+    let mut rx = Arc::clone(&bus_read_handle).clone().add_rx();
 
-    while let Ok(msg) = subscriber.try_recv() {
+    while let Ok(msg) = rx.recv() {
         // We don't expect JSON serialisation to fail.
-        let json_msg = serde_json::to_string(&*msg).unwrap();
+        let json_msg = serde_json::to_string(&msg).unwrap();
         let _ = socket
             .send(axum::extract::ws::Message::Text(json_msg))
             .await;
@@ -170,10 +171,11 @@ async fn main() {
 
     run_db_migrations(&mut db);
 
-    let (publisher, subscriber) = raw_bounded(10*1024);
+    let bus: Bus<client::ClientMsg> = bus::Bus::new(10 * 1024);
+    let bus_read_handle = bus.read_handle();
 
     std::thread::spawn(move || {
-        crawler::crawler(&mut db, publisher).unwrap_or_else(|e| {
+        crawler::crawler(&mut db, bus).unwrap_or_else(|e| {
             error!("{}", e);
             std::process::exit(1);
         });
@@ -181,7 +183,7 @@ async fn main() {
 
     let app = axum::Router::new()
         .route("/api/delays", get(delays_handler))
-        .with_state(subscriber);
+        .with_state(Arc::new(bus_read_handle));
 
     // run it with hyper on localhost:3000
     axum::Server::bind(&format!("[::1]:{}", args.flag_port).parse().unwrap())

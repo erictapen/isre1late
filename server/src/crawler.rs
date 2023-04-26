@@ -5,6 +5,7 @@
 use crate::client::ClientMsg;
 use crate::models::*;
 use crate::transport_rest_vbb_v6::{TripOverview, TripsOverview};
+use bus::Bus;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::ExpressionMethods;
@@ -69,7 +70,7 @@ fn insert_delay(
         .map(|_| ())
 }
 
-pub fn crawler(db: &mut PgConnection, publisher: bus_queue::flavors::arc_swap::Sender<ClientMsg>) -> Result<(), Box<dyn Error>> {
+pub fn crawler(db: &mut PgConnection, mut bus: Bus<ClientMsg>) -> Result<(), Box<dyn Error>> {
     // It looks like, HAFAS is only cabable of showing new state every 30seconds anyway.
     let loop_interval = Duration::from_secs(30);
     let mut next_execution = Instant::now() + loop_interval;
@@ -135,7 +136,7 @@ pub fn crawler(db: &mut PgConnection, publisher: bus_queue::flavors::arc_swap::S
             debug!("{:?}", client_msg_res);
             match client_msg_res {
                 Ok(client_msg) => {
-                    publisher.broadcast(client_msg);
+                    bus.broadcast(client_msg);
                 }
                 Err(e) => {
                     error!("{}", e);

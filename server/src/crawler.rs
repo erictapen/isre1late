@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020 Kerstin Humm <mail@erictapen.name>
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 use crate::client::ClientMsg;
 use crate::models::*;
 use crate::transport_rest_vbb_v6::{TripOverview, TripsOverview};

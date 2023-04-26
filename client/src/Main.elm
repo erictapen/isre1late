@@ -4,6 +4,7 @@ import Browser exposing (Document)
 import Dict exposing (Dict)
 import Time exposing (Posix)
 
+import Types exposing (Delay, TripId)
 
 port sendMessage : String -> Cmd msg
 
@@ -19,19 +20,6 @@ type Msg
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     messageReceiver RecvWebsocket
-
-
-type alias TripId =
-    String
-
-
-type alias Delay =
-    { time : Posix
-    , previousStation : String
-    , nextStation : String
-    , percentageSegment : Float
-    , delay : Int
-    }
 
 
 type alias Model =

@@ -187,7 +187,7 @@ async fn main() {
         .with_state(Arc::new(bus_read_handle));
 
     // run it with hyper on localhost:3000
-    axum::Server::bind(&format!("127.0.0.1:{}", args.flag_port).parse().unwrap())
+    axum::Server::bind(&format!("[::1]:{}", args.flag_port).parse().unwrap())
         .serve(app.into_make_service())
         .await
         .unwrap();

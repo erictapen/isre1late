@@ -1,11 +1,16 @@
+-- SPDX-FileCopyrightText: 2020 Kerstin Humm <mail@erictapen.name>
+-- SPDX-License-Identifier: GPL-3.0-or-later
+
+
 module Types exposing (Delay, TripId)
 
+import Json.Decode as J exposing (Decoder, decodeString, field, float, int, list, map2, map3, map5, string)
 import Time exposing (Posix, millisToPosix)
 
-import Json.Decode as J exposing ( Decoder, decodeString, field, int, list, map2, map3, map5, string, float)
 
 type alias TripId =
     String
+
 
 type alias Delay =
     { time : Posix
@@ -16,7 +21,7 @@ type alias Delay =
     }
 
 
-decodeClientMsg : Decoder (Delay)
+decodeClientMsg : Decoder Delay
 decodeClientMsg =
     map5 Delay
         (J.map ((*) 1000 >> millisToPosix) <| field "time" int)
@@ -24,4 +29,3 @@ decodeClientMsg =
         (field "next_station" string)
         (field "percentageSegment" float)
         (field "delay" int)
-

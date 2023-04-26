@@ -1,10 +1,14 @@
+-- SPDX-FileCopyrightText: 2020 Kerstin Humm <mail@erictapen.name>
+-- SPDX-License-Identifier: GPL-3.0-or-later
+
+
 port module Main exposing (main)
 
 import Browser exposing (Document)
 import Dict exposing (Dict)
 import Time exposing (Posix)
-
 import Types exposing (Delay, TripId)
+
 
 port sendMessage : String -> Cmd msg
 

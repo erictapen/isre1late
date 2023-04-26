@@ -16,7 +16,7 @@ type alias Delay =
     }
 
 
-decodeClientMsg : Decoder (TripId, Delay)
+decodeClientMsg : Decoder (Delay)
 decodeClientMsg =
     map5 Delay
         (J.map millisToPosix <| field "time" int)

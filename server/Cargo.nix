@@ -83,6 +83,17 @@ rec {
     #   inject test dependencies into the build
 
     crates = {
+      "arc-swap" = rec {
+        crateName = "arc-swap";
+        version = "0.4.8";
+        edition = "2015";
+        sha256 = "1a3vg89xc7r2166mc25ciw3rbqfxjylfbjwlq4wrfy433wc5mgns";
+        authors = [
+          "Michal 'vorner' Vaner <vorner@vorner.cz>"
+        ];
+        features = {
+        };
+      };
       "async-trait" = rec {
         crateName = "async-trait";
         version = "0.1.68";
@@ -106,16 +117,6 @@ rec {
             packageId = "syn 2.0.15";
             features = [ "full" "visit-mut" ];
           }
-        ];
-
-      };
-      "atomic-option" = rec {
-        crateName = "atomic-option";
-        version = "0.1.2";
-        edition = "2015";
-        sha256 = "14zmzysgamw1pckp675k769f541kgmgzq95382n2bdb7nsn7idhd";
-        authors = [
-          "Jonathan Reem <jonathan.reem@gmail.com>"
         ];
 
       };
@@ -148,23 +149,7 @@ rec {
         ];
 
       };
-      "autocfg 0.1.8" = rec {
-        crateName = "autocfg";
-        version = "0.1.8";
-        edition = "2015";
-        sha256 = "0y4vw4l4izdxq1v0rrhvmlbqvalrqrmk60v1z0dqlgnlbzkl7phd";
-        authors = [
-          "Josh Stone <cuviper@gmail.com>"
-        ];
-        dependencies = [
-          {
-            name = "autocfg";
-            packageId = "autocfg 1.1.0";
-          }
-        ];
-
-      };
-      "autocfg 1.1.0" = rec {
+      "autocfg" = rec {
         crateName = "autocfg";
         version = "1.1.0";
         edition = "2015";
@@ -482,40 +467,37 @@ rec {
         };
         resolvedDefaultFeatures = [ "default" ];
       };
-      "bus" = rec {
-        crateName = "bus";
-        version = "2.2.2";
+      "bus_queue" = rec {
+        crateName = "bus_queue";
+        version = "0.5.3";
         edition = "2018";
-        crateBin = [];
-        workspace_member = null;
-        src = pkgs.fetchgit {
-          url = "https://github.com/agausmann/bus";
-          rev = "faca2750f506896417067ee9d02fbd5f4ac55027";
-          sha256 = "1psjx8q7bwizmssj93gqyqkxzscgrzxn2cvhg55rgiajf3sgzb3a";
-        };
+        sha256 = "0va94f0ia9im0jjd0cv244cd02zg4arilwma34h21l2lq17f763y";
         authors = [
-          "Jon Gjengset <jon@thesquareplanet.com>"
+          "Filip Dulic <filip.dulic@gmail.com>"
+          "Vladan Popovic <vladanovic@gmail.com>"
+          "Bojan Petrovic <bojan_petrovic@fastmail.fm>"
         ];
         dependencies = [
           {
-            name = "atomic-option";
-            packageId = "atomic-option";
+            name = "arc-swap";
+            packageId = "arc-swap";
+            optional = true;
           }
           {
-            name = "crossbeam-channel";
-            packageId = "crossbeam-channel";
+            name = "futures-core";
+            packageId = "futures-core";
           }
           {
-            name = "num_cpus";
-            packageId = "num_cpus";
-          }
-          {
-            name = "parking_lot_core";
-            packageId = "parking_lot_core";
+            name = "futures-sink";
+            packageId = "futures-sink";
           }
         ];
         features = {
+          "arc-swap" = [ "dep:arc-swap" ];
+          "arcswap" = [ "arc-swap" ];
+          "default" = [ "arcswap" "rwlock" ];
         };
+        resolvedDefaultFeatures = [ "arc-swap" "arcswap" "default" "rwlock" ];
       };
       "byteorder" = rec {
         crateName = "byteorder";
@@ -559,21 +541,7 @@ rec {
           "parallel" = [ "jobserver" ];
         };
       };
-      "cfg-if 0.1.10" = rec {
-        crateName = "cfg-if";
-        version = "0.1.10";
-        edition = "2018";
-        sha256 = "08h80ihs74jcyp24cd75wwabygbbdgl05k6p5dmq8akbr78vv1a7";
-        authors = [
-          "Alex Crichton <alex@alexcrichton.com>"
-        ];
-        features = {
-          "compiler_builtins" = [ "dep:compiler_builtins" ];
-          "core" = [ "dep:core" ];
-          "rustc-dep-of-std" = [ "core" "compiler_builtins" ];
-        };
-      };
-      "cfg-if 1.0.0" = rec {
+      "cfg-if" = rec {
         crateName = "cfg-if";
         version = "1.0.0";
         edition = "2018";
@@ -586,28 +554,6 @@ rec {
           "core" = [ "dep:core" ];
           "rustc-dep-of-std" = [ "core" "compiler_builtins" ];
         };
-      };
-      "cloudabi" = rec {
-        crateName = "cloudabi";
-        version = "0.0.3";
-        edition = "2015";
-        sha256 = "0kxcg83jlihy0phnd2g8c2c303px3l2p3pkjz357ll6llnd5pz6x";
-        libPath = "cloudabi.rs";
-        authors = [
-          "Nuxi (https://nuxi.nl/) and contributors"
-        ];
-        dependencies = [
-          {
-            name = "bitflags";
-            packageId = "bitflags";
-            optional = true;
-          }
-        ];
-        features = {
-          "bitflags" = [ "dep:bitflags" ];
-          "default" = [ "bitflags" ];
-        };
-        resolvedDefaultFeatures = [ "bitflags" "default" ];
       };
       "colored" = rec {
         crateName = "colored";
@@ -701,48 +647,6 @@ rec {
           }
         ];
 
-      };
-      "crossbeam-channel" = rec {
-        crateName = "crossbeam-channel";
-        version = "0.3.9";
-        edition = "2015";
-        sha256 = "1ylyzb1m9qbvd1nd3vy38x9073wdmcy295ncjs7wf7ap476pzv68";
-        authors = [
-          "The Crossbeam Project Developers"
-        ];
-        dependencies = [
-          {
-            name = "crossbeam-utils";
-            packageId = "crossbeam-utils";
-          }
-        ];
-
-      };
-      "crossbeam-utils" = rec {
-        crateName = "crossbeam-utils";
-        version = "0.6.6";
-        edition = "2015";
-        sha256 = "1rk0r9n04bmq4a3g2q5qhvvlmrmx780gc6h9lmc94mwndslkz5q4";
-        authors = [
-          "The Crossbeam Project Developers"
-        ];
-        dependencies = [
-          {
-            name = "cfg-if";
-            packageId = "cfg-if 0.1.10";
-          }
-          {
-            name = "lazy_static";
-            packageId = "lazy_static";
-            optional = true;
-          }
-        ];
-        features = {
-          "default" = [ "std" ];
-          "lazy_static" = [ "dep:lazy_static" ];
-          "std" = [ "lazy_static" ];
-        };
-        resolvedDefaultFeatures = [ "default" "lazy_static" "std" ];
       };
       "crypto-common" = rec {
         crateName = "crypto-common";
@@ -1011,7 +915,7 @@ rec {
         dependencies = [
           {
             name = "cfg-if";
-            packageId = "cfg-if 1.0.0";
+            packageId = "cfg-if";
           }
         ];
         features = {
@@ -1164,16 +1068,6 @@ rec {
             name = "percent-encoding";
             packageId = "percent-encoding";
           }
-        ];
-
-      };
-      "fuchsia-cprng" = rec {
-        crateName = "fuchsia-cprng";
-        version = "0.1.1";
-        edition = "2018";
-        sha256 = "1fnkqrbz7ixxzsb04bsz9p0zzazanma8znfdqjvh39n14vapfvx0";
-        authors = [
-          "Erick Tryzelaar <etryzelaar@google.com>"
         ];
 
       };
@@ -1353,7 +1247,7 @@ rec {
         dependencies = [
           {
             name = "cfg-if";
-            packageId = "cfg-if 1.0.0";
+            packageId = "cfg-if";
           }
           {
             name = "libc";
@@ -1827,7 +1721,7 @@ rec {
         buildDependencies = [
           {
             name = "autocfg";
-            packageId = "autocfg 1.1.0";
+            packageId = "autocfg";
           }
         ];
         features = {
@@ -1851,7 +1745,7 @@ rec {
         dependencies = [
           {
             name = "cfg-if";
-            packageId = "cfg-if 1.0.0";
+            packageId = "cfg-if";
           }
         ];
         features = {
@@ -1947,8 +1841,8 @@ rec {
             features = [ "ws" ];
           }
           {
-            name = "bus";
-            packageId = "bus";
+            name = "bus_queue";
+            packageId = "bus_queue";
           }
           {
             name = "diesel";
@@ -2152,7 +2046,7 @@ rec {
         dependencies = [
           {
             name = "cfg-if";
-            packageId = "cfg-if 1.0.0";
+            packageId = "cfg-if";
           }
           {
             name = "value-bag";
@@ -2191,17 +2085,6 @@ rec {
         };
         resolvedDefaultFeatures = [ "default" ];
       };
-      "maybe-uninit" = rec {
-        crateName = "maybe-uninit";
-        version = "2.0.0";
-        edition = "2015";
-        sha256 = "004y0nzmpfdrhz251278341z6ql34iv1k6dp1h6af7d6nd6jwc30";
-        authors = [
-          "est31 <MTest31@outlook.com>"
-          "The Rust Project Developers"
-        ];
-
-      };
       "memchr" = rec {
         crateName = "memchr";
         version = "2.5.0";
@@ -2232,7 +2115,7 @@ rec {
         buildDependencies = [
           {
             name = "autocfg";
-            packageId = "autocfg 1.1.0";
+            packageId = "autocfg";
           }
         ];
         features = {
@@ -2432,7 +2315,7 @@ rec {
           }
           {
             name = "cfg-if";
-            packageId = "cfg-if 1.0.0";
+            packageId = "cfg-if";
           }
           {
             name = "libc";
@@ -2570,7 +2453,7 @@ rec {
           }
           {
             name = "cfg-if";
-            packageId = "cfg-if 1.0.0";
+            packageId = "cfg-if";
           }
           {
             name = "foreign-types";
@@ -2671,62 +2554,6 @@ rec {
           "openssl-src" = [ "dep:openssl-src" ];
           "unstable_boringssl" = [ "bssl-sys" ];
           "vendored" = [ "openssl-src" ];
-        };
-      };
-      "parking_lot_core" = rec {
-        crateName = "parking_lot_core";
-        version = "0.5.0";
-        edition = "2018";
-        sha256 = "1317j5a1yd03baza2kqqrxb4kr1vxa7rckw4frksl2vrncfcp26b";
-        authors = [
-          "Amanieu d'Antras <amanieu@gmail.com>"
-        ];
-        dependencies = [
-          {
-            name = "cfg-if";
-            packageId = "cfg-if 0.1.10";
-          }
-          {
-            name = "cloudabi";
-            packageId = "cloudabi";
-            target = { target, features }: ("cloudabi" == target."os");
-          }
-          {
-            name = "libc";
-            packageId = "libc";
-            target = { target, features }: (target."unix" or false);
-          }
-          {
-            name = "rand";
-            packageId = "rand 0.6.5";
-          }
-          {
-            name = "redox_syscall";
-            packageId = "redox_syscall 0.1.57";
-            target = { target, features }: ("redox" == target."os");
-          }
-          {
-            name = "smallvec";
-            packageId = "smallvec";
-          }
-          {
-            name = "winapi";
-            packageId = "winapi";
-            target = { target, features }: (target."windows" or false);
-            features = [ "winnt" "ntstatus" "minwindef" "winerror" "winbase" "errhandlingapi" "handleapi" ];
-          }
-        ];
-        buildDependencies = [
-          {
-            name = "rustc_version";
-            packageId = "rustc_version";
-          }
-        ];
-        features = {
-          "backtrace" = [ "dep:backtrace" ];
-          "deadlock_detection" = [ "petgraph" "thread-id" "backtrace" ];
-          "petgraph" = [ "dep:petgraph" ];
-          "thread-id" = [ "dep:thread-id" ];
         };
       };
       "percent-encoding" = rec {
@@ -2944,84 +2771,7 @@ rec {
         };
         resolvedDefaultFeatures = [ "default" "proc-macro" ];
       };
-      "rand 0.6.5" = rec {
-        crateName = "rand";
-        version = "0.6.5";
-        edition = "2015";
-        sha256 = "1jl4449jcl4wgmzld6ffwqj5gwxrp8zvx8w573g1z368qg6xlwbd";
-        authors = [
-          "The Rand Project Developers"
-          "The Rust Project Developers"
-        ];
-        dependencies = [
-          {
-            name = "libc";
-            packageId = "libc";
-            usesDefaultFeatures = false;
-            target = { target, features }: (target."unix" or false);
-          }
-          {
-            name = "rand_chacha";
-            packageId = "rand_chacha 0.1.1";
-          }
-          {
-            name = "rand_core";
-            packageId = "rand_core 0.4.2";
-          }
-          {
-            name = "rand_hc";
-            packageId = "rand_hc";
-          }
-          {
-            name = "rand_isaac";
-            packageId = "rand_isaac";
-          }
-          {
-            name = "rand_jitter";
-            packageId = "rand_jitter";
-          }
-          {
-            name = "rand_os";
-            packageId = "rand_os";
-            optional = true;
-          }
-          {
-            name = "rand_pcg";
-            packageId = "rand_pcg";
-          }
-          {
-            name = "rand_xorshift";
-            packageId = "rand_xorshift";
-          }
-          {
-            name = "winapi";
-            packageId = "winapi";
-            target = { target, features }: (target."windows" or false);
-            features = [ "minwindef" "ntsecapi" "profileapi" "winnt" ];
-          }
-        ];
-        buildDependencies = [
-          {
-            name = "autocfg";
-            packageId = "autocfg 0.1.8";
-          }
-        ];
-        features = {
-          "alloc" = [ "rand_core/alloc" ];
-          "default" = [ "std" ];
-          "log" = [ "dep:log" ];
-          "nightly" = [ "simd_support" ];
-          "packed_simd" = [ "dep:packed_simd" ];
-          "rand_os" = [ "dep:rand_os" ];
-          "serde1" = [ "rand_core/serde1" "rand_isaac/serde1" "rand_xorshift/serde1" ];
-          "simd_support" = [ "packed_simd" ];
-          "std" = [ "rand_core/std" "alloc" "rand_os" "rand_jitter/std" ];
-          "stdweb" = [ "rand_os/stdweb" ];
-          "wasm-bindgen" = [ "rand_os/wasm-bindgen" ];
-        };
-        resolvedDefaultFeatures = [ "alloc" "default" "rand_os" "std" ];
-      };
-      "rand 0.8.5" = rec {
+      "rand" = rec {
         crateName = "rand";
         version = "0.8.5";
         edition = "2018";
@@ -3040,13 +2790,13 @@ rec {
           }
           {
             name = "rand_chacha";
-            packageId = "rand_chacha 0.3.1";
+            packageId = "rand_chacha";
             optional = true;
             usesDefaultFeatures = false;
           }
           {
             name = "rand_core";
-            packageId = "rand_core 0.6.4";
+            packageId = "rand_core";
           }
         ];
         features = {
@@ -3065,31 +2815,7 @@ rec {
         };
         resolvedDefaultFeatures = [ "alloc" "default" "getrandom" "libc" "rand_chacha" "std" "std_rng" ];
       };
-      "rand_chacha 0.1.1" = rec {
-        crateName = "rand_chacha";
-        version = "0.1.1";
-        edition = "2015";
-        sha256 = "1vxwyzs4fy1ffjc8l00fsyygpiss135irjf7nyxgq2v0lqf3lvam";
-        authors = [
-          "The Rand Project Developers"
-          "The Rust Project Developers"
-        ];
-        dependencies = [
-          {
-            name = "rand_core";
-            packageId = "rand_core 0.3.1";
-            usesDefaultFeatures = false;
-          }
-        ];
-        buildDependencies = [
-          {
-            name = "autocfg";
-            packageId = "autocfg 0.1.8";
-          }
-        ];
-
-      };
-      "rand_chacha 0.3.1" = rec {
+      "rand_chacha" = rec {
         crateName = "rand_chacha";
         version = "0.3.1";
         edition = "2018";
@@ -3108,7 +2834,7 @@ rec {
           }
           {
             name = "rand_core";
-            packageId = "rand_core 0.6.4";
+            packageId = "rand_core";
           }
         ];
         features = {
@@ -3119,46 +2845,7 @@ rec {
         };
         resolvedDefaultFeatures = [ "std" ];
       };
-      "rand_core 0.3.1" = rec {
-        crateName = "rand_core";
-        version = "0.3.1";
-        edition = "2015";
-        sha256 = "0jzdgszfa4bliigiy4hi66k7fs3gfwi2qxn8vik84ph77fwdwvvs";
-        authors = [
-          "The Rand Project Developers"
-          "The Rust Project Developers"
-        ];
-        dependencies = [
-          {
-            name = "rand_core";
-            packageId = "rand_core 0.4.2";
-          }
-        ];
-        features = {
-          "alloc" = [ "rand_core/alloc" ];
-          "default" = [ "std" ];
-          "serde1" = [ "rand_core/serde1" ];
-          "std" = [ "rand_core/std" ];
-        };
-      };
-      "rand_core 0.4.2" = rec {
-        crateName = "rand_core";
-        version = "0.4.2";
-        edition = "2015";
-        sha256 = "1p09ynysrq1vcdlmcqnapq4qakl2yd1ng3kxh3qscpx09k2a6cww";
-        authors = [
-          "The Rand Project Developers"
-          "The Rust Project Developers"
-        ];
-        features = {
-          "serde" = [ "dep:serde" ];
-          "serde1" = [ "serde" "serde_derive" ];
-          "serde_derive" = [ "dep:serde_derive" ];
-          "std" = [ "alloc" ];
-        };
-        resolvedDefaultFeatures = [ "alloc" "std" ];
-      };
-      "rand_core 0.6.4" = rec {
+      "rand_core" = rec {
         crateName = "rand_core";
         version = "0.6.4";
         edition = "2018";
@@ -3182,204 +2869,7 @@ rec {
         };
         resolvedDefaultFeatures = [ "alloc" "getrandom" "std" ];
       };
-      "rand_hc" = rec {
-        crateName = "rand_hc";
-        version = "0.1.0";
-        edition = "2015";
-        sha256 = "1i0vl8q5ddvvy0x8hf1zxny393miyzxkwqnw31ifg6p0gdy6fh3v";
-        authors = [
-          "The Rand Project Developers"
-        ];
-        dependencies = [
-          {
-            name = "rand_core";
-            packageId = "rand_core 0.3.1";
-            usesDefaultFeatures = false;
-          }
-        ];
-
-      };
-      "rand_isaac" = rec {
-        crateName = "rand_isaac";
-        version = "0.1.1";
-        edition = "2015";
-        sha256 = "027flpjr4znx2csxk7gxb7vrf9c7y5mydmvg5az2afgisp4rgnfy";
-        authors = [
-          "The Rand Project Developers"
-          "The Rust Project Developers"
-        ];
-        dependencies = [
-          {
-            name = "rand_core";
-            packageId = "rand_core 0.3.1";
-            usesDefaultFeatures = false;
-          }
-        ];
-        features = {
-          "serde" = [ "dep:serde" ];
-          "serde1" = [ "serde" "serde_derive" "rand_core/serde1" ];
-          "serde_derive" = [ "dep:serde_derive" ];
-        };
-      };
-      "rand_jitter" = rec {
-        crateName = "rand_jitter";
-        version = "0.1.4";
-        edition = "2015";
-        sha256 = "16z387y46bfz3csc42zxbjq89vcr1axqacncvv8qhyy93p4xarhi";
-        authors = [
-          "The Rand Project Developers"
-        ];
-        dependencies = [
-          {
-            name = "libc";
-            packageId = "libc";
-            usesDefaultFeatures = false;
-            target = { target, features }: (("macos" == target."os") || ("ios" == target."os"));
-          }
-          {
-            name = "rand_core";
-            packageId = "rand_core 0.4.2";
-          }
-          {
-            name = "winapi";
-            packageId = "winapi";
-            target = { target, features }: ("windows" == target."os");
-            features = [ "profileapi" ];
-          }
-        ];
-        features = {
-          "log" = [ "dep:log" ];
-          "std" = [ "rand_core/std" ];
-        };
-        resolvedDefaultFeatures = [ "std" ];
-      };
-      "rand_os" = rec {
-        crateName = "rand_os";
-        version = "0.1.3";
-        edition = "2015";
-        sha256 = "0wahppm0s64gkr2vmhcgwc0lij37in1lgfxg5rbgqlz0l5vgcxbv";
-        authors = [
-          "The Rand Project Developers"
-        ];
-        dependencies = [
-          {
-            name = "cloudabi";
-            packageId = "cloudabi";
-            target = { target, features }: ("cloudabi" == target."os");
-          }
-          {
-            name = "fuchsia-cprng";
-            packageId = "fuchsia-cprng";
-            target = { target, features }: ("fuchsia" == target."os");
-          }
-          {
-            name = "libc";
-            packageId = "libc";
-            target = { target, features }: (target."unix" or false);
-          }
-          {
-            name = "rand_core";
-            packageId = "rand_core 0.4.2";
-            features = [ "std" ];
-          }
-          {
-            name = "rdrand";
-            packageId = "rdrand";
-            target = { target, features }: ("sgx" == target."env");
-          }
-          {
-            name = "winapi";
-            packageId = "winapi";
-            target = { target, features }: (target."windows" or false);
-            features = [ "minwindef" "ntsecapi" "winnt" ];
-          }
-        ];
-        features = {
-          "log" = [ "dep:log" ];
-          "stdweb" = [ "dep:stdweb" ];
-          "wasm-bindgen" = [ "dep:wasm-bindgen" ];
-        };
-      };
-      "rand_pcg" = rec {
-        crateName = "rand_pcg";
-        version = "0.1.2";
-        edition = "2015";
-        sha256 = "0i0bdla18a8x4jn1w0fxsbs3jg7ajllz6azmch1zw33r06dv1ydb";
-        authors = [
-          "The Rand Project Developers"
-        ];
-        dependencies = [
-          {
-            name = "rand_core";
-            packageId = "rand_core 0.4.2";
-          }
-        ];
-        buildDependencies = [
-          {
-            name = "autocfg";
-            packageId = "autocfg 0.1.8";
-          }
-        ];
-        features = {
-          "serde" = [ "dep:serde" ];
-          "serde1" = [ "serde" "serde_derive" ];
-          "serde_derive" = [ "dep:serde_derive" ];
-        };
-      };
-      "rand_xorshift" = rec {
-        crateName = "rand_xorshift";
-        version = "0.1.1";
-        edition = "2015";
-        sha256 = "0p2x8nr00hricpi2m6ca5vysiha7ybnghz79yqhhx6sl4gkfkxyb";
-        authors = [
-          "The Rand Project Developers"
-          "The Rust Project Developers"
-        ];
-        dependencies = [
-          {
-            name = "rand_core";
-            packageId = "rand_core 0.3.1";
-            usesDefaultFeatures = false;
-          }
-        ];
-        features = {
-          "serde" = [ "dep:serde" ];
-          "serde1" = [ "serde" "serde_derive" ];
-          "serde_derive" = [ "dep:serde_derive" ];
-        };
-      };
-      "rdrand" = rec {
-        crateName = "rdrand";
-        version = "0.4.0";
-        edition = "2015";
-        sha256 = "1cjq0kwx1bk7jx3kzyciiish5gqsj7620dm43dc52sr8fzmm9037";
-        authors = [
-          "Simonas Kazlauskas <rdrand@kazlauskas.me>"
-        ];
-        dependencies = [
-          {
-            name = "rand_core";
-            packageId = "rand_core 0.3.1";
-            usesDefaultFeatures = false;
-          }
-        ];
-        features = {
-          "default" = [ "std" ];
-        };
-        resolvedDefaultFeatures = [ "default" "std" ];
-      };
-      "redox_syscall 0.1.57" = rec {
-        crateName = "redox_syscall";
-        version = "0.1.57";
-        edition = "2015";
-        sha256 = "1kh59fpwy33w9nwd5iyc283yglq8pf2s41hnhvl48iax9mz0zk21";
-        libName = "syscall";
-        authors = [
-          "Jeremy Soller <jackpot51@gmail.com>"
-        ];
-
-      };
-      "redox_syscall 0.3.5" = rec {
+      "redox_syscall" = rec {
         crateName = "redox_syscall";
         version = "0.3.5";
         edition = "2018";
@@ -3684,22 +3174,6 @@ rec {
         };
         resolvedDefaultFeatures = [ "__tls" "blocking" "default" "default-tls" "hyper-tls" "json" "native-tls-crate" "serde_json" "tokio-native-tls" ];
       };
-      "rustc_version" = rec {
-        crateName = "rustc_version";
-        version = "0.2.3";
-        edition = "2015";
-        sha256 = "02h3x57lcr8l2pm0a645s9whdh33pn5cnrwvn5cb57vcrc53x3hk";
-        authors = [
-          "Marvin Löbel <loebel.marvin@gmail.com>"
-        ];
-        dependencies = [
-          {
-            name = "semver";
-            packageId = "semver";
-          }
-        ];
-
-      };
       "rustix" = rec {
         crateName = "rustix";
         version = "0.37.14";
@@ -3939,37 +3413,6 @@ rec {
         };
         resolvedDefaultFeatures = [ "OSX_10_9" "default" ];
       };
-      "semver" = rec {
-        crateName = "semver";
-        version = "0.9.0";
-        edition = "2015";
-        sha256 = "00q4lkcj0rrgbhviv9sd4p6qmdsipkwkbra7rh11jrhq5kpvjzhx";
-        authors = [
-          "Steve Klabnik <steve@steveklabnik.com>"
-          "The Rust Project Developers"
-        ];
-        dependencies = [
-          {
-            name = "semver-parser";
-            packageId = "semver-parser";
-          }
-        ];
-        features = {
-          "ci" = [ "serde" ];
-          "serde" = [ "dep:serde" ];
-        };
-        resolvedDefaultFeatures = [ "default" ];
-      };
-      "semver-parser" = rec {
-        crateName = "semver-parser";
-        version = "0.7.0";
-        edition = "2015";
-        sha256 = "18vhypw6zgccnrlm5ps1pwa0khz7ry927iznpr88b87cagr1v2iq";
-        authors = [
-          "Steve Klabnik <steve@steveklabnik.com>"
-        ];
-
-      };
       "serde" = rec {
         crateName = "serde";
         version = "1.0.160";
@@ -4122,7 +3565,7 @@ rec {
         dependencies = [
           {
             name = "cfg-if";
-            packageId = "cfg-if 1.0.0";
+            packageId = "cfg-if";
           }
           {
             name = "cpufeatures";
@@ -4161,7 +3604,7 @@ rec {
         dependencies = [
           {
             name = "cfg-if";
-            packageId = "cfg-if 1.0.0";
+            packageId = "cfg-if";
           }
           {
             name = "cpufeatures";
@@ -4247,28 +3690,7 @@ rec {
         buildDependencies = [
           {
             name = "autocfg";
-            packageId = "autocfg 1.1.0";
-          }
-        ];
-        features = {
-          "default" = [ "std" ];
-          "serde" = [ "dep:serde" ];
-        };
-        resolvedDefaultFeatures = [ "default" "std" ];
-      };
-      "smallvec" = rec {
-        crateName = "smallvec";
-        version = "0.6.14";
-        edition = "2015";
-        sha256 = "1q4hz0ssnv24s6fq5kfp2wzrrprrrjiwc42a0h7s7nwym3mwlzxr";
-        libPath = "lib.rs";
-        authors = [
-          "Simon Sapin <simon.sapin@exyr.org>"
-        ];
-        dependencies = [
-          {
-            name = "maybe-uninit";
-            packageId = "maybe-uninit";
+            packageId = "autocfg";
           }
         ];
         features = {
@@ -4460,7 +3882,7 @@ rec {
         dependencies = [
           {
             name = "cfg-if";
-            packageId = "cfg-if 1.0.0";
+            packageId = "cfg-if";
           }
           {
             name = "fastrand";
@@ -4468,7 +3890,7 @@ rec {
           }
           {
             name = "redox_syscall";
-            packageId = "redox_syscall 0.3.5";
+            packageId = "redox_syscall";
             target = { target, features }: ("redox" == target."os");
           }
           {
@@ -4731,7 +4153,7 @@ rec {
         buildDependencies = [
           {
             name = "autocfg";
-            packageId = "autocfg 1.1.0";
+            packageId = "autocfg";
           }
         ];
         devDependencies = [
@@ -5095,7 +4517,7 @@ rec {
         dependencies = [
           {
             name = "cfg-if";
-            packageId = "cfg-if 1.0.0";
+            packageId = "cfg-if";
           }
           {
             name = "log";
@@ -5201,7 +4623,7 @@ rec {
           }
           {
             name = "rand";
-            packageId = "rand 0.8.5";
+            packageId = "rand";
           }
           {
             name = "sha1";
@@ -5225,7 +4647,7 @@ rec {
         devDependencies = [
           {
             name = "rand";
-            packageId = "rand 0.8.5";
+            packageId = "rand";
           }
         ];
         features = {
@@ -5512,7 +4934,7 @@ rec {
         dependencies = [
           {
             name = "cfg-if";
-            packageId = "cfg-if 1.0.0";
+            packageId = "cfg-if";
           }
           {
             name = "wasm-bindgen-macro";
@@ -5586,7 +5008,7 @@ rec {
         dependencies = [
           {
             name = "cfg-if";
-            packageId = "cfg-if 1.0.0";
+            packageId = "cfg-if";
           }
           {
             name = "js-sys";
@@ -6160,7 +5582,7 @@ rec {
         features = {
           "debug" = [ "impl-debug" ];
         };
-        resolvedDefaultFeatures = [ "consoleapi" "errhandlingapi" "handleapi" "impl-debug" "impl-default" "minwinbase" "minwindef" "ntsecapi" "ntstatus" "processenv" "profileapi" "timezoneapi" "winbase" "winerror" "winnt" "winreg" "ws2ipdef" "ws2tcpip" ];
+        resolvedDefaultFeatures = [ "consoleapi" "handleapi" "impl-debug" "impl-default" "minwinbase" "minwindef" "processenv" "timezoneapi" "winbase" "winerror" "winnt" "winreg" "ws2ipdef" "ws2tcpip" ];
       };
       "winapi-i686-pc-windows-gnu" = rec {
         crateName = "winapi-i686-pc-windows-gnu";

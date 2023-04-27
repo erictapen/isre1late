@@ -171,16 +171,24 @@ overallTrackLength =
     trackStep <| map Tuple.first stations
 
 
-stationLegend : Float -> List StationId -> List (Svg Msg)
-stationLegend cursor stationIds =
+{-| Position an element on the canvas, considering a margin.
+Input is a value between 0 and 1.
+-}
+yPosition : Float -> String
+yPosition p =
     let
-        margin =
+        yMargin =
             10
     in
+    fromFloat (yMargin + (p * (100 - 2 * yMargin))) ++ "%"
+
+
+stationLegend : Float -> List StationId -> List (Svg Msg)
+stationLegend cursor stationIds =
     case stationIds of
         sid1 :: sids ->
             S.text_
-                [ y <| fromFloat (margin + ((cursor / overallTrackLength) * (100 - 2 * margin))) ++ "%"
+                [ y <| yPosition <| cursor / overallTrackLength
                 , x "60%"
                 , SA.textAnchor "right"
                 , SA.alignmentBaseline "middle"

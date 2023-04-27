@@ -190,14 +190,14 @@ stationLegend cursor stationIds =
             g []
                 [ S.text_
                     [ y <| yPosition <| cursor / overallTrackLength
-                    , x "60%"
+                    , x "75%"
                     , SA.textAnchor "right"
                     , SA.dominantBaseline "middle"
                     , SA.fontSize "12px"
                     ]
                     [ S.text <| Maybe.withDefault "Unkown Station" <| Dict.get sid1 stationNames ]
                 , line
-                    [ x1 "58%"
+                    [ x1 "73%"
                     , x2 "0%"
                     , y1 <| yPosition <| cursor / overallTrackLength
                     , y2 <| yPosition <| cursor / overallTrackLength

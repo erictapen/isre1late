@@ -2,9 +2,22 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
 
-module Types exposing (Delay, TripId)
+module Types exposing (Delay, TripId, decodeClientMsg)
 
-import Json.Decode as J exposing (Decoder, decodeString, field, float, int, list, map2, map3, map5, string)
+import Json.Decode as J
+    exposing
+        ( Decoder
+        , decodeString
+        , field
+        , float
+        , int
+        , list
+        , map2
+        , map3
+        , map5
+        , maybe
+        , string
+        )
 import Time exposing (Posix, millisToPosix)
 
 
@@ -16,8 +29,8 @@ type alias TripId =
 -}
 type alias Delay =
     { time : Posix
-    , previousStation : String
-    , nextStation : String
+    , previousStation : Maybe String
+    , nextStation : Maybe String
     , percentageSegment : Float
     , delay : Int
     }
@@ -26,11 +39,11 @@ type alias Delay =
 decodeClientMsg : Decoder ( TripId, Delay )
 decodeClientMsg =
     map2 Tuple.pair
-        (field "id" string)
+        (field "trip_id" string)
     <|
         map5 Delay
             (J.map ((*) 1000 >> millisToPosix) <| field "time" int)
-            (field "previous_station" string)
-            (field "next_station" string)
-            (field "percentageSegment" float)
+            (maybe <| field "previous_station" string)
+            (maybe <| field "next_station" string)
+            (field "percentage_segment" float)
             (field "delay" int)

@@ -6,8 +6,9 @@ port module Main exposing (main)
 
 import Browser exposing (Document)
 import Dict exposing (Dict)
+import Json.Decode as JD exposing (decodeString)
 import Time exposing (Posix)
-import Types exposing (Delay, TripId)
+import Types exposing (Delay, TripId, decodeClientMsg)
 
 
 port sendMessage : String -> Cmd msg
@@ -28,12 +29,13 @@ subscriptions _ =
 
 type alias Model =
     { delays : Dict TripId (List Delay)
+    , errors : List String
     }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { delays = Dict.empty }, Cmd.none )
+    ( { delays = Dict.empty, errors = [] }, Cmd.none )
 
 
 view : Model -> Document Msg
@@ -47,7 +49,23 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         RecvWebsocket jsonStr ->
-            ( model, Cmd.none )
+            case decodeString decodeClientMsg jsonStr of
+                Ok ( tripId, delay ) ->
+                    ( { model
+                        | delays =
+                            Dict.update tripId
+                                (\maybeList ->
+                                    Just <|
+                                        delay
+                                            :: Maybe.withDefault [] maybeList
+                                )
+                                model.delays
+                      }
+                    , Cmd.none
+                    )
+
+                Err e ->
+                    ( { model | errors = JD.errorToString e :: model.errors }, Cmd.none )
 
         Send ->
             ( model, sendMessage "" )

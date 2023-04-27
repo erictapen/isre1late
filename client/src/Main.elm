@@ -11,8 +11,8 @@ import Html.Attributes exposing (id, style)
 import Json.Decode as JD exposing (decodeString)
 import List exposing (head, map)
 import String exposing (fromFloat)
-import Svg as S exposing (Svg, path, svg)
-import Svg.Attributes as SA exposing (d, fill, height, preserveAspectRatio, stroke, strokeWidth, viewBox, width, x, y)
+import Svg as S exposing (Svg, g, line, path, svg)
+import Svg.Attributes as SA exposing (d, fill, height, preserveAspectRatio, stroke, strokeWidth, viewBox, width, x, x1, x2, y, y1, y2)
 import Time exposing (Posix)
 import Types exposing (Delay, StationId, TripId, decodeClientMsg)
 
@@ -187,14 +187,25 @@ stationLegend : Float -> List StationId -> List (Svg Msg)
 stationLegend cursor stationIds =
     case stationIds of
         sid1 :: sids ->
-            S.text_
-                [ y <| yPosition <| cursor / overallTrackLength
-                , x "60%"
-                , SA.textAnchor "right"
-                , SA.alignmentBaseline "middle"
-                , SA.fontSize "12px"
+            g []
+                [ S.text_
+                    [ y <| yPosition <| cursor / overallTrackLength
+                    , x "60%"
+                    , SA.textAnchor "right"
+                    , SA.dominantBaseline "middle"
+                    , SA.fontSize "12px"
+                    ]
+                    [ S.text <| Maybe.withDefault "Unkown Station" <| Dict.get sid1 stationNames ]
+                , line
+                    [ x1 "58%"
+                    , x2 "0%"
+                    , y1 <| yPosition <| cursor / overallTrackLength
+                    , y2 <| yPosition <| cursor / overallTrackLength
+                    , stroke "#dddddd"
+                    , strokeWidth "1px"
+                    ]
+                    []
                 ]
-                [ S.text <| Maybe.withDefault "Unkown Station" <| Dict.get sid1 stationNames ]
                 :: stationLegend
                     (cursor
                         + (Maybe.withDefault 0 <|

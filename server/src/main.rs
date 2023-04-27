@@ -8,17 +8,9 @@ use bus::{Bus, BusReadHandle};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use docopt::Docopt;
-use log::{error, info};
+use log::{debug, error, info, warn};
 use serde::Deserialize;
 use std::error::Error;
-use std::sync::Arc;
-
-use axum::{
-    extract::ws::{WebSocket, WebSocketUpgrade},
-    extract::State,
-    response::Response,
-    routing::get,
-};
 
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
@@ -40,11 +32,14 @@ Usage: isre1late-server --port <port>
 Options:
     -h, --help           Show this message.
     --port <port>        TCP port on which the server listens. [default: 8080]
+    -l, --listen IP      IP address to listen on, e.g. ::. [default: ::1]
+
 ";
 
 #[derive(Deserialize)]
 struct CliArgs {
     flag_port: u16,
+    flag_listen: std::net::IpAddr,
     cmd_validate_hafas_schema: bool,
     cmd_run_db_migrations: bool,
 }
@@ -97,49 +92,91 @@ fn run_db_migrations(db: &mut PgConnection) -> () {
     );
 }
 
-// #[get("/delays")]
-// fn delays(ws: ws::WebSocket, bus_read_handle: &rocket::State<bus::BusReadHandle<ClientMsg>>) -> ws::Channel<'static> {
-//     info!("Receiving websocket request");
-//     let mut rx = bus_read_handle.clone().add_rx();
-//     ws.channel(move |mut stream| {
-//         Box::pin(async move {
-//             while let Ok(msg) = rx.recv() {
-//                 // We don't expect JSON serialisation to fail.
-//                 let json_msg = serde_json::to_string(&msg).unwrap();
-//                 let _ = stream.send(ws::Message::Text(json_msg)).await;
-//             }
-//
-//             Ok(())
-//         })
-//     })
-// }
-
-async fn delays_handler(
-    ws: WebSocketUpgrade,
-    State(state): State<Arc<BusReadHandle<ClientMsg>>>,
-) -> Response {
-    info!("Receiving websocket upgrade request");
-    ws.on_upgrade(|socket| handle_delays_socket(socket, state))
-}
-
-async fn handle_delays_socket(
-    mut socket: WebSocket,
-    bus_read_handle: Arc<BusReadHandle<ClientMsg>>,
+/// Open the webserver and publish fetched data via Websockets.
+fn websocket_server(
+    bus_read_handle: BusReadHandle<ClientMsg>,
+    listen: std::net::IpAddr,
+    port: u16,
 ) {
-    info!("Receiving websocket request");
-    let mut rx = Arc::clone(&bus_read_handle).clone().add_rx();
+    use std::net::{IpAddr, SocketAddr, SocketAddrV4, SocketAddrV6};
 
-    while let Ok(msg) = rx.recv() {
-        // We don't expect JSON serialisation to fail.
-        let json_msg = serde_json::to_string(&msg).unwrap();
-        let _ = socket
-            .send(axum::extract::ws::Message::Text(json_msg))
-            .await;
+    let socket_addr: std::net::SocketAddr = match listen {
+        IpAddr::V4(addr) => SocketAddr::V4(SocketAddrV4::new(addr, port)),
+        IpAddr::V6(addr) => SocketAddr::V6(SocketAddrV6::new(addr, port, 0, 0)),
+    };
+
+    let server = std::net::TcpListener::bind(socket_addr).unwrap_or_else(|_| {
+        error!("Can't bind to {}", socket_addr);
+        std::process::exit(1);
+    });
+    info!("Server started.");
+    for stream in server.incoming() {
+        use tungstenite::handshake::server::{Request, Response};
+
+        let ws_callback = |request: &Request, response: Response| match request.uri().path() {
+            "/api/delays" => {
+                debug!("The request's route is: /api/delays");
+                Ok(response)
+            }
+            other_path => {
+                warn!("Path {} is not available.", other_path);
+                let not_found = Response::builder()
+                    .status(tungstenite::http::StatusCode::NOT_FOUND)
+                    .body(Some("Path not found.".into()))
+                    .expect("This should never fail.");
+                Err(not_found)
+            }
+        };
+        match stream {
+            Ok(stream) => {
+                let mut websocket = match tungstenite::accept_hdr(stream, ws_callback) {
+                    Ok(ws) => ws,
+                    Err(e) => {
+                        warn!("{}", e);
+                        continue;
+                    }
+                };
+
+                let mut rx = bus_read_handle.add_rx();
+
+                std::thread::spawn(move || {
+                    while let Ok(msg) = rx.recv() {
+                        let json_msg = serde_json::to_string(&msg).expect("This shouldn't fail.");
+                        match websocket.write_message(tungstenite::Message::Text(json_msg)) {
+                            Err(e) => {
+                                warn!(
+                                    "{:?}: Couldn't send message to subscriber: {}",
+                                    std::thread::current().id(),
+                                    e
+                                );
+                                break;
+                            }
+                            Ok(_) => {
+                                debug!(
+                                    "{:?}: Sent message to subscriber successfully.",
+                                    std::thread::current().id()
+                                );
+                            }
+                        }
+                    }
+                    info!("Closing websocket");
+                    websocket
+                        .close(None)
+                        .unwrap_or_else(|_| warn!("Can't close websocket in a normal way."));
+                    websocket
+                        .write_pending()
+                        .unwrap_or_else(|_| warn!("Couldn't write pending close frame."));
+                });
+            }
+            Err(_) => {
+                warn!("Close connection.");
+                continue;
+            }
+        };
     }
 }
 
-#[tokio::main]
-async fn main() {
+fn main() {
     // Setup logging
     if systemd_journal_logger::connected_to_journal() {
         // If journald is available.
@@ -171,7 +208,9 @@ async fn main() {
 
     run_db_migrations(&mut db);
 
+    // The spmc bus with which the crawler can communicate with all open websocket threads.
     let bus: Bus<client::ClientMsg> = bus::Bus::new(10 * 1024);
+    // With this handle we can produce new channel receivers per new websocket connection.
     let bus_read_handle = bus.read_handle();
 
     std::thread::spawn(move || {
@@ -181,13 +220,5 @@ async fn main() {
         });
     });
 
-    let app = axum::Router::new()
-        .route("/api/delays", get(delays_handler))
-        .with_state(Arc::new(bus_read_handle));
-
-    // run it with hyper on localhost:3000
-    axum::Server::bind(&format!("[::1]:{}", args.flag_port).parse().unwrap())
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    websocket_server(bus_read_handle, args.flag_listen, args.flag_port);
 }

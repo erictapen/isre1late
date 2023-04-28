@@ -2132,6 +2132,10 @@ rec {
             packageId = "serde_json";
           }
           {
+            name = "serde_qs";
+            packageId = "serde_qs";
+          }
+          {
             name = "serde_with";
             packageId = "serde_with";
           }
@@ -2151,10 +2155,6 @@ rec {
           {
             name = "tungstenite";
             packageId = "tungstenite";
-          }
-          {
-            name = "url";
-            packageId = "url";
           }
           {
             name = "urlencoding";
@@ -4234,6 +4234,44 @@ rec {
           "std" = [ "serde/std" ];
         };
         resolvedDefaultFeatures = [ "alloc" "default" "std" ];
+      };
+      "serde_qs" = rec {
+        crateName = "serde_qs";
+        version = "0.12.0";
+        edition = "2018";
+        sha256 = "031kgpxbqkkxnql0k7sd80lyp98x7jc92311chrkc7k5d1as6c84";
+        authors = [
+          "Sam Scott <sam@osohq.com>"
+        ];
+        dependencies = [
+          {
+            name = "percent-encoding";
+            packageId = "percent-encoding";
+          }
+          {
+            name = "serde";
+            packageId = "serde";
+          }
+          {
+            name = "thiserror";
+            packageId = "thiserror";
+          }
+        ];
+        features = {
+          "actix-web2" = [ "dep:actix-web2" ];
+          "actix-web3" = [ "dep:actix-web3" ];
+          "actix-web4" = [ "dep:actix-web4" ];
+          "actix2" = [ "actix-web2" "futures" ];
+          "actix3" = [ "actix-web3" "futures" ];
+          "actix4" = [ "actix-web4" "futures" ];
+          "axum" = [ "axum-framework" "futures" ];
+          "axum-framework" = [ "dep:axum-framework" ];
+          "futures" = [ "dep:futures" ];
+          "tracing" = [ "dep:tracing" ];
+          "warp" = [ "futures" "tracing" "warp-framework" ];
+          "warp-framework" = [ "dep:warp-framework" ];
+        };
+        resolvedDefaultFeatures = [ "default" ];
       };
       "serde_urlencoded" = rec {
         crateName = "serde_urlencoded";

@@ -120,24 +120,20 @@ fn websocket_server(
         let mut historic_seconds = 3600;
 
         let ws_callback = |request: &Request, response: Response| {
-            use std::str::FromStr;
+            #[derive(Deserialize, Debug)]
+            struct Query {
+                historic: u64,
+            }
 
-            let url_str = request.uri().to_string();
-            debug!("url_str: {}", url_str);
-            match url::Url::from_str(&url_str) {
-                Err(e) => {
-                    error!("{}", e);
-                }
-                Ok(url) => {
-                    for (key, value) in url.query_pairs() {
-                        if key == "historic" {
-                            if let Ok(sec) = value.parse() {
-                                // We don't allow more than a week for now
-                                historic_seconds = std::cmp::max(sec, 3600 * 24 * 7);
-                            } else {
-                                error!("Failed to parse `historic` query parameter as int: {}. Using default {} instead.", value, historic_seconds);
-                            }
-                        }
+            if let Some(query_str) = request.uri().query() {
+                debug!("query_str: {}", query_str);
+                match serde_qs::from_str(&query_str) {
+                    Err(e) => {
+                        error!("{}", e);
+                    }
+                    Ok(Query { historic }) => {
+                        // We don't allow more than a week for now
+                        historic_seconds = std::cmp::max(historic, 3600 * 24 * 7);
                     }
                 }
             }

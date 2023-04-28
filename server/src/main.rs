@@ -132,8 +132,9 @@ fn websocket_server(
                         error!("{}", e);
                     }
                     Ok(Query { historic }) => {
-                        // We don't allow more than a week for now
-                        historic_seconds = std::cmp::max(historic, 3600 * 24 * 7);
+                        // We don't allow more than 6 hours for now
+                        // Otherwise the current server goes OOM.
+                        historic_seconds = std::cmp::min(historic, 3600 * 6);
                     }
                 }
             }

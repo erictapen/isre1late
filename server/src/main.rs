@@ -94,10 +94,11 @@ fn run_db_migrations(db: &mut PgConnection) -> () {
 
 /// Open the webserver and publish fetched data via Websockets.
 fn websocket_server(
+    db: &mut PgConnection,
     bus_read_handle: BusReadHandle<ClientMsg>,
     listen: std::net::IpAddr,
     port: u16,
-) {
+) -> Result<(), Box<dyn Error>> {
     use std::net::{IpAddr, SocketAddr, SocketAddrV4, SocketAddrV6};
 
     let socket_addr: std::net::SocketAddr = match listen {
@@ -137,12 +138,53 @@ fn websocket_server(
                     }
                 };
 
+                use self::schema::fetched_json::dsl::fetched_json;
+                use crate::schema::fetched_json::{body, fetched_at};
+
                 let mut rx = bus_read_handle.add_rx();
+                let old_delays_str: Vec<String> = fetched_json
+                    .select(body)
+                    .filter(
+                        fetched_at
+                            .gt(time::OffsetDateTime::now_utc()
+                                - std::time::Duration::from_secs(1800)),
+                    )
+                    .then_order_by(fetched_at.asc())
+                    .load(db)?;
 
                 std::thread::spawn(move || {
+                    use tungstenite::Message::Text;
+
+                    let old_delays = old_delays_str
+                        .iter()
+                        .map(|s| s.as_str())
+                        .filter_map(|s| serde_json::from_str(s).ok())
+                        .filter_map(|to| client::client_msg_from_trip_overview(to).ok());
+
+                    for cm in old_delays {
+                        match websocket.write_message(Text(
+                            serde_json::to_string(&cm).expect("This shouldn't fail."),
+                        )) {
+                            Err(e) => {
+                                warn!(
+                                    "{:?}: Couldn't send message to subscriber: {}",
+                                    std::thread::current().id(),
+                                    e
+                                );
+                                break;
+                            }
+                            Ok(_) => {
+                                debug!(
+                                    "{:?}: Sent message to subscriber successfully.",
+                                    std::thread::current().id()
+                                );
+                            }
+                        };
+                    }
+
                     while let Ok(msg) = rx.recv() {
                         let json_msg = serde_json::to_string(&msg).expect("This shouldn't fail.");
-                        match websocket.write_message(tungstenite::Message::Text(json_msg)) {
+                        match websocket.write_message(Text(json_msg)) {
                             Err(e) => {
                                 warn!(
                                     "{:?}: Couldn't send message to subscriber: {}",
@@ -174,6 +216,7 @@ fn websocket_server(
             }
         };
     }
+    Ok(())
 }
 
 fn main() {
@@ -192,33 +235,43 @@ fn main() {
         .unwrap_or_else(|e| e.exit());
 
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let mut db: PgConnection = PgConnection::establish(&db_url)
-        .unwrap_or_else(|_| panic!("Error connecting to {}", db_url));
 
-    if args.cmd_validate_hafas_schema {
-        validate_hafas_schema(&mut db).unwrap_or_else(|e| {
-            error!("{}", e);
-            std::process::exit(1);
-        });
-        std::process::exit(0);
-    } else if args.cmd_run_db_migrations {
+    {
+        let mut db: PgConnection = PgConnection::establish(&db_url)
+            .unwrap_or_else(|_| panic!("Error connecting to {}", db_url));
+        if args.cmd_validate_hafas_schema {
+            validate_hafas_schema(&mut db).unwrap_or_else(|e| {
+                error!("{}", e);
+                std::process::exit(1);
+            });
+            std::process::exit(0);
+        } else if args.cmd_run_db_migrations {
+            run_db_migrations(&mut db);
+            std::process::exit(0);
+        }
         run_db_migrations(&mut db);
-        std::process::exit(0);
     }
-
-    run_db_migrations(&mut db);
 
     // The spmc bus with which the crawler can communicate with all open websocket threads.
     let bus: Bus<client::ClientMsg> = bus::Bus::new(10 * 1024);
     // With this handle we can produce new channel receivers per new websocket connection.
     let bus_read_handle = bus.read_handle();
 
-    std::thread::spawn(move || {
-        crawler::crawler(&mut db, bus).unwrap_or_else(|e| {
-            error!("{}", e);
-            std::process::exit(1);
+    {
+        let db_url = db_url.clone();
+        std::thread::spawn(move || {
+            let mut db: PgConnection = PgConnection::establish(&db_url)
+                .unwrap_or_else(|_| panic!("Error connecting to {}", db_url));
+            crawler::crawler(&mut db, bus).unwrap_or_else(|e| {
+                error!("{}", e);
+                std::process::exit(1);
+            });
         });
-    });
+    }
 
-    websocket_server(bus_read_handle, args.flag_listen, args.flag_port);
+    {
+        let mut db: PgConnection = PgConnection::establish(&(db_url.clone()))
+            .unwrap_or_else(|_| panic!("Error connecting to {}", db_url));
+        websocket_server(&mut db, bus_read_handle, args.flag_listen, args.flag_port);
+    }
 }

@@ -49,6 +49,8 @@ subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.batch
         [ messageReceiver RecvWebsocket
+
+        -- TODO synchronise this with RecvWebsocket after the loading state is implemented
         , Time.every 1000 CurrentTime
         ]
 
@@ -327,20 +329,37 @@ posixToSec p =
 -}
 westwards s1 s2 =
     case distance s1 s2 of
-      Just _ -> True
-      Nothing -> False
+        Just _ ->
+            True
+
+        Nothing ->
+            False
 
 
 tripLines : Dict TripId (List Delay) -> Posix -> List (Svg Msg)
 tripLines delayDict now =
     let
-        tripD : Delay -> Maybe ( Float, Float )
-        tripD { time, previousStation, nextStation, percentageSegment, delay } =
+        tripD : Bool -> Delay -> Maybe ( Float, Float )
+        tripD secondPass { time, previousStation, nextStation, percentageSegment, delay } =
             case ( previousStation, nextStation ) of
                 ( Just pS, Just nS ) ->
                     if westwards pS nS then
                         Just
-                            ( 100 - (100 * ((toFloat <| posixToSec now - posixToSec time + delay) / 3600))
+                            ( 100
+                                - (100
+                                    * ((toFloat <|
+                                            posixToSec now
+                                                - posixToSec time
+                                                + (if secondPass then
+                                                    delay
+
+                                                   else
+                                                    0
+                                                  )
+                                       )
+                                        / 3600
+                                      )
+                                  )
                             , 100 * stationPos pS + (percentageSegment / overallTrackLength)
                             )
 
@@ -355,7 +374,7 @@ tripLines delayDict now =
             path
                 [ SA.title tripId
                 , stroke "black"
-                , fill "none"
+                , fill "red"
                 , strokeWidth "1px"
                 , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
                 , d <|
@@ -365,7 +384,10 @@ tripLines delayDict now =
                                     (Tuple.mapBoth fromFloat fromFloat >> (\( x, y ) -> x ++ " " ++ y))
                                 <|
                                     filterMap identity <|
-                                        map tripD delays
+                                        List.concat
+                                            [ map (tripD False) delays
+                                            , map (tripD True) <| List.reverse delays
+                                            ]
                            )
                 ]
                 []

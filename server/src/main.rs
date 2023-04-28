@@ -142,7 +142,8 @@ fn websocket_server(
                 use crate::schema::fetched_json::{body, fetched_at};
 
                 let mut rx = bus_read_handle.add_rx();
-                let old_delays_str: Vec<String> = fetched_json
+
+                let old_delays_str = fetched_json
                     .select(body)
                     .filter(
                         fetched_at
@@ -150,20 +151,22 @@ fn websocket_server(
                                 - std::time::Duration::from_secs(1800)),
                     )
                     .then_order_by(fetched_at.asc())
-                    .load(db)?;
+                    .load::<String>(db)
+                    .unwrap_or_else(|e| {
+                        panic!("Unable to load data from fetched_json: {}", e);
+                    });
 
                 std::thread::spawn(move || {
+                    use std::net::TcpStream;
+                    use tungstenite::protocol::WebSocket;
                     use tungstenite::Message::Text;
 
-                    let old_delays = old_delays_str
-                        .iter()
-                        .map(|s| s.as_str())
-                        .filter_map(|s| serde_json::from_str(s).ok())
-                        .filter_map(|to| client::client_msg_from_trip_overview(to).ok());
-
-                    for cm in old_delays {
+                    fn send_message(
+                        websocket: &mut WebSocket<TcpStream>,
+                        msg: ClientMsg,
+                    ) -> Result<(), ()> {
                         match websocket.write_message(Text(
-                            serde_json::to_string(&cm).expect("This shouldn't fail."),
+                            serde_json::to_string(&msg).expect("This shouldn't fail."),
                         )) {
                             Err(e) => {
                                 warn!(
@@ -171,36 +174,33 @@ fn websocket_server(
                                     std::thread::current().id(),
                                     e
                                 );
-                                break;
+                                Err(())
                             }
                             Ok(_) => {
                                 debug!(
                                     "{:?}: Sent message to subscriber successfully.",
                                     std::thread::current().id()
                                 );
-                            }
-                        };
-                    }
-
-                    while let Ok(msg) = rx.recv() {
-                        let json_msg = serde_json::to_string(&msg).expect("This shouldn't fail.");
-                        match websocket.write_message(Text(json_msg)) {
-                            Err(e) => {
-                                warn!(
-                                    "{:?}: Couldn't send message to subscriber: {}",
-                                    std::thread::current().id(),
-                                    e
-                                );
-                                break;
-                            }
-                            Ok(_) => {
-                                debug!(
-                                    "{:?}: Sent message to subscriber successfully.",
-                                    std::thread::current().id()
-                                );
+                                Ok(())
                             }
                         }
                     }
+                    let old_delays = old_delays_str
+                        .iter()
+                        .map(|s| s.as_str())
+                        .filter_map(|s| serde_json::from_str(s).ok())
+                        .filter_map(|to| client::client_msg_from_trip_overview(to).ok());
+
+                    for cm in old_delays {
+                        let _ = send_message(&mut websocket, cm).is_err();
+                    }
+
+                    while let Ok(msg) = rx.recv() {
+                        if send_message(&mut websocket, msg).is_err() {
+                            break;
+                        };
+                    }
+
                     info!("Closing websocket");
                     websocket
                         .close(None)

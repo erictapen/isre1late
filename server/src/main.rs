@@ -195,6 +195,8 @@ fn websocket_server(
                         let _ = send_message(&mut websocket, cm).is_err();
                     }
 
+                    debug!("Sent old messages to client, switching to live update now.");
+
                     while let Ok(msg) = rx.recv() {
                         if send_message(&mut websocket, msg).is_err() {
                             break;

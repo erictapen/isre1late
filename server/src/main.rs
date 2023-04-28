@@ -2,6 +2,9 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#[macro_use] extern crate serde_with;
+
+
 use self::models::*;
 use crate::client::ClientMsg;
 use bus::{Bus, BusReadHandle};

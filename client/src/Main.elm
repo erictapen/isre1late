@@ -42,22 +42,27 @@ port messageReceiver : (String -> msg) -> Sub msg
 type Msg
     = Send
     | RecvWebsocket String
+    | CurrentTime Posix
 
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    messageReceiver RecvWebsocket
+    Sub.batch
+        [ messageReceiver RecvWebsocket
+        , Time.every 1000 CurrentTime
+        ]
 
 
 type alias Model =
     { delays : Dict TripId (List Delay)
     , errors : List String
+    , now : Posix
     }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { delays = Dict.empty, errors = [] }, Cmd.none )
+    ( { delays = Dict.empty, errors = [], now = Time.millisToPosix 0 }, Cmd.none )
 
 
 stations : List ( StationId, String )
@@ -172,6 +177,85 @@ distance station1 station2 =
             Nothing
 
 
+stationPos : StationId -> Float
+stationPos sid =
+    case sid of
+        900311307 ->
+            1 / 24
+
+        900360000 ->
+            2 / 24
+
+        900310001 ->
+            3 / 24
+
+        900310002 ->
+            4 / 24
+
+        900310003 ->
+            5 / 24
+
+        900310004 ->
+            6 / 24
+
+        900120003 ->
+            7 / 24
+
+        900120005 ->
+            8 / 24
+
+        900100003 ->
+            9 / 24
+
+        900100001 ->
+            10 / 24
+
+        900003201 ->
+            11 / 24
+
+        900023201 ->
+            12 / 24
+
+        900024101 ->
+            13 / 24
+
+        900053301 ->
+            14 / 24
+
+        900230999 ->
+            15 / 24
+
+        900220009 ->
+            16 / 24
+
+        900275110 ->
+            17 / 24
+
+        900275719 ->
+            18 / 24
+
+        900220249 ->
+            19 / 24
+
+        900550073 ->
+            20 / 24
+
+        900550078 ->
+            21 / 24
+
+        900550062 ->
+            22 / 24
+
+        900550255 ->
+            23 / 24
+
+        900550094 ->
+            24 / 24
+
+        _ ->
+            0
+
+
 overallTrackLength : Float
 overallTrackLength =
     let
@@ -234,26 +318,44 @@ stationLegend cursor stationIds =
             []
 
 
-tripLines : Dict TripId (List Delay) -> List (Svg Msg)
-tripLines delayDict =
+posixToSec : Posix -> Int
+posixToSec p =
+    posixToMillis p // 1000
+
+
+{-| Wether two stations are ordered from west to east
+-}
+westwards s1 s2 =
+    case distance s1 s2 of
+      Just _ -> True
+      Nothing -> False
+
+
+tripLines : Dict TripId (List Delay) -> Posix -> List (Svg Msg)
+tripLines delayDict now =
     let
         tripD : Delay -> Maybe ( Float, Float )
         tripD { time, previousStation, nextStation, percentageSegment, delay } =
-            if previousStation == Just 900311307 && nextStation == Just 900360000 then
-                Just
-                    ( 10 * ((toFloat <| (posixToMillis time // 1000) - 1682688817) / 1800)
-                    , 10 * (percentageSegment / overallTrackLength)
-                    )
+            case ( previousStation, nextStation ) of
+                ( Just pS, Just nS ) ->
+                    if westwards pS nS then
+                        Just
+                            ( 100 - (100 * ((toFloat <| posixToSec now - posixToSec time + delay) / 7200))
+                            , 100 * stationPos pS + (percentageSegment / overallTrackLength)
+                            )
 
-            else
-                Nothing
+                    else
+                        Nothing
+
+                _ ->
+                    Nothing
 
         tripLine : ( TripId, List Delay ) -> Svg Msg
         tripLine ( tripId, delays ) =
             path
-                [ SA.id tripId
+                [ SA.title tripId
                 , stroke "black"
-                , fill "red"
+                , fill "none"
                 , strokeWidth "1px"
                 , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
                 , d <|
@@ -287,7 +389,7 @@ view model =
                     , height "80%"
                     , width "73%"
                     ]
-                    (tripLines model.delays)
+                    (tripLines model.delays model.now)
                  ]
                     ++ (stationLegend 0 <| map Tuple.first stations)
                 )
@@ -320,6 +422,9 @@ update msg model =
 
         Send ->
             ( model, sendMessage "" )
+
+        CurrentTime now ->
+            ( { model | now = now }, Cmd.none )
 
 
 main : Program () Model Msg

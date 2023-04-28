@@ -169,45 +169,46 @@ fn websocket_server(
 
                 let mut rx = bus_read_handle.add_rx();
 
-                let old_delays_str = fetched_json
-                    .select(body)
-                    .filter(fetched_at.gt(time::OffsetDateTime::now_utc()
-                        - std::time::Duration::from_secs(historic_seconds)))
-                    .then_order_by(fetched_at.asc())
-                    .load::<String>(db)
-                    .unwrap_or_else(|e| {
-                        panic!("Unable to load data from fetched_json: {}", e);
-                    });
+                use std::net::TcpStream;
+                use tungstenite::protocol::WebSocket;
+                use tungstenite::Message::Text;
 
-                std::thread::spawn(move || {
-                    use std::net::TcpStream;
-                    use tungstenite::protocol::WebSocket;
-                    use tungstenite::Message::Text;
-
-                    fn send_message(
-                        websocket: &mut WebSocket<TcpStream>,
-                        msg: ClientMsg,
-                    ) -> Result<(), ()> {
-                        match websocket.write_message(Text(
-                            serde_json::to_string(&msg).expect("This shouldn't fail."),
-                        )) {
-                            Err(e) => {
-                                warn!(
-                                    "{:?}: Couldn't send message to subscriber: {}",
-                                    std::thread::current().id(),
-                                    e
-                                );
-                                Err(())
-                            }
-                            Ok(_) => {
-                                debug!(
-                                    "{:?}: Sent message to subscriber successfully.",
-                                    std::thread::current().id()
-                                );
-                                Ok(())
-                            }
+                fn send_message(
+                    websocket: &mut WebSocket<TcpStream>,
+                    msg: ClientMsg,
+                ) -> Result<(), ()> {
+                    match websocket.write_message(Text(
+                        serde_json::to_string(&msg).expect("This shouldn't fail."),
+                    )) {
+                        Err(e) => {
+                            warn!(
+                                "{:?}: Couldn't send message to subscriber: {}",
+                                std::thread::current().id(),
+                                e
+                            );
+                            Err(())
+                        }
+                        Ok(_) => {
+                            debug!(
+                                "{:?}: Sent message to subscriber successfully.",
+                                std::thread::current().id()
+                            );
+                            Ok(())
                         }
                     }
+                }
+
+                {
+                    let old_delays_str = fetched_json
+                        .select(body)
+                        .filter(fetched_at.gt(time::OffsetDateTime::now_utc()
+                            - std::time::Duration::from_secs(historic_seconds)))
+                        .then_order_by(fetched_at.asc())
+                        .load::<String>(db)
+                        .unwrap_or_else(|e| {
+                            panic!("Unable to load data from fetched_json: {}", e);
+                        });
+
                     let old_delays = old_delays_str
                         .iter()
                         .map(|s| s.as_str())
@@ -217,9 +218,11 @@ fn websocket_server(
                     for cm in old_delays {
                         let _ = send_message(&mut websocket, cm).is_err();
                     }
+                }
 
-                    debug!("Sent old messages to client, switching to live update now.");
+                debug!("Sent old messages to client, switching to live update now.");
 
+                std::thread::spawn(move || {
                     while let Ok(msg) = rx.recv() {
                         if send_message(&mut websocket, msg).is_err() {
                             break;

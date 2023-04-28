@@ -68,18 +68,22 @@ type alias Model =
     }
 
 
-applicationUrl =
-    Url.Builder.crossOrigin "wss://isre1late.erictapen.name" [ "api", "delays" ] [ Url.Builder.int "historic" 3600 ]
+applicationUrl historicSeconds =
+    Url.Builder.crossOrigin "wss://isre1late.erictapen.name" [ "api", "delays" ] [ Url.Builder.int "historic" historicSeconds ]
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
+    let
+        defaultHistoricSeconds =
+            3600 * 3
+    in
     ( { delays = Dict.empty
       , errors = []
       , now = Time.millisToPosix 0
-      , historicSeconds = 3600
+      , historicSeconds = defaultHistoricSeconds
       }
-    , rebuildSocket applicationUrl
+    , rebuildSocket <| applicationUrl defaultHistoricSeconds
     )
 
 
@@ -199,76 +203,76 @@ stationPos : StationId -> Float
 stationPos sid =
     case sid of
         900311307 ->
-            1 / 24
+            0 / 23
 
         900360000 ->
-            2 / 24
+            1 / 23
 
         900310001 ->
-            3 / 24
+            2 / 23
 
         900310002 ->
-            4 / 24
+            3 / 23
 
         900310003 ->
-            5 / 24
+            4 / 23
 
         900310004 ->
-            6 / 24
+            5 / 23
 
         900120003 ->
-            7 / 24
+            6 / 23
 
         900120005 ->
-            8 / 24
+            7 / 23
 
         900100003 ->
-            9 / 24
+            8 / 23
 
         900100001 ->
-            10 / 24
+            9 / 23
 
         900003201 ->
-            11 / 24
+            10 / 23
 
         900023201 ->
-            12 / 24
+            11 / 23
 
         900024101 ->
-            13 / 24
+            12 / 23
 
         900053301 ->
-            14 / 24
+            13 / 23
 
         900230999 ->
-            15 / 24
+            14 / 23
 
         900220009 ->
-            16 / 24
+            15 / 23
 
         900275110 ->
-            17 / 24
+            16 / 23
 
         900275719 ->
-            18 / 24
+            17 / 23
 
         900220249 ->
-            19 / 24
+            18 / 23
 
         900550073 ->
-            20 / 24
+            19 / 23
 
         900550078 ->
-            21 / 24
+            20 / 23
 
         900550062 ->
-            22 / 24
+            21 / 23
 
         900550255 ->
-            23 / 24
+            22 / 23
 
         900550094 ->
-            24 / 24
+            23 / 23
 
         _ ->
             0
@@ -352,8 +356,8 @@ westwards s1 s2 =
             False
 
 
-tripLines : Dict TripId (List Delay) -> Posix -> List (Svg Msg)
-tripLines delayDict now =
+tripLines : Int -> Dict TripId (List Delay) -> Posix -> List (Svg Msg)
+tripLines historicSeconds delayDict now =
     let
         tripD : Bool -> Delay -> Maybe ( Float, Float )
         tripD secondPass { time, previousStation, nextStation, percentageSegment, delay } =
@@ -373,7 +377,7 @@ tripLines delayDict now =
                                                     0
                                                   )
                                        )
-                                        / 3600
+                                        / toFloat historicSeconds
                                       )
                                   )
                             , 100 * stationPos pS + (percentageSegment / overallTrackLength)
@@ -428,7 +432,7 @@ view model =
                             , height "80%"
                             , width "73%"
                             ]
-                            (tripLines model.delays model.now)
+                            (tripLines model.historicSeconds model.delays model.now)
                        ]
                 )
             ]

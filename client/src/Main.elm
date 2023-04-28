@@ -31,12 +31,17 @@ import Svg.Attributes as SA
         )
 import Time exposing (Posix, posixToMillis)
 import Types exposing (Delay, StationId, TripId, decodeClientMsg)
+import Url
+import Url.Builder
 
 
 port sendMessage : String -> Cmd msg
 
 
 port messageReceiver : (String -> msg) -> Sub msg
+
+
+port rebuildSocket : String -> Cmd msg
 
 
 type Msg
@@ -59,12 +64,23 @@ type alias Model =
     { delays : Dict TripId (List Delay)
     , errors : List String
     , now : Posix
+    , historicSeconds : Int
     }
+
+
+applicationUrl =
+    Url.Builder.crossOrigin "wss://isre1late.erictapen.name" [ "api", "delays" ] [ Url.Builder.int "historic" 3600 ]
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { delays = Dict.empty, errors = [], now = Time.millisToPosix 0 }, Cmd.none )
+    ( { delays = Dict.empty
+      , errors = []
+      , now = Time.millisToPosix 0
+      , historicSeconds = 3600
+      }
+    , rebuildSocket applicationUrl
+    )
 
 
 stations : List ( StationId, String )

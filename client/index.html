@@ -19,8 +19,12 @@ var app = Elm.Main.init({
 	node: document.getElementById('myapp')
 });
 
-// Create your WebSocket.
 var socket = new WebSocket('wss://isre1late.erictapen.name/api/delays');
+
+// Create your WebSocket.
+app.ports.rebuildSocket.subscribe(function(url) {
+    socket = new WebSocket(url);
+});
 
 // When a command goes to the `sendMessage` port, we pass the message
 // along to the WebSocket.

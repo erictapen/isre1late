@@ -340,7 +340,7 @@ tripLines delayDict now =
                 ( Just pS, Just nS ) ->
                     if westwards pS nS then
                         Just
-                            ( 100 - (100 * ((toFloat <| posixToSec now - posixToSec time + delay) / 7200))
+                            ( 100 - (100 * ((toFloat <| posixToSec now - posixToSec time + delay) / 3600))
                             , 100 * stationPos pS + (percentageSegment / overallTrackLength)
                             )
 

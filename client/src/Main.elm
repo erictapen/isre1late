@@ -193,7 +193,6 @@ stationLegend cursor stationIds =
                     , x "75%"
                     , SA.textAnchor "right"
                     , SA.dominantBaseline "middle"
-                    , SA.fontSize "12px"
                     ]
                     [ S.text <| Maybe.withDefault "Unkown Station" <| Dict.get sid1 stationNames ]
                 , line

@@ -151,7 +151,7 @@ fn websocket_server(
                     .filter(
                         fetched_at
                             .gt(time::OffsetDateTime::now_utc()
-                                - std::time::Duration::from_secs(1800)),
+                                - std::time::Duration::from_secs(3600)),
                     )
                     .then_order_by(fetched_at.asc())
                     .load::<String>(db)

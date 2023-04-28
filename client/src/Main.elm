@@ -420,16 +420,16 @@ view model =
                 [ width "100%"
                 , height "100vh"
                 ]
-                ([ svg
-                    [ preserveAspectRatio "none"
-                    , viewBox "0 0 100 100"
-                    , y "10%"
-                    , height "80%"
-                    , width "73%"
-                    ]
-                    (tripLines model.delays model.now)
-                 ]
-                    ++ (stationLegend 0 <| map Tuple.first stations)
+                ((stationLegend 0 <| map Tuple.first stations)
+                    ++ [ svg
+                            [ preserveAspectRatio "none"
+                            , viewBox "0 0 100 100"
+                            , y "10%"
+                            , height "80%"
+                            , width "73%"
+                            ]
+                            (tripLines model.delays model.now)
+                       ]
                 )
             ]
         ]

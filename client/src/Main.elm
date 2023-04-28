@@ -9,10 +9,26 @@ import Dict exposing (Dict)
 import Html exposing (div)
 import Html.Attributes exposing (id, style)
 import Json.Decode as JD exposing (decodeString)
-import List exposing (head, map)
+import List exposing (filterMap, head, map)
 import String exposing (fromFloat)
 import Svg as S exposing (Svg, g, line, path, svg)
-import Svg.Attributes as SA exposing (d, fill, height, preserveAspectRatio, stroke, strokeWidth, viewBox, width, x, x1, x2, y, y1, y2)
+import Svg.Attributes as SA
+    exposing
+        ( d
+        , fill
+        , height
+        , preserveAspectRatio
+        , stroke
+        , strokeWidth
+        , viewBox
+        , width
+        , x
+        , x1
+        , x2
+        , y
+        , y1
+        , y2
+        )
 import Time exposing (Posix, posixToMillis)
 import Types exposing (Delay, StationId, TripId, decodeClientMsg)
 
@@ -221,28 +237,16 @@ stationLegend cursor stationIds =
 tripLines : Dict TripId (List Delay) -> List (Svg Msg)
 tripLines delayDict =
     let
-        tripD : List Delay -> String
-        tripD delays =
-            case delays of
-                [] ->
-                    ""
+        tripD : Delay -> Maybe ( Float, Float )
+        tripD { time, previousStation, nextStation, percentageSegment, delay } =
+            if previousStation == Just 900311307 && nextStation == Just 900360000 then
+                Just
+                    ( 10 * ((toFloat <| (posixToMillis time // 1000) - 1682688817) / 1800)
+                    , 10 * (percentageSegment / overallTrackLength)
+                    )
 
-                { time, previousStation, nextStation, percentageSegment, delay } :: ds ->
-                    tripD ds
-                        ++ (if previousStation == Just 900311307 && nextStation == Just 900360000 then
-                                (if ds == [] then
-                                    "M "
-
-                                 else
-                                    "L "
-                                )
-                                    ++ fromFloat ((toFloat <| (posixToMillis time // 1000) - 1682685556) / 1800)
-                                    ++ " "
-                                    ++ fromFloat (percentageSegment / overallTrackLength)
-
-                            else
-                                ""
-                           )
+            else
+                Nothing
 
         tripLine : ( TripId, List Delay ) -> Svg Msg
         tripLine ( tripId, delays ) =
@@ -252,7 +256,15 @@ tripLines delayDict =
                 , fill "red"
                 , strokeWidth "1px"
                 , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
-                , d <| tripD delays
+                , d <|
+                    "M "
+                        ++ (String.join " L " <|
+                                map
+                                    (Tuple.mapBoth fromFloat fromFloat >> (\( x, y ) -> x ++ " " ++ y))
+                                <|
+                                    filterMap identity <|
+                                        map tripD delays
+                           )
                 ]
                 []
     in

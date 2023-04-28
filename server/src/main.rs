@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#[macro_use] extern crate serde_with;
-
+#[macro_use]
+extern crate serde_with;
 
 use self::models::*;
 use crate::client::ClientMsg;
@@ -117,18 +117,37 @@ fn websocket_server(
     for stream in server.incoming() {
         use tungstenite::handshake::server::{Request, Response};
 
-        let ws_callback = |request: &Request, response: Response| match request.uri().path() {
-            "/api/delays" => {
-                debug!("The request's route is: /api/delays");
-                Ok(response)
+        let mut historic_seconds = 3600;
+
+        let ws_callback = |request: &Request, response: Response| {
+            use std::str::FromStr;
+            for (key, value) in url::Url::from_str(&request.uri().to_string())
+                .unwrap()
+                .query_pairs()
+            {
+                if key == "historic" {
+                    if let Ok(sec) = value.parse() {
+                        // We don't allow more than a week for now
+                        historic_seconds = std::cmp::max(sec, 3600 * 24 * 7);
+                    } else {
+                        error!("Failed to parse `historic` query parameter as int: {}. Using default {} instead.", value, historic_seconds);
+                    }
+                }
             }
-            other_path => {
-                warn!("Path {} is not available.", other_path);
-                let not_found = Response::builder()
-                    .status(tungstenite::http::StatusCode::NOT_FOUND)
-                    .body(Some("Path not found.".into()))
-                    .expect("This should never fail.");
-                Err(not_found)
+
+            match request.uri().path() {
+                "/api/delays" => {
+                    debug!("The request's route is: /api/delays");
+                    Ok(response)
+                }
+                other_path => {
+                    warn!("Path {} is not available.", other_path);
+                    let not_found = Response::builder()
+                        .status(tungstenite::http::StatusCode::NOT_FOUND)
+                        .body(Some("Path not found.".into()))
+                        .expect("This should never fail.");
+                    Err(not_found)
+                }
             }
         };
         match stream {
@@ -148,11 +167,8 @@ fn websocket_server(
 
                 let old_delays_str = fetched_json
                     .select(body)
-                    .filter(
-                        fetched_at
-                            .gt(time::OffsetDateTime::now_utc()
-                                - std::time::Duration::from_secs(3600)),
-                    )
+                    .filter(fetched_at.gt(time::OffsetDateTime::now_utc()
+                        - std::time::Duration::from_secs(historic_seconds)))
                     .then_order_by(fetched_at.asc())
                     .load::<String>(db)
                     .unwrap_or_else(|e| {

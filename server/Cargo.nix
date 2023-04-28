@@ -2153,6 +2153,10 @@ rec {
             packageId = "tungstenite";
           }
           {
+            name = "url";
+            packageId = "url";
+          }
+          {
             name = "urlencoding";
             packageId = "urlencoding";
           }

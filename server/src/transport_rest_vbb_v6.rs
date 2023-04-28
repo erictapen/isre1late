@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use serde::Deserialize;
-use time::OffsetDateTime;
 use serde_with::DisplayFromStr;
+use time::OffsetDateTime;
 
 #[derive(Deserialize, Debug)]
 pub struct TripsOverview {

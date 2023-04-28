@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+use serde::de::{self, Deserializer};
 use serde::Deserialize;
+use std::fmt::Display;
+use std::str::FromStr;
 use time::OffsetDateTime;
 
 #[derive(Deserialize, Debug)]
@@ -57,7 +60,19 @@ pub struct TripStopover {
     pub plannedDeparture: Option<OffsetDateTime>,
 }
 
+fn from_str<'de, T, D>(deserializer: D) -> Result<T, D::Error>
+where
+    T: FromStr,
+    T::Err: Display,
+    D: Deserializer<'de>,
+{
+    let s = String::deserialize(deserializer)?;
+    T::from_str(&s).map_err(de::Error::custom)
+}
+
 #[derive(Deserialize, Debug)]
 pub struct TripStop {
     pub name: String,
+    #[serde(deserialize_with = "from_str")]
+    pub id: i64,
 }

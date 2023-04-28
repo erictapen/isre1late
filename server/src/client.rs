@@ -12,8 +12,8 @@ pub struct ClientMsg {
     trip_id: String,
     #[serde(with = "time::serde::timestamp")]
     time: OffsetDateTime,
-    previous_station: Option<String>,
-    next_station: Option<String>,
+    previous_station: Option<i64>,
+    next_station: Option<i64>,
     percentage_segment: f64,
     delay: i64,
 }
@@ -33,10 +33,10 @@ pub fn client_msg_from_trip_overview(to: TripOverview) -> Result<ClientMsg, Stri
             .plannedDeparture
             .map_or(false, |d| current_time > d)
         {
-            previous_station = Some(stopover.stop.name);
+            previous_station = Some(stopover.stop.id);
             previous_departure = stopover.plannedDeparture;
         } else if stopover.plannedArrival.map_or(false, |a| current_time < a) {
-            next_station = Some(stopover.stop.name);
+            next_station = Some(stopover.stop.id);
             next_arrival = stopover.plannedArrival;
             break;
         } else {

@@ -13,7 +13,7 @@ import List exposing (head, map)
 import String exposing (fromFloat)
 import Svg as S exposing (Svg, g, line, path, svg)
 import Svg.Attributes as SA exposing (d, fill, height, preserveAspectRatio, stroke, strokeWidth, viewBox, width, x, x1, x2, y, y1, y2)
-import Time exposing (Posix)
+import Time exposing (Posix, posixToMillis)
 import Types exposing (Delay, StationId, TripId, decodeClientMsg)
 
 
@@ -218,6 +218,47 @@ stationLegend cursor stationIds =
             []
 
 
+tripLines : Dict TripId (List Delay) -> List (Svg Msg)
+tripLines delayDict =
+    let
+        tripD : List Delay -> String
+        tripD delays =
+            case delays of
+                [] ->
+                    ""
+
+                { time, previousStation, nextStation, percentageSegment, delay } :: ds ->
+                    tripD ds
+                        ++ (if previousStation == Just 900311307 && nextStation == Just 900360000 then
+                                (if ds == [] then
+                                    "M "
+
+                                 else
+                                    "L "
+                                )
+                                    ++ fromFloat ((toFloat <| (posixToMillis time // 1000) - 1682685556) / 1800)
+                                    ++ " "
+                                    ++ fromFloat (percentageSegment / overallTrackLength)
+
+                            else
+                                ""
+                           )
+
+        tripLine : ( TripId, List Delay ) -> Svg Msg
+        tripLine ( tripId, delays ) =
+            path
+                [ SA.id tripId
+                , stroke "black"
+                , fill "red"
+                , strokeWidth "1px"
+                , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
+                , d <| tripD delays
+                ]
+                []
+    in
+    map tripLine <| Dict.toList delayDict
+
+
 view : Model -> Document Msg
 view model =
     { title = "Is RE1 late?"
@@ -230,18 +271,11 @@ view model =
                 ([ svg
                     [ preserveAspectRatio "none"
                     , viewBox "0 0 100 100"
+                    , y "10%"
+                    , height "80%"
+                    , width "73%"
                     ]
-                    [ path
-                        [ x "10"
-                        , y "10"
-                        , stroke "black"
-                        , fill "red"
-                        , strokeWidth "1px"
-                        , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
-                        , d "M 10 10  L 20 40"
-                        ]
-                        []
-                    ]
+                    (tripLines model.delays)
                  ]
                     ++ (stationLegend 0 <| map Tuple.first stations)
                 )

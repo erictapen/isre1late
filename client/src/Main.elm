@@ -371,7 +371,8 @@ tripLines historicSeconds delayDict now =
                                             posixToSec now
                                                 - posixToSec time
                                                 + (if secondPass then
-                                                    delay
+                                                    -- Apparently this is never < 0 anyway?
+                                                    max 0 delay
 
                                                    else
                                                     0

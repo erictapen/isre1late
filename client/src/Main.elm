@@ -441,7 +441,6 @@ view model =
         [ div [ id "app" ]
             [ svg
                 [ width "100%"
-                , height "100vh"
                 ]
                 ((stationLegend 0 <| map Tuple.first stations)
                     ++ [ svg

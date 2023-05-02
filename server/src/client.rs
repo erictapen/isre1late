@@ -30,6 +30,8 @@ pub fn client_msg_from_trip_overview(to: TripOverview) -> Result<ClientMsg, Stri
 
     let mut delay = None;
 
+    let mut percentage_segment = -1.0;
+
     for stopover in trip.stopovers {
         if stopover
             .plannedDeparture
@@ -41,20 +43,26 @@ pub fn client_msg_from_trip_overview(to: TripOverview) -> Result<ClientMsg, Stri
             next_station = Some(stopover.stop.id);
             next_arrival = stopover.plannedArrival;
             delay = stopover.arrivalDelay;
+
+            // We just assume the passed track linearly by time, for the lack of better data.
+            percentage_segment = match (
+                previous_departure.map(OffsetDateTime::unix_timestamp),
+                next_arrival.map(OffsetDateTime::unix_timestamp),
+            ) {
+                (Some(d), Some(a)) => (current_time.unix_timestamp() - d) as f64 / (a - d) as f64,
+                _ => 0.0,
+            };
+
             break;
-        } else {
-            // TODO Train should be in the station currently
+        }
+        // Train should be waiting in the next_station currently
+        else {
+            next_station = Some(stopover.stop.id);
+            delay = stopover.departureDelay;
+            percentage_segment = 1.0;
             break;
         }
     }
-
-    let percentage_segment = match (
-        previous_departure.map(OffsetDateTime::unix_timestamp),
-        next_arrival.map(OffsetDateTime::unix_timestamp),
-    ) {
-        (Some(d), Some(a)) => (current_time.unix_timestamp() - d) as f64 / (a - d) as f64,
-        _ => 0.0,
-    };
 
     debug!(
         "{} should be between {} and {}",

@@ -370,7 +370,7 @@ tripLines historicSeconds delayDict now =
                                     * ((toFloat <|
                                             posixToSec now
                                                 - posixToSec time
-                                                + (if secondPass then
+                                                - (if secondPass then
                                                     -- Apparently this is never < 0 anyway?
                                                     max 0 delay
 
@@ -392,26 +392,43 @@ tripLines historicSeconds delayDict now =
 
         tripLine : ( TripId, List Delay ) -> Svg Msg
         tripLine ( tripId, delays ) =
-            path
+            g
                 [ SA.title tripId
-                , stroke "black"
-                , fill "red"
-                , strokeWidth "1px"
-                , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
-                , d <|
-                    "M "
-                        ++ (String.join " L " <|
-                                map
-                                    (Tuple.mapBoth fromFloat fromFloat >> (\( x, y ) -> x ++ " " ++ y))
-                                <|
-                                    filterMap identity <|
-                                        List.concat
-                                            [ map (tripD False) delays
-                                            , map (tripD True) <| List.reverse delays
-                                            ]
-                           )
                 ]
-                []
+                [ path
+                    [ stroke "none"
+                    , fill "red"
+                    , d <|
+                        "M "
+                            ++ (String.join " L " <|
+                                    map
+                                        (Tuple.mapBoth fromFloat fromFloat >> (\( x, y ) -> x ++ " " ++ y))
+                                    <|
+                                        filterMap identity <|
+                                            List.concat
+                                                [ map (tripD False) delays
+                                                , map (tripD True) <| List.reverse delays
+                                                ]
+                               )
+                    ]
+                    []
+                , path
+                    [ stroke "black"
+                    , fill "none"
+                    , strokeWidth "1px"
+                    , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
+                    , d <|
+                        "M "
+                            ++ (String.join " L " <|
+                                    map
+                                        (Tuple.mapBoth fromFloat fromFloat >> (\( x, y ) -> x ++ " " ++ y))
+                                    <|
+                                        filterMap identity <|
+                                            map (tripD False) delays
+                               )
+                    ]
+                    []
+                ]
     in
     map tripLine <| Dict.toList delayDict
 

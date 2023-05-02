@@ -381,7 +381,7 @@ tripLines historicSeconds delayDict now =
                                         / toFloat historicSeconds
                                       )
                                   )
-                            , 100 * stationPos pS + (percentageSegment / overallTrackLength)
+                            , 100 * (stationPos pS + (percentageSegment / overallTrackLength))
                             )
 
                     else
@@ -394,6 +394,7 @@ tripLines historicSeconds delayDict now =
         tripLine ( tripId, delays ) =
             g
                 [ SA.title tripId
+                , SA.id tripId
                 ]
                 [ path
                     [ stroke "none"

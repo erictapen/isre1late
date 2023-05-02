@@ -38,6 +38,7 @@ let
           echo "compiling ${elmfile module}"
           cp ${./index.html} $out/index.html
           cp ${./style.css} $out/style.css
+          cp -r ${./assets} $out/assets
           elm make --optimize ${elmfile module} --output $out/${module}.${extension} --docs $out/share/doc/${module}.json
           ${lib.optionalString outputJavaScript ''
             echo "minifying ${elmfile module}"

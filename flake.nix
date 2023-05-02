@@ -26,7 +26,16 @@
               crates.workspaceMembers.isre1late-server.build;
             client = import ./client {
               inherit pkgs;
+              inherit favicons;
             };
+            favicons = pkgs.runCommand "favicons"
+              { nativeBuildInputs = [ pkgs.imagemagick ]; }
+              ''
+                ${import ./client/favicons.nix pkgs}/bin/generate-favicons.sh ${./client/favicon.svg}
+
+                mkdir -p $out
+                cp -R . $out
+              '';
             default = server;
           };
           apps = rec {

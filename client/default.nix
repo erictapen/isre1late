@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 { pkgs
+, favicons
 }:
 
 with pkgs;
@@ -39,6 +40,8 @@ let
           cp ${./index.html} $out/index.html
           cp ${./style.css} $out/style.css
           cp -r ${./assets} $out/assets
+          chmod -R a+w $out/assets
+          ln -s ${favicons}/assets/icons $out/assets/
           elm make --optimize ${elmfile module} --output $out/${module}.${extension} --docs $out/share/doc/${module}.json
           ${lib.optionalString outputJavaScript ''
             echo "minifying ${elmfile module}"

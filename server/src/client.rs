@@ -28,6 +28,8 @@ pub fn client_msg_from_trip_overview(to: TripOverview) -> Result<ClientMsg, Stri
     let mut previous_departure = None;
     let mut next_arrival = None;
 
+    let mut delay = None;
+
     for stopover in trip.stopovers {
         if stopover
             .plannedDeparture
@@ -38,6 +40,7 @@ pub fn client_msg_from_trip_overview(to: TripOverview) -> Result<ClientMsg, Stri
         } else if stopover.plannedArrival.map_or(false, |a| current_time < a) {
             next_station = Some(stopover.stop.id);
             next_arrival = stopover.plannedArrival;
+            delay = stopover.arrivalDelay;
             break;
         } else {
             // TODO Train should be in the station currently
@@ -79,6 +82,6 @@ pub fn client_msg_from_trip_overview(to: TripOverview) -> Result<ClientMsg, Stri
         previous_station: previous_station,
         next_station: next_station,
         percentage_segment: percentage_segment,
-        delay: trip.departureDelay.unwrap_or(0),
+        delay: delay.unwrap_or(0),
     })
 }

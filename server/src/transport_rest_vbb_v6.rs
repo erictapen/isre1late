@@ -54,8 +54,10 @@ pub struct TripStopover {
     pub stop: TripStop,
     #[serde(with = "time::serde::rfc3339::option")]
     pub plannedArrival: Option<OffsetDateTime>,
+    pub arrivalDelay: Option<i64>,
     #[serde(with = "time::serde::rfc3339::option")]
     pub plannedDeparture: Option<OffsetDateTime>,
+    pub departureDelay: Option<i64>,
 }
 
 #[serde_as]

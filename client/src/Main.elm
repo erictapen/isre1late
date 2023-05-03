@@ -398,7 +398,7 @@ tripLines historicSeconds delayDict now =
                 ]
                 [ path
                     [ stroke "none"
-                    , fill "red"
+                    , fill "#e86f6f"
                     , d <|
                         "M "
                             ++ (String.join " L " <|

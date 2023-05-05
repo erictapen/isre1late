@@ -84,7 +84,7 @@
           server = self.packages.${config.nixpkgs.localSystem.system}.server;
           client = self.packages.${config.nixpkgs.localSystem.system}.client;
           stateDir = "/var/lib/isre1late";
-          inherit (lib) mkEnableOption mkOption types;
+          inherit (lib) mkEnableOption mkOption mkIf types;
           cfg = config.services.isre1late;
         in
         {
@@ -98,7 +98,7 @@
             };
           };
 
-          config = {
+          config = mkIf cfg.enable {
             services.postgresql = {
               enable = true;
               ensureDatabases = [ "isre1late" ];

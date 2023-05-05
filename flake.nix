@@ -97,6 +97,11 @@
               example = 8080;
               description = "TCP port to use.";
             };
+            hafasBaseUrl = mkOption {
+              type = types.str;
+              default = "https://v6.vbb.transport.rest";
+              description = "Hafas Base URL without a leading slash.";
+            };
           };
 
           config = mkIf cfg.enable {
@@ -117,7 +122,7 @@
               wantedBy = [ "multi-user.target" ];
               environment = {
                 DATABASE_URL = "postgres://localhost/isre1late?host=/run/postgresql";
-                HAFAS_BASE_URL = "https://v6.vbb.transport.rest";
+                HAFAS_BASE_URL = cfg.hafasBaseUrl;
               };
 
               serviceConfig = {

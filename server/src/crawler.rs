@@ -73,9 +73,10 @@ fn insert_delay(
 pub fn crawler(db: &mut PgConnection, mut bus: Bus<ClientMsg>) -> Result<(), Box<dyn Error>> {
     // It looks like, HAFAS is only cabable of showing new state every 30seconds anyway.
     let loop_interval = Duration::from_secs(30);
-    let mut next_execution = Instant::now() + loop_interval;
 
     loop {
+        let next_execution = Instant::now() + loop_interval;
+
         info!("Fetching currently running trips.");
         let trips_overview_url = format!("{}?lineName=RE1&operatorNames=ODEG", TRIPS_BASEPATH);
         let trips_overview_json = match fetch_json_and_store_in_db(db, trips_overview_url) {
@@ -164,6 +165,5 @@ pub fn crawler(db: &mut PgConnection, mut bus: Bus<ClientMsg>) -> Result<(), Box
             // };
         }
         sleep(next_execution - Instant::now());
-        next_execution += loop_interval;
     }
 }

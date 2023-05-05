@@ -49,7 +49,7 @@ struct CliArgs {
 /// Validate our representation of HAFAS types.
 fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
     use self::schema::fetched_json::dsl::fetched_json;
-    use std::{error::Error, fmt};
+    use std::fmt;
     use transport_rest_vbb_v6::HafasMsg;
 
     #[derive(Debug)]

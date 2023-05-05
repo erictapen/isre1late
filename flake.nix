@@ -76,6 +76,7 @@
             RUST_LOG = "info";
             DATABASE_URL = "postgres://localhost/isre1late?host=/run/postgresql";
             PGDATABASE = "isre1late";
+            HAFAS_BASE_URL = "https://v6.vbb.transport.rest";
           };
         }
       ) // {
@@ -114,7 +115,10 @@
               description = "Is RE1 late?";
               after = [ "network.target" ];
               wantedBy = [ "multi-user.target" ];
-              environment.DATABASE_URL = "postgres://localhost/isre1late?host=/run/postgresql";
+              environment = {
+                DATABASE_URL = "postgres://localhost/isre1late?host=/run/postgresql";
+                HAFAS_BASE_URL = "https://v6.vbb.transport.rest";
+              };
 
               serviceConfig = {
                 Type = "simple";

@@ -16,7 +16,7 @@ use time::OffsetDateTime;
 
 use crate::client::client_msg_from_trip_overview;
 
-const TRIPS_BASEPATH: &'static str = "https://v6.vbb.transport.rest/trips";
+const TRIPS_PATH: &'static str = "/trips";
 
 fn fetch_json_and_store_in_db(
     db: &mut PgConnection,
@@ -42,12 +42,14 @@ pub fn crawler(db: &mut PgConnection, mut bus: Bus<ClientMsg>) -> Result<(), Box
     // It looks like, HAFAS is only cabable of showing new state every 30seconds anyway.
     let loop_interval = Duration::from_secs(30);
 
+    let hafas_base_url = std::env::var("HAFAS_BASE_URL").expect("HAFAS_BASE_URL must be set");
+
     loop {
         let next_execution = Instant::now() + loop_interval;
 
         let trips_overview: TripsOverview = {
             info!("Fetching currently running trips.");
-            let url = format!("{}?lineName=RE1&operatorNames=ODEG", TRIPS_BASEPATH);
+            let url = format!("{hafas_base_url}{TRIPS_PATH}?lineName=RE1&operatorNames=ODEG");
             let fetched_at = OffsetDateTime::now_utc();
             let json = match fetch_json_and_store_in_db(db, url, fetched_at) {
                 Ok(fj) => fj,
@@ -72,7 +74,10 @@ pub fn crawler(db: &mut PgConnection, mut bus: Bus<ClientMsg>) -> Result<(), Box
 
         for trip in trips_overview.trips {
             // With this endpoint, we can access the delay data per trip.
-            let url = format!("{}/{}", TRIPS_BASEPATH, urlencoding::encode(&trip.id));
+            let url = format!(
+                "{hafas_base_url}{TRIPS_PATH}/{}",
+                urlencoding::encode(&trip.id)
+            );
             info!("Fetching trip data from {}", url);
             let fetched_at = OffsetDateTime::now_utc();
             let json = match fetch_json_and_store_in_db(db, url, fetched_at) {

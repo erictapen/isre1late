@@ -2,6 +2,9 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+// I'd rather keep the names from the JSON representation.
+#![allow(non_snake_case)]
+
 use serde::Deserialize;
 use serde_with::DisplayFromStr;
 use time::OffsetDateTime;

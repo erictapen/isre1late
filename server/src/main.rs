@@ -300,6 +300,6 @@ fn main() {
     {
         let mut db: PgConnection = PgConnection::establish(&(db_url.clone()))
             .unwrap_or_else(|_| panic!("Error connecting to {}", db_url));
-        websocket_server(&mut db, bus_read_handle, args.flag_listen, args.flag_port);
+        websocket_server(&mut db, bus_read_handle, args.flag_listen, args.flag_port).unwrap();
     }
 }

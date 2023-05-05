@@ -47,15 +47,11 @@ struct CliArgs {
     cmd_run_db_migrations: bool,
 }
 
-/// Validate our representation of HAFAS types and also delete and refill delays and trips table.
+/// Validate our representation of HAFAS types.
 fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
     use self::schema::fetched_json::dsl::fetched_json;
-    use crate::schema::delays::dsl::delays;
-    use crate::schema::trips::dsl::trips;
 
-    info!("Validating HAFAS schema..");
-    diesel::delete(delays).execute(db)?;
-    diesel::delete(trips).execute(db)?;
+    info!("Validating HAFAS schema...");
 
     let bodies_iter =
         fetched_json.load_iter::<SelectFetchedJson, diesel::pg::PgRowByRowLoadingMode>(db)?;

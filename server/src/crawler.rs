@@ -8,7 +8,6 @@ use crate::transport_rest_vbb_v6::{TripOverview, TripsOverview};
 use bus::Bus;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
-use diesel::ExpressionMethods;
 use log::{debug, error, info};
 use std::error::Error;
 use std::thread::sleep;
@@ -36,38 +35,6 @@ fn fetch_json_and_store_in_db(
         .execute(db)?;
 
     Ok(response_text)
-}
-
-fn insert_trip(db: &mut PgConnection, new_trip: Trip) -> Result<i64, diesel::result::Error> {
-    use crate::schema::trips;
-
-    diesel::insert_into(trips::table)
-        .values(new_trip)
-        .on_conflict(trips::text_id)
-        .do_update()
-        .set((
-            trips::text_id.eq(trips::text_id),
-            trips::first_observed.eq(trips::first_observed),
-        ))
-        .get_result(db)
-        .map(|t| {
-            let SelectTrip {
-                id: current_trip_id,
-                ..
-            } = t;
-            current_trip_id
-        })
-}
-fn insert_delay(
-    db: &mut PgConnection,
-    new_delay: crate::Delay,
-) -> Result<(), diesel::result::Error> {
-    use crate::schema::delays;
-
-    diesel::insert_into(delays::table)
-        .values(new_delay)
-        .execute(db)
-        .map(|_| ())
 }
 
 pub fn crawler(db: &mut PgConnection, mut bus: Bus<ClientMsg>) -> Result<(), Box<dyn Error>> {
@@ -100,21 +67,6 @@ pub fn crawler(db: &mut PgConnection, mut bus: Bus<ClientMsg>) -> Result<(), Box
         );
 
         for trip in trips_overview.trips {
-            // let new_trip = Trip {
-            //     first_observed: OffsetDateTime::now_utc(),
-            //     text_id: trip.id.clone(),
-            //     origin: trip.origin.name,
-            //     destination: trip.destination.name,
-            //     planned_departure_from_origin: trip.plannedDeparture,
-            // };
-            // let current_trip_id = match insert_trip(db, new_trip) {
-            //     Ok(res) => res,
-            //     Err(e) => {
-            //         error!("Error inserting into trips: {}", e);
-            //         continue;
-            //     }
-            // };
-
             // With this endpoint, we can access the delay data per trip.
             let trip_url = format!("{}/{}", TRIPS_BASEPATH, urlencoding::encode(&trip.id));
             info!("Fetching trip data from {}", trip_url);
@@ -143,26 +95,6 @@ pub fn crawler(db: &mut PgConnection, mut bus: Bus<ClientMsg>) -> Result<(), Box
                     error!("{}", e);
                 }
             }
-
-            // let (latitude, longitude) = trip_overview
-            //     .trip
-            //     .currentLocation
-            //     .map_or((None, None), |tl| (Some(tl.latitude), Some(tl.longitude)));
-            // let new_delay = Delay {
-            //     trip_id: current_trip_id,
-            //     observed_at: OffsetDateTime::now_utc(),
-            //     generated_at: trip_overview.realtimeDataUpdatedAt,
-            //     latitude: latitude,
-            //     longitude: longitude,
-            //     delay: trip_overview.trip.arrivalDelay,
-            // };
-            // match insert_delay(db, new_delay) {
-            //     Ok(_) => (),
-            //     Err(e) => {
-            //         error!("{}", e);
-            //         continue;
-            //     }
-            // };
         }
         sleep(next_execution - Instant::now());
     }

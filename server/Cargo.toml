@@ -20,6 +20,7 @@ serde = { version = "*", features = [ "derive" ] }
 serde_json = "*"
 serde_with = "*"
 serde_qs = "*"
+monostate = "*"
 docopt = "*"
 log = "*"
 time = { version = "*", features = [ "serde-well-known", "local-offset" ] }

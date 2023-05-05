@@ -22,4 +22,3 @@ pub struct FetchedJson {
     pub url: String,
     pub body: String,
 }
-

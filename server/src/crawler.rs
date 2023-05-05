@@ -21,12 +21,13 @@ const TRIPS_BASEPATH: &'static str = "https://v6.vbb.transport.rest/trips";
 fn fetch_json_and_store_in_db(
     db: &mut PgConnection,
     url: String,
+    fetched_at: OffsetDateTime,
 ) -> Result<String, Box<dyn Error>> {
     use crate::schema::fetched_json;
 
     let response_text = reqwest::blocking::get(url.clone())?.text()?;
     let fetched_json = FetchedJson {
-        fetched_at: OffsetDateTime::now_utc(),
+        fetched_at: fetched_at,
         url: url,
         body: response_text.clone(),
     };
@@ -44,20 +45,23 @@ pub fn crawler(db: &mut PgConnection, mut bus: Bus<ClientMsg>) -> Result<(), Box
     loop {
         let next_execution = Instant::now() + loop_interval;
 
-        info!("Fetching currently running trips.");
-        let trips_overview_url = format!("{}?lineName=RE1&operatorNames=ODEG", TRIPS_BASEPATH);
-        let trips_overview_json = match fetch_json_and_store_in_db(db, trips_overview_url) {
-            Ok(fj) => fj,
-            Err(e) => {
-                error!("{}", e);
-                continue;
-            }
-        };
-        let trips_overview: TripsOverview = match serde_json::from_str(&trips_overview_json) {
-            Ok(res) => res,
-            Err(e) => {
-                error!("Failed to deserialize trips overview: {}", e);
-                continue;
+        let trips_overview: TripsOverview = {
+            info!("Fetching currently running trips.");
+            let url = format!("{}?lineName=RE1&operatorNames=ODEG", TRIPS_BASEPATH);
+            let fetched_at = OffsetDateTime::now_utc();
+            let json = match fetch_json_and_store_in_db(db, url, fetched_at) {
+                Ok(fj) => fj,
+                Err(e) => {
+                    error!("{}", e);
+                    continue;
+                }
+            };
+            match serde_json::from_str(&json) {
+                Ok(res) => res,
+                Err(e) => {
+                    error!("Failed to deserialize trips overview: {}", e);
+                    continue;
+                }
             }
         };
 
@@ -68,16 +72,17 @@ pub fn crawler(db: &mut PgConnection, mut bus: Bus<ClientMsg>) -> Result<(), Box
 
         for trip in trips_overview.trips {
             // With this endpoint, we can access the delay data per trip.
-            let trip_url = format!("{}/{}", TRIPS_BASEPATH, urlencoding::encode(&trip.id));
-            info!("Fetching trip data from {}", trip_url);
-            let trip_overview_json = match fetch_json_and_store_in_db(db, trip_url) {
+            let url = format!("{}/{}", TRIPS_BASEPATH, urlencoding::encode(&trip.id));
+            info!("Fetching trip data from {}", url);
+            let fetched_at = OffsetDateTime::now_utc();
+            let json = match fetch_json_and_store_in_db(db, url, fetched_at) {
                 Ok(fj) => fj,
                 Err(e) => {
                     error!("{}", e);
                     continue;
                 }
             };
-            let trip_overview: TripOverview = match serde_json::from_str(&trip_overview_json) {
+            let trip_overview: TripOverview = match serde_json::from_str(&json) {
                 Ok(res) => res,
                 Err(e) => {
                     error!("Failed to deserialize trip overview: {}", e);
@@ -85,16 +90,9 @@ pub fn crawler(db: &mut PgConnection, mut bus: Bus<ClientMsg>) -> Result<(), Box
                 }
             };
 
-            let client_msg_res = client_msg_from_trip_overview(trip_overview);
-            debug!("{:?}", client_msg_res);
-            match client_msg_res {
-                Ok(client_msg) => {
-                    bus.broadcast(client_msg);
-                }
-                Err(e) => {
-                    error!("{}", e);
-                }
-            }
+            let client_msg = client_msg_from_trip_overview(trip_overview, fetched_at);
+            debug!("{:?}", client_msg);
+            bus.broadcast(client_msg);
         }
         sleep(next_execution - Instant::now());
     }

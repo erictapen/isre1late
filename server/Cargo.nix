@@ -2114,6 +2114,10 @@ rec {
             packageId = "log";
           }
           {
+            name = "monostate";
+            packageId = "monostate";
+          }
+          {
             name = "reqwest";
             packageId = "reqwest";
             features = [ "blocking" "json" ];
@@ -2505,6 +2509,61 @@ rec {
           "os-ext" = [ "os-poll" "windows-sys/Win32_System_Pipes" "windows-sys/Win32_Security" ];
         };
         resolvedDefaultFeatures = [ "default" "net" "os-ext" "os-poll" ];
+      };
+      "monostate" = rec {
+        crateName = "monostate";
+        version = "0.1.6";
+        edition = "2021";
+        sha256 = "12mrbfnx3jnb3x7zmkbycnpwrg3jahjx5l7n4hgdyddcy41vfc02";
+        authors = [
+          "David Tolnay <dtolnay@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "monostate-impl";
+            packageId = "monostate-impl";
+          }
+          {
+            name = "serde";
+            packageId = "serde";
+            usesDefaultFeatures = false;
+          }
+        ];
+        devDependencies = [
+          {
+            name = "serde";
+            packageId = "serde";
+            features = [ "derive" ];
+          }
+        ];
+
+      };
+      "monostate-impl" = rec {
+        crateName = "monostate-impl";
+        version = "0.1.6";
+        edition = "2021";
+        sha256 = "02sks8xx6q1mfdpnnxxkcx3jka4q90lx72w4iqgz2a20w79sv5c7";
+        procMacro = true;
+        authors = [
+          "David Tolnay <dtolnay@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "proc-macro2";
+            packageId = "proc-macro2";
+          }
+          {
+            name = "quote";
+            packageId = "quote";
+          }
+          {
+            name = "syn";
+            packageId = "syn 2.0.15";
+            usesDefaultFeatures = false;
+            features = [ "proc-macro" "parsing" ];
+          }
+        ];
+
       };
       "native-tls" = rec {
         crateName = "native-tls";

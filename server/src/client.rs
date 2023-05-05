@@ -18,8 +18,24 @@ pub struct ClientMsg {
     delay: i64,
 }
 
-pub fn client_msg_from_trip_overview(to: TripOverview) -> Result<ClientMsg, String> {
-    let current_time = to.realtimeDataUpdatedAt;
+/// Convert a TripOverview into a ClientMsg, intended for the webclient.
+///
+/// # Arguments
+///
+/// * `fetched_at` - TripOverviews don't always provide a datetime, so we need a fallback which
+/// should be used from the fetched_at field from the database.
+pub fn client_msg_from_trip_overview(to: TripOverview, fetched_at: OffsetDateTime) -> ClientMsg {
+    // Sometimes realtimeDataUpdatedAt is null, we just use the time the crawler got the response
+    // then.
+    let current_time = match to.realtimeDataUpdatedAt {
+        Some(ct) => ct,
+        None => {
+            debug!(
+                "realtimeDataUpdatedAt is not available, using fetched_at field from db instead"
+            );
+            fetched_at
+        }
+    };
     let trip = to.trip;
 
     let mut previous_station = None;
@@ -84,12 +100,12 @@ pub fn client_msg_from_trip_overview(to: TripOverview) -> Result<ClientMsg, Stri
     assert!(percentage_segment >= 0.0);
     assert!(percentage_segment <= 1.0);
 
-    Ok(ClientMsg {
+    ClientMsg {
         trip_id: trip.id,
         time: current_time,
         previous_station: previous_station,
         next_station: next_station,
         percentage_segment: percentage_segment,
         delay: delay.unwrap_or(0),
-    })
+    }
 }

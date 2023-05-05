@@ -19,7 +19,6 @@ use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
 
 mod transport_rest_vbb_v6;
-use transport_rest_vbb_v6::TripOverview;
 
 pub mod client;
 pub mod crawler;
@@ -50,8 +49,22 @@ struct CliArgs {
 /// Validate our representation of HAFAS types.
 fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
     use self::schema::fetched_json::dsl::fetched_json;
+    use std::{error::Error, fmt};
+    use transport_rest_vbb_v6::HafasMsg;
+
+    #[derive(Debug)]
+    struct SomeErrorsEncountered;
+
+    impl Error for SomeErrorsEncountered {}
+
+    impl fmt::Display for SomeErrorsEncountered {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(f, "Some errors encountered")
+        }
+    }
 
     info!("Validating HAFAS schema...");
+    let start = time::OffsetDateTime::now_utc();
 
     let bodies_iter =
         fetched_json.load_iter::<SelectFetchedJson, diesel::pg::PgRowByRowLoadingMode>(db)?;
@@ -66,7 +79,7 @@ fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
                 continue;
             }
         };
-        match serde_json::from_str::<TripOverview>(&body.as_ref()) {
+        match serde_json::from_str::<HafasMsg>(&body.as_ref()) {
             Ok(_) => {}
             Err(err) => {
                 // error!("Couldn't deserialize: {}", body.unwrap());
@@ -75,8 +88,16 @@ fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
             }
         }
     }
-    error!("Encountered {} errors.", error_count);
-    Ok(())
+
+    let duration = time::OffsetDateTime::now_utc() - start;
+
+    if error_count > 0 {
+        error!("Encountered {} errors in {duration:.3}", error_count);
+        Err(Box::new(SomeErrorsEncountered))
+    } else {
+        info!("Encountered no errors in {duration:.3}");
+        Ok(())
+    }
 }
 
 fn run_db_migrations(db: &mut PgConnection) -> () {
@@ -161,7 +182,7 @@ fn websocket_server(
                 };
 
                 use self::schema::fetched_json::dsl::fetched_json;
-                use crate::schema::fetched_json::{body, fetched_at};
+                use crate::schema::fetched_json::fetched_at;
 
                 let mut rx = bus_read_handle.add_rx();
 
@@ -195,24 +216,22 @@ fn websocket_server(
                 }
 
                 {
-                    let old_delays_str = fetched_json
-                        .select(body)
+                    let old_delays = fetched_json
                         .filter(fetched_at.gt(time::OffsetDateTime::now_utc()
                             - std::time::Duration::from_secs(historic_seconds)))
                         .then_order_by(fetched_at.asc())
-                        .load::<String>(db)
+                        .load::<SelectFetchedJson>(db)
                         .unwrap_or_else(|e| {
                             panic!("Unable to load data from fetched_json: {}", e);
                         });
 
-                    let old_delays = old_delays_str
-                        .iter()
-                        .map(|s| s.as_str())
-                        .filter_map(|s| serde_json::from_str(s).ok())
-                        .filter_map(|to| client::client_msg_from_trip_overview(to).ok());
-
-                    for cm in old_delays {
-                        let _ = send_message(&mut websocket, cm).is_err();
+                    for fj in old_delays {
+                        if let Ok(trip_overview) = serde_json::from_str(&fj.body) {
+                            let _ = send_message(
+                                &mut websocket,
+                                client::client_msg_from_trip_overview(trip_overview, fj.fetched_at),
+                            );
+                        }
                     }
                 }
 

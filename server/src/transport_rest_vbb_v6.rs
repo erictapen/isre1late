@@ -5,20 +5,48 @@
 // I'd rather keep the names from the JSON representation.
 #![allow(non_snake_case)]
 
+use monostate::MustBe;
 use serde::Deserialize;
 use serde_with::DisplayFromStr;
 use time::OffsetDateTime;
 
+/// Some kind of umbrella type for all the stuff we can receive from HAFAS.
+#[derive(Deserialize, Debug)]
+#[serde(untagged)]
+pub enum HafasMsg {
+    TripOverview(TripOverview),
+    TripsOverview(TripsOverview),
+    TransportRestErr(TransportRestErr),
+    HafasErr(HafasErr),
+}
+
+#[derive(Deserialize, Debug)]
+pub struct TransportRestErr {
+    pub message: String,
+    pub r#type: String,
+    pub errno: String,
+    pub code: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct HafasErr {
+    pub message: String,
+    pub isHafasError: MustBe!(true),
+    pub hafasDescription: String,
+}
+
+/// Message we get from calling https://v6.vbb.transport.rest/trips
 #[derive(Deserialize, Debug)]
 pub struct TripsOverview {
     pub trips: Vec<Trip>,
 }
 
+/// Message we get from calling https://v6.vbb.transport.rest/trips/{id}
 #[derive(Deserialize, Debug)]
 pub struct TripOverview {
     pub trip: Trip,
-    #[serde(with = "time::serde::timestamp")]
-    pub realtimeDataUpdatedAt: OffsetDateTime,
+    #[serde(with = "time::serde::timestamp::option")]
+    pub realtimeDataUpdatedAt: Option<OffsetDateTime>,
 }
 
 #[derive(Deserialize, Debug)]

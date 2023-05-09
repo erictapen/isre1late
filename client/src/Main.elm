@@ -403,7 +403,7 @@ tripLines historicSeconds delayDict now =
                         "M "
                             ++ (String.join " L " <|
                                     map
-                                        (Tuple.mapBoth fromFloat fromFloat >> (\( x, y ) -> x ++ " " ++ y))
+                                        (\( x, y ) -> fromFloat x ++ " " ++ fromFloat y)
                                     <|
                                         filterMap identity <|
                                             List.concat

@@ -30,7 +30,8 @@ import Svg.Attributes as SA
         , y1
         , y2
         )
-import Time exposing (Posix, posixToMillis, utc)
+import Task
+import Time exposing (Posix, posixToMillis)
 import Types exposing (Delay, StationId, TripId, decodeClientMsg)
 import Url
 import Url.Builder
@@ -49,6 +50,7 @@ type Msg
     = Send
     | RecvWebsocket String
     | CurrentTime Posix
+    | TimeZone Time.Zone
 
 
 subscriptions : Model -> Sub Msg
@@ -65,6 +67,7 @@ type alias Model =
     { delays : Dict TripId (List Delay)
     , errors : List String
     , now : Maybe Posix
+    , timeZone : Maybe Time.Zone
     , historicSeconds : Int
     }
 
@@ -82,9 +85,13 @@ init _ =
     ( { delays = Dict.empty
       , errors = []
       , now = Nothing
+      , timeZone = Nothing
       , historicSeconds = defaultHistoricSeconds
       }
-    , rebuildSocket <| applicationUrl defaultHistoricSeconds
+    , Cmd.batch
+        [ rebuildSocket <| applicationUrl defaultHistoricSeconds
+        , Task.perform TimeZone Time.here
+        ]
     )
 
 
@@ -431,11 +438,11 @@ tripLines historicSeconds delayDict now =
     g [] <| map tripLine <| Dict.toList delayDict
 
 
-timeLegend : Int -> Posix -> Svg Msg
-timeLegend historicSeconds now =
+timeLegend : Int -> Time.Zone -> Posix -> Svg Msg
+timeLegend historicSeconds tz now =
     let
         currentHourBegins =
-            Time.toSecond utc now + Time.toMinute utc now * 60
+            Time.toSecond tz now + Time.toMinute tz now * 60
 
         hourLine sec =
             line
@@ -455,11 +462,11 @@ timeLegend historicSeconds now =
                 List.range 0 (historicSeconds // 3600)
 
 
-timeTextLegend : Int -> Posix -> Svg Msg
-timeTextLegend historicSeconds now =
+timeTextLegend : Int -> Time.Zone -> Posix -> Svg Msg
+timeTextLegend historicSeconds tz now =
     let
         currentHourBegins =
-            Time.toSecond utc now + Time.toMinute utc now * 60
+            Time.toSecond tz now + Time.toMinute tz now * 60
 
         hourText sec =
             S.text_
@@ -471,7 +478,7 @@ timeTextLegend historicSeconds now =
                 ]
                 [ S.text <|
                     (fromInt <|
-                        Time.toHour utc <|
+                        Time.toHour tz <|
                             Time.millisToPosix <|
                                 1000
                                     * (posixToSec now - sec)
@@ -489,11 +496,8 @@ view : Model -> Document Msg
 view model =
     { title = "Is RE1 late?"
     , body =
-        case model.now of
-            Nothing ->
-                []
-
-            Just now ->
+        case ( model.timeZone, model.now ) of
+            ( Just timeZone, Just now ) ->
                 [ div [ id "app" ]
                     [ svg
                         [ width "100%"
@@ -506,7 +510,7 @@ view model =
                             , height "80%"
                             , width "73%"
                             ]
-                            [ timeLegend model.historicSeconds now
+                            [ timeLegend model.historicSeconds timeZone now
                             , tripLines model.historicSeconds model.delays now
                             ]
                         , svg
@@ -515,11 +519,14 @@ view model =
                             , height "5%"
                             , width "73%"
                             ]
-                            [ timeTextLegend model.historicSeconds now
+                            [ timeTextLegend model.historicSeconds timeZone now
                             ]
                         ]
                     ]
                 ]
+
+            _ ->
+                []
     }
 
 
@@ -550,6 +557,9 @@ update msg model =
 
         CurrentTime now ->
             ( { model | now = Just now }, Cmd.none )
+
+        TimeZone zone ->
+            ( { model | timeZone = Just zone }, Cmd.none )
 
 
 main : Program () Model Msg

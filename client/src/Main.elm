@@ -16,6 +16,7 @@ import Svg.Attributes as SA
     exposing
         ( d
         , fill
+        , fontSize
         , height
         , preserveAspectRatio
         , stroke
@@ -434,7 +435,7 @@ timeLegend : Int -> Posix -> Svg Msg
 timeLegend historicSeconds now =
     let
         currentHourBegins =
-            historicSeconds - (Time.toSecond utc now + Time.toMinute utc now * 60)
+            Time.toSecond utc now + Time.toMinute utc now * 60
 
         hourLine sec =
             line
@@ -450,7 +451,37 @@ timeLegend historicSeconds now =
     in
     g [ SA.id "time-legend" ] <|
         map hourLine <|
-            map (\i -> currentHourBegins - i * 3600) <|
+            map (\i -> historicSeconds - currentHourBegins - i * 3600) <|
+                List.range 0 (historicSeconds // 3600)
+
+
+timeTextLegend : Int -> Posix -> Svg Msg
+timeTextLegend historicSeconds now =
+    let
+        currentHourBegins =
+            Time.toSecond utc now + Time.toMinute utc now * 60
+
+        hourText sec =
+            S.text_
+                [ y "0"
+                , x <| fromInt <| historicSeconds - sec
+                , fontSize "500"
+                , SA.textAnchor "middle"
+                , SA.dominantBaseline "middle"
+                ]
+                [ S.text <|
+                    (fromInt <|
+                        Time.toHour utc <|
+                            Time.millisToPosix <|
+                                1000
+                                    * (posixToSec now - sec)
+                    )
+                        ++ ":00"
+                ]
+    in
+    g [ SA.id "time-text-legend" ] <|
+        map hourText <|
+            map (\i -> currentHourBegins + i * 3600) <|
                 List.range 0 (historicSeconds // 3600)
 
 
@@ -477,6 +508,14 @@ view model =
                             ]
                             [ timeLegend model.historicSeconds now
                             , tripLines model.historicSeconds model.delays now
+                            ]
+                        , svg
+                            [ viewBox <| "0 0 " ++ fromInt model.historicSeconds ++ " 100"
+                            , y "90%"
+                            , height "5%"
+                            , width "73%"
+                            ]
+                            [ timeTextLegend model.historicSeconds now
                             ]
                         ]
                     ]

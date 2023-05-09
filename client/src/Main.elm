@@ -10,7 +10,7 @@ import Html exposing (div)
 import Html.Attributes exposing (id, style)
 import Json.Decode as JD exposing (decodeString)
 import List exposing (filterMap, head, map)
-import String exposing (fromFloat)
+import String exposing (fromFloat, fromInt)
 import Svg as S exposing (Svg, g, line, path, svg)
 import Svg.Attributes as SA
     exposing
@@ -365,21 +365,17 @@ tripLines historicSeconds delayDict now =
                 ( Just pS, Just nS ) ->
                     if westwards pS nS then
                         Just
-                            ( 100
-                                - (100
-                                    * ((toFloat <|
-                                            posixToSec now
-                                                - posixToSec time
-                                                - (if secondPass then
-                                                    -- Apparently this is never < 0 anyway?
-                                                    max 0 delay
+                            ( toFloat historicSeconds
+                                - (toFloat <|
+                                    posixToSec now
+                                        - posixToSec time
+                                        - (if secondPass then
+                                            -- Apparently this is never < 0 anyway?
+                                            max 0 delay
 
-                                                   else
-                                                    0
-                                                  )
-                                       )
-                                        / toFloat historicSeconds
-                                      )
+                                           else
+                                            0
+                                          )
                                   )
                             , 100 * (stationPos pS + (percentageSegment / overallTrackLength))
                             )
@@ -445,7 +441,7 @@ view model =
                 ((stationLegend 0 <| map Tuple.first stations)
                     ++ [ svg
                             [ preserveAspectRatio "none"
-                            , viewBox "0 0 100 100"
+                            , viewBox <| "0 0 " ++ fromInt model.historicSeconds ++ " 100"
                             , y "10%"
                             , height "80%"
                             , width "73%"

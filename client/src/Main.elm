@@ -448,7 +448,10 @@ timeLegend historicSeconds now =
                 ]
                 []
     in
-    g [] <| map hourLine <| map (\i -> currentHourBegins - i * 3600) <| List.range 0 (historicSeconds // 3600)
+    g [ SA.id "time-legend" ] <|
+        map hourLine <|
+            map (\i -> currentHourBegins - i * 3600) <|
+                List.range 0 (historicSeconds // 3600)
 
 
 view : Model -> Document Msg
@@ -464,19 +467,18 @@ view model =
                     [ svg
                         [ width "100%"
                         ]
-                        ((stationLegend 0 <| map Tuple.first stations)
-                            ++ [ svg
-                                    [ preserveAspectRatio "none"
-                                    , viewBox <| "0 0 " ++ fromInt model.historicSeconds ++ " 100"
-                                    , y "10%"
-                                    , height "80%"
-                                    , width "73%"
-                                    ]
-                                    [ timeLegend model.historicSeconds now
-                                    , tripLines model.historicSeconds model.delays now
-                                    ]
-                               ]
-                        )
+                        [ g [ SA.id "station-legend" ] <| stationLegend 0 <| map Tuple.first stations
+                        , svg
+                            [ preserveAspectRatio "none"
+                            , viewBox <| "0 0 " ++ fromInt model.historicSeconds ++ " 100"
+                            , y "10%"
+                            , height "80%"
+                            , width "73%"
+                            ]
+                            [ timeLegend model.historicSeconds now
+                            , tripLines model.historicSeconds model.delays now
+                            ]
+                        ]
                     ]
                 ]
     }

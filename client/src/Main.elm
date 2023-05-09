@@ -29,7 +29,7 @@ import Svg.Attributes as SA
         , y1
         , y2
         )
-import Time exposing (Posix, posixToMillis)
+import Time exposing (Posix, posixToMillis, utc)
 import Types exposing (Delay, StationId, TripId, decodeClientMsg)
 import Url
 import Url.Builder
@@ -63,7 +63,7 @@ subscriptions _ =
 type alias Model =
     { delays : Dict TripId (List Delay)
     , errors : List String
-    , now : Posix
+    , now : Maybe Posix
     , historicSeconds : Int
     }
 
@@ -80,7 +80,7 @@ init _ =
     in
     ( { delays = Dict.empty
       , errors = []
-      , now = Time.millisToPosix 0
+      , now = Nothing
       , historicSeconds = defaultHistoricSeconds
       }
     , rebuildSocket <| applicationUrl defaultHistoricSeconds
@@ -356,7 +356,7 @@ westwards s1 s2 =
             False
 
 
-tripLines : Int -> Dict TripId (List Delay) -> Posix -> List (Svg Msg)
+tripLines : Int -> Dict TripId (List Delay) -> Posix -> Svg Msg
 tripLines historicSeconds delayDict now =
     let
         tripD : Bool -> Delay -> Maybe ( Float, Float )
@@ -427,30 +427,58 @@ tripLines historicSeconds delayDict now =
                     []
                 ]
     in
-    map tripLine <| Dict.toList delayDict
+    g [] <| map tripLine <| Dict.toList delayDict
+
+
+timeLegend : Int -> Posix -> Svg Msg
+timeLegend historicSeconds now =
+    let
+        currentHourBegins =
+            historicSeconds - (Time.toSecond utc now + Time.toMinute utc now * 60)
+
+        hourLine sec =
+            line
+                [ x1 <| fromInt sec
+                , x2 <| fromInt sec
+                , y1 "0%"
+                , y2 "100%"
+                , stroke "#dddddd"
+                , strokeWidth "1px"
+                , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
+                ]
+                []
+    in
+    g [] <| map hourLine <| map (\i -> currentHourBegins - i * 3600) <| List.range 0 (historicSeconds // 3600)
 
 
 view : Model -> Document Msg
 view model =
     { title = "Is RE1 late?"
     , body =
-        [ div [ id "app" ]
-            [ svg
-                [ width "100%"
+        case model.now of
+            Nothing ->
+                []
+
+            Just now ->
+                [ div [ id "app" ]
+                    [ svg
+                        [ width "100%"
+                        ]
+                        ((stationLegend 0 <| map Tuple.first stations)
+                            ++ [ svg
+                                    [ preserveAspectRatio "none"
+                                    , viewBox <| "0 0 " ++ fromInt model.historicSeconds ++ " 100"
+                                    , y "10%"
+                                    , height "80%"
+                                    , width "73%"
+                                    ]
+                                    [ timeLegend model.historicSeconds now
+                                    , tripLines model.historicSeconds model.delays now
+                                    ]
+                               ]
+                        )
+                    ]
                 ]
-                ((stationLegend 0 <| map Tuple.first stations)
-                    ++ [ svg
-                            [ preserveAspectRatio "none"
-                            , viewBox <| "0 0 " ++ fromInt model.historicSeconds ++ " 100"
-                            , y "10%"
-                            , height "80%"
-                            , width "73%"
-                            ]
-                            (tripLines model.historicSeconds model.delays model.now)
-                       ]
-                )
-            ]
-        ]
     }
 
 
@@ -480,7 +508,7 @@ update msg model =
             ( model, sendMessage "" )
 
         CurrentTime now ->
-            ( { model | now = now }, Cmd.none )
+            ( { model | now = Just now }, Cmd.none )
 
 
 main : Program () Model Msg

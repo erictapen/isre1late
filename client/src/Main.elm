@@ -402,6 +402,7 @@ tripLines historicSeconds delayDict now =
                 ]
                 [ path
                     [ stroke "none"
+                    -- red for delay
                     , fill "#e86f6f"
                     , d <|
                         "M "

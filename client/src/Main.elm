@@ -6,7 +6,7 @@ port module Main exposing (main)
 
 import Browser exposing (Document)
 import Dict exposing (Dict)
-import Html exposing (div)
+import Html exposing (div, text)
 import Html.Attributes exposing (id, style)
 import Json.Decode as JD exposing (decodeString)
 import List exposing (filterMap, head, map)
@@ -30,6 +30,7 @@ import Svg.Attributes as SA
         , y1
         , y2
         )
+import Svg.Loaders
 import Task
 import Time exposing (Posix, posixToMillis)
 import Types exposing (Delay, StationId, TripId, decodeClientMsg)
@@ -402,6 +403,7 @@ tripLines historicSeconds delayDict now =
                 ]
                 [ path
                     [ stroke "none"
+
                     -- red for delay
                     , fill "#e86f6f"
                     , d <|
@@ -527,7 +529,11 @@ view model =
                 ]
 
             _ ->
-                []
+                [ div [ id "loading-screen" ]
+                    [ Svg.Loaders.grid
+                        [ Svg.Loaders.size 300, Svg.Loaders.color "#dddddd" ]
+                    ]
+                ]
     }
 
 

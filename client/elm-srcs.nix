@@ -35,6 +35,11 @@
         version = "1.0.0";
       };
 
+      "tj/elm-svg-loaders" = {
+        sha256 = "1rvp23lb9bjr9z45vgaj29sp42qw04x3qzi882cc1qnwzr1r4xp9";
+        version = "1.0.0";
+      };
+
       "elm/virtual-dom" = {
         sha256 = "1yvb8px2z62xd578ag2q0r5hd1vkz9y7dfkx05355iiy1d7jwq4v";
         version = "1.0.3";

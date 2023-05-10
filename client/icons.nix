@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2020 Kerstin Humm <mail@erictapen.name>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+
 pkgs:
 let
   iconDir = "assets/icons/";

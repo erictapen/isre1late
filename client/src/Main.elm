@@ -51,7 +51,7 @@ type Msg
     = Send
     | RecvWebsocket String
     | CurrentTime Posix
-    | TimeZone Time.Zone
+    | CurrentTimeZone Time.Zone
 
 
 subscriptions : Model -> Sub Msg
@@ -91,7 +91,7 @@ init _ =
       }
     , Cmd.batch
         [ rebuildSocket <| applicationUrl defaultHistoricSeconds
-        , Task.perform TimeZone Time.here
+        , Task.perform CurrentTimeZone Time.here
         ]
     )
 
@@ -565,7 +565,7 @@ update msg model =
         CurrentTime now ->
             ( { model | now = Just now }, Cmd.none )
 
-        TimeZone zone ->
+        CurrentTimeZone zone ->
             ( { model | timeZone = Just zone }, Cmd.none )
 
 

@@ -60,10 +60,27 @@
     font-weight: 700;
 }
 
+@media (min-width: 801px) {
+  body {
+    font-size: 30px;
+  }
+  .station-legend {
+    min-width: 300px;
+  }
+}
+
+@media (max-width: 800px) {
+  body {
+    font-size: 15px;
+  }
+  .station-legend {
+    min-width: 130px;
+  }
+}
+
 body {
   margin: 0;
   font-family: "Roboto Condensed";
-  font-size: 14px;
   font-weight: 300;
   font-style: normal;
 }
@@ -104,5 +121,4 @@ body {
 
 .station-legend {
   margin-left: 1em;
-  min-width: 120px;
 }

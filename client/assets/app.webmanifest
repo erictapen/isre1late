@@ -1,0 +1,29 @@
+{
+   "name": "Is RE1 late?",
+   "short_name": "isre1late",
+   "start_url": "/",
+   "display": "standalone",
+   "id": "isre1late.erictapen.name",
+   "icons": [
+   {
+      "src": "/assets/icons/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+   },
+   {
+      "src": "/assets/icons/icon-384x384.png",
+      "type": "image/png",
+      "sizes": "384x384"
+   },
+   {
+      "src": "/assets/icons/icons-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+   },
+   {
+      "src": "/assets/icons/icons-1024x1024.png",
+      "type": "image/png",
+      "sizes": "1024x1024"
+   }
+]
+}

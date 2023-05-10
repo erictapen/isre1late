@@ -3,7 +3,7 @@ let
   iconDir = "assets/icons/";
   inherit (pkgs.lib) concatMapStrings;
 in
-pkgs.writeShellScriptBin "generate-favicons.sh" (''
+pkgs.writeShellScriptBin "generate-icons.sh" (''
   mkdir -p ${iconDir}
 
   magick convert \
@@ -80,7 +80,11 @@ pkgs.writeShellScriptBin "generate-favicons.sh" (''
     { resize = "128"; filename = "badge-128x128.png"; }
     { resize = "144"; filename = "icon-144x144.png"; }
     { resize = "168"; filename = "icon-168x168.png"; }
+    { resize = "192"; filename = "icon-192x192.png"; }
     { resize = "256"; filename = "icon-256x256.png"; }
+    { resize = "384"; filename = "icon-384x384.png"; }
+    { resize = "512"; filename = "icon-512x512.png"; }
+    { resize = "1024"; filename = "icon-1024x1024.png"; }
     { resize = "48"; filename = "icon-48x48.png"; }
     { resize = "72"; filename = "icon-72x72.png"; }
     { resize = "96"; filename = "icon-96x96.png"; }

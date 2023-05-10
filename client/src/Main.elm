@@ -6,8 +6,8 @@ port module Main exposing (main)
 
 import Browser exposing (Document)
 import Dict exposing (Dict)
-import Html exposing (div, text)
-import Html.Attributes exposing (id, style)
+import Html as H exposing (Html, div, text)
+import Html.Attributes as HA exposing (class, id, style)
 import Json.Decode as JD exposing (decodeString)
 import List exposing (filterMap, head, map)
 import String exposing (fromFloat, fromInt)
@@ -74,7 +74,10 @@ type alias Model =
 
 
 applicationUrl historicSeconds =
-    Url.Builder.crossOrigin "wss://isre1late.erictapen.name" [ "api", "delays" ] [ Url.Builder.int "historic" historicSeconds ]
+    Url.Builder.crossOrigin
+        "wss://isre1late.erictapen.name"
+        [ "api", "delays" ]
+        [ Url.Builder.int "historic" historicSeconds ]
 
 
 init : () -> ( Model, Cmd Msg )
@@ -96,32 +99,134 @@ init _ =
     )
 
 
-stations : List ( StationId, String )
+type alias StationInfo =
+    { name : String
+    , shortName : String
+    }
+
+
+stations : List ( StationId, StationInfo )
 stations =
-    [ ( 900311307, "Eisenhüttenstadt, Bahnhof" )
-    , ( 900360000, "Frankfurt (Oder), Bahnhof" )
-    , ( 900310001, "Fürstenwalde, Bahnhof" )
-    , ( 900310002, "Hangelsberg, Bahnhof" )
-    , ( 900310003, "Grünheide, Fangschleuse Bhf" )
-    , ( 900310004, "S Erkner Bhf" )
-    , ( 900120003, "S Ostkreuz Bhf (Berlin)" )
-    , ( 900120005, "S Ostbahnhof (Berlin)" )
-    , ( 900100003, "S+U Alexanderplatz Bhf (Berlin)" )
-    , ( 900100001, "S+U Friedrichstr. Bhf (Berlin)" )
-    , ( 900003201, "S+U Berlin Hauptbahnhof" )
-    , ( 900023201, "S+U Zoologischer Garten Bhf (Berlin)" )
-    , ( 900024101, "S Charlottenburg Bhf (Berlin)" )
-    , ( 900053301, "S Wannsee Bhf (Berlin)" )
-    , ( 900230999, "S Potsdam Hauptbahnhof" )
-    , ( 900220009, "Werder (Havel), Bahnhof" )
-    , ( 900275110, "Brandenburg, Hauptbahnhof" )
-    , ( 900275719, "Brandenburg, Kirchmöser Bhf" )
-    , ( 900220249, "Wusterwitz, Bahnhof" )
-    , ( 900550073, "Genthin, Bahnhof" )
-    , ( 900550078, "Güsen, Bahnhof" )
-    , ( 900550062, "Burg (bei Magdeburg), Bahnhof" )
-    , ( 900550255, "Magdeburg-Neustadt, Bahnhof" )
-    , ( 900550094, "Magdeburg, Hauptbahnhof" )
+    [ ( 900311307
+      , { name = "Eisenhüttenstadt, Bahnhof"
+        , shortName = "Eisenhüttenstadt"
+        }
+      )
+    , ( 900360000
+      , { name = "Frankfurt (Oder), Bahnhof"
+        , shortName = "Frankfurt (Oder)"
+        }
+      )
+    , ( 900310001
+      , { name = "Fürstenwalde, Bahnhof"
+        , shortName = "Fürstenwalde"
+        }
+      )
+    , ( 900310002
+      , { name = "Hangelsberg, Bahnhof"
+        , shortName = "Hangelsberg"
+        }
+      )
+    , ( 900310003
+      , { name = "Grünheide, Fangschleuse Bhf"
+        , shortName = "Fangschleuse"
+        }
+      )
+    , ( 900310004
+      , { name = "S Erkner Bhf"
+        , shortName = "Erkner "
+        }
+      )
+    , ( 900120003
+      , { name = "S Ostkreuz Bhf (Berlin)"
+        , shortName = "Ostkreuz"
+        }
+      )
+    , ( 900120005
+      , { name = "S Ostbahnhof (Berlin)"
+        , shortName = "Ostbahnhof"
+        }
+      )
+    , ( 900100003
+      , { name = "S+U Alexanderplatz Bhf (Berlin)"
+        , shortName = "Alexanderplatz"
+        }
+      )
+    , ( 900100001
+      , { name = "S+U Friedrichstr. Bhf (Berlin)"
+        , shortName = "Friedrichstr."
+        }
+      )
+    , ( 900003201
+      , { name = "S+U Berlin Hauptbahnhof"
+        , shortName = "Berlin Hbf"
+        }
+      )
+    , ( 900023201
+      , { name = "S+U Zoologischer Garten Bhf (Berlin)"
+        , shortName = "Zoologischer Garten"
+        }
+      )
+    , ( 900024101
+      , { name = "S Charlottenburg Bhf (Berlin)"
+        , shortName = "Charlottenburg"
+        }
+      )
+    , ( 900053301
+      , { name = "S Wannsee Bhf (Berlin)"
+        , shortName = "Wannsee"
+        }
+      )
+    , ( 900230999
+      , { name = "S Potsdam Hauptbahnhof"
+        , shortName = "Potsdam"
+        }
+      )
+    , ( 900220009
+      , { name = "Werder (Havel), Bahnhof"
+        , shortName = "Werder (Havel)"
+        }
+      )
+    , ( 900275110
+      , { name = "Brandenburg, Hauptbahnhof"
+        , shortName = "Brandenburg"
+        }
+      )
+    , ( 900275719
+      , { name = "Brandenburg, Kirchmöser Bhf"
+        , shortName = "Kirchmöser"
+        }
+      )
+    , ( 900220249
+      , { name = "Wusterwitz, Bahnhof"
+        , shortName = "Wusterwitz"
+        }
+      )
+    , ( 900550073
+      , { name = "Genthin, Bahnhof"
+        , shortName = "Genthin"
+        }
+      )
+    , ( 900550078
+      , { name = "Güsen, Bahnhof"
+        , shortName = "Güsen"
+        }
+      )
+    , ( 900550062
+      , { name = "Burg (bei Magdeburg), Bahnhof"
+        , shortName = "Burg (bei Magdeburg)"
+        }
+      )
+    , ( 900550255
+      , { name = "Magdeburg-Neustadt, Bahnhof"
+        , shortName = "Magdeburg-Neustadt"
+        }
+      )
+    , ( 900550094
+      , { name = "Magdeburg, Hauptbahnhof"
+        , shortName = "Magdeburg"
+        }
+      )
     ]
 
 
@@ -302,41 +407,53 @@ overallTrackLength =
     trackStep <| map Tuple.first stations
 
 
-{-| Position an element on the canvas, considering a margin.
-Input is a value between 0 and 1.
--}
 yPosition : Float -> String
 yPosition p =
-    let
-        yMargin =
-            10
-    in
-    fromFloat (yMargin + (p * (100 - 2 * yMargin))) ++ "%"
+    fromFloat (p * 100) ++ "%"
 
 
-stationLegend : Float -> List StationId -> List (Svg Msg)
+stationLegend : Float -> List StationId -> List (Html Msg)
 stationLegend cursor stationIds =
     case stationIds of
         sid1 :: sids ->
-            g []
-                [ S.text_
-                    [ y <| yPosition <| cursor / overallTrackLength
-                    , x "75%"
-                    , SA.textAnchor "right"
-                    , SA.dominantBaseline "middle"
-                    ]
-                    [ S.text <| Maybe.withDefault "Unkown Station" <| Dict.get sid1 stationNames ]
-                , line
-                    [ x1 "73%"
-                    , x2 "0%"
-                    , y1 <| yPosition <| cursor / overallTrackLength
-                    , y2 <| yPosition <| cursor / overallTrackLength
-                    , stroke "#dddddd"
-                    , strokeWidth "1px"
-                    ]
-                    []
+            div
+                [ style "top" <| yPosition <| cursor / overallTrackLength
+                , style "position" "absolute"
+                , style "text-anchor" "right"
+                , style "margin-top" "-0.5em"
+                ]
+                [ text <|
+                    Maybe.withDefault "Unkown Station" <|
+                        Maybe.map .shortName <|
+                            Dict.get sid1 stationNames
                 ]
                 :: stationLegend
+                    (cursor
+                        + (Maybe.withDefault 0 <|
+                            Maybe.andThen (distance sid1) <|
+                                head sids
+                          )
+                    )
+                    sids
+
+        _ ->
+            []
+
+
+stationLines : Float -> List StationId -> List (Svg Msg)
+stationLines cursor stationIds =
+    case stationIds of
+        sid1 :: sids ->
+            line
+                [ x1 "100%"
+                , x2 "0%"
+                , y1 <| yPosition <| cursor / overallTrackLength
+                , y2 <| yPosition <| cursor / overallTrackLength
+                , stroke "#dddddd"
+                , strokeWidth "0.2px"
+                ]
+                []
+                :: stationLines
                     (cursor
                         + (Maybe.withDefault 0 <|
                             Maybe.andThen (distance sid1) <|
@@ -424,7 +541,7 @@ tripLines historicSeconds delayDict now =
                     [ stroke "black"
                     , fill "none"
                     , strokeWidth "1px"
-                    , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
+                    , HA.attribute "vector-effect" "non-scaling-stroke"
                     , d <|
                         "M "
                             ++ (String.join " L " <|
@@ -455,7 +572,7 @@ timeLegend historicSeconds tz now =
                 , y2 "100%"
                 , stroke "#dddddd"
                 , strokeWidth "1px"
-                , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
+                , HA.attribute "vector-effect" "non-scaling-stroke"
                 ]
                 []
     in
@@ -465,21 +582,22 @@ timeLegend historicSeconds tz now =
                 List.range 0 (historicSeconds // 3600)
 
 
-timeTextLegend : Int -> Time.Zone -> Posix -> Svg Msg
+timeTextLegend : Int -> Time.Zone -> Posix -> Html Msg
 timeTextLegend historicSeconds tz now =
     let
         currentHourBegins =
             Time.toSecond tz now + Time.toMinute tz now * 60
 
         hourText sec =
-            S.text_
-                [ y "0"
-                , x <| fromInt <| historicSeconds - sec
-                , fontSize "500"
-                , SA.textAnchor "middle"
-                , SA.dominantBaseline "middle"
+            div
+                [ style "top" "0"
+                , style "left" <|
+                    (fromFloat <| 100 * (toFloat (historicSeconds - sec) / toFloat historicSeconds))
+                        ++ "%"
+                , style "position" "absolute"
+                , style "transform" "translateX(-50%)"
                 ]
-                [ S.text <|
+                [ text <|
                     (fromInt <|
                         Time.toHour tz <|
                             Time.millisToPosix <|
@@ -489,7 +607,7 @@ timeTextLegend historicSeconds tz now =
                         ++ ":00"
                 ]
     in
-    g [ SA.id "time-text-legend" ] <|
+    div [ id "time-text-legend" ] <|
         map hourText <|
             map (\i -> currentHourBegins + i * 3600) <|
                 List.range 0 (historicSeconds // 3600)
@@ -502,28 +620,21 @@ view model =
         case ( model.timeZone, model.now ) of
             ( Just timeZone, Just now ) ->
                 [ div [ id "app" ]
-                    [ svg
-                        [ width "100%"
-                        ]
-                        [ g [ SA.id "station-legend" ] <| stationLegend 0 <| map Tuple.first stations
-                        , svg
-                            [ preserveAspectRatio "none"
+                    [ div [ id "row1" ]
+                        [ svg
+                            [ id "diagram"
+                            , preserveAspectRatio "none"
                             , viewBox <| "0 0 " ++ fromInt model.historicSeconds ++ " 100"
-                            , y "10%"
-                            , height "80%"
-                            , width "73%"
                             ]
                             [ timeLegend model.historicSeconds timeZone now
+                            , g [ SA.id "station-lines" ] <| stationLines 0 <| map Tuple.first stations
                             , tripLines model.historicSeconds model.delays now
                             ]
-                        , svg
-                            [ viewBox <| "0 0 " ++ fromInt model.historicSeconds ++ " 100"
-                            , y "90%"
-                            , height "5%"
-                            , width "73%"
-                            ]
-                            [ timeTextLegend model.historicSeconds timeZone now
-                            ]
+                        , div [ class "station-legend" ] <| stationLegend 0 <| map Tuple.first stations
+                        ]
+                    , div [ id "row2" ]
+                        [ timeTextLegend model.historicSeconds timeZone now
+                        , div [ class "station-legend" ] []
                         ]
                     ]
                 ]

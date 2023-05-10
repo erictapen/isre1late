@@ -63,14 +63,27 @@
 body {
   margin: 0;
   font-family: "Roboto Condensed";
-  font-size: 30px;
+  font-size: 14px;
   font-weight: 300;
   font-style: normal;
 }
 
 #app {
-  height: 100vh;
+  margin-top: 10vh;
+  margin-bottom: 5vh;
+}
+
+#row1 {
+  height: 80vh;
   display: flex;
+  flex-flow: row;
+  position: relative;
+}
+
+#row2 {
+  height: 5vh;
+  display: flex;
+  flex-flow: row;
 }
 
 #loading-screen {
@@ -78,4 +91,18 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+#diagram {
+  flex: 1;
+}
+
+#time-text-legend {
+  flex: 1;
+  position: relative;
+}
+
+.station-legend {
+  margin-left: 1em;
+  min-width: 120px;
 }

@@ -134,6 +134,7 @@ fn websocket_server(
     for stream in server.incoming() {
         use tungstenite::handshake::server::{Request, Response};
 
+        // Default is one hour.
         let mut historic_seconds = 3600;
 
         let ws_callback = |request: &Request, response: Response| {
@@ -149,9 +150,7 @@ fn websocket_server(
                         error!("{}", e);
                     }
                     Ok(Query { historic }) => {
-                        // We don't allow more than 6 hours for now
-                        // Otherwise the current server goes OOM.
-                        historic_seconds = std::cmp::min(historic, 3600 * 6);
+                        historic_seconds = std::cmp::min(historic, 3600 * 24 * 31);
                     }
                 }
             }
@@ -220,12 +219,13 @@ fn websocket_server(
                         .filter(fetched_at.gt(time::OffsetDateTime::now_utc()
                             - std::time::Duration::from_secs(historic_seconds)))
                         .then_order_by(fetched_at.asc())
-                        .load::<SelectFetchedJson>(db)
+                        .load_iter::<SelectFetchedJson, diesel::pg::PgRowByRowLoadingMode>(db)
                         .unwrap_or_else(|e| {
                             panic!("Unable to load data from fetched_json: {}", e);
                         });
 
-                    for fj in old_delays {
+                    for fj_result in old_delays {
+                        let fj = fj_result?;
                         if let Ok(trip_overview) = serde_json::from_str(&fj.body) {
                             let _ = send_message(
                                 &mut websocket,

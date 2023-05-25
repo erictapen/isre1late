@@ -266,7 +266,10 @@ fn main() {
     // Setup logging
     if systemd_journal_logger::connected_to_journal() {
         // If journald is available.
-        systemd_journal_logger::init().unwrap();
+        systemd_journal_logger::JournalLog::default()
+            .with_syslog_identifier("isre1late".to_string())
+            .install()
+            .unwrap();
         log::set_max_level(log::LevelFilter::Info);
     } else {
         // Otherwise fall back to logging to standard error.

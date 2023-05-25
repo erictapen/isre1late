@@ -118,7 +118,8 @@
 
             systemd.services.isre1late = {
               description = "Is RE1 late?";
-              after = [ "network.target" ];
+              after = [ "network.target" "postgresql.service" ];
+              requires = [ "postgresql.service" ];
               wantedBy = [ "multi-user.target" ];
               environment = {
                 DATABASE_URL = "postgres://localhost/isre1late?host=/run/postgresql";

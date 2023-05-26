@@ -9,7 +9,7 @@ import Dict exposing (Dict)
 import Html as H exposing (Html, div, text)
 import Html.Attributes as HA exposing (class, id, style)
 import Json.Decode as JD exposing (decodeString)
-import List exposing (filterMap, head, map)
+import List exposing (filterMap, head, indexedMap, map)
 import String exposing (fromFloat, fromInt)
 import Svg as S exposing (Svg, g, line, path, svg)
 import Svg.Attributes as SA
@@ -64,13 +64,71 @@ subscriptions _ =
         ]
 
 
+type Direction
+    = Westwards
+    | Eastwards
+
+
+type alias DistanceMatrix =
+    Dict
+        ( StationId, StationId )
+        { start : Float
+        , end : Float
+        , direction : Direction
+        , skipsStations : Bool
+        }
+
+
 type alias Model =
     { delays : Dict TripId (List Delay)
     , errors : List String
     , now : Maybe Posix
     , timeZone : Maybe Time.Zone
     , historicSeconds : Int
+    , direction : Direction
+    , distanceMatrix : DistanceMatrix
     }
+
+
+{-| This scales quadratically, so be careful with the number of stations!
+-}
+initDistanceMatrix : DistanceMatrix
+initDistanceMatrix =
+    let
+        stationsCount =
+            toFloat <| List.length stations
+
+        stationId =
+            Tuple.first
+
+        oneToNDistances direction cursorIndex ( cursorSid, _ ) =
+            indexedMap
+                (\i ( sid, _ ) ->
+                    if cursorIndex >= i then
+                        Nothing
+
+                    else
+                        Just
+                            ( ( cursorSid, sid )
+                            , { start = toFloat cursorIndex / stationsCount
+                              , end = toFloat i / stationsCount
+                              , direction = direction
+                              , skipsStations =
+                                    if i > cursorIndex + 1 then
+                                        True
+
+                                    else
+                                        False
+                              }
+                            )
+                )
+                stations
+    in
+    Dict.fromList <|
+        filterMap identity <|
+            List.concat <|
+                indexedMap (oneToNDistances Eastwards) stations
+                    ++ (indexedMap (oneToNDistances Westwards) <| List.reverse stations)
 
 
 applicationUrl historicSeconds =
@@ -91,6 +149,8 @@ init _ =
       , now = Nothing
       , timeZone = Nothing
       , historicSeconds = defaultHistoricSeconds
+      , direction = Eastwards
+      , distanceMatrix = initDistanceMatrix
       }
     , Cmd.batch
         [ rebuildSocket <| applicationUrl defaultHistoricSeconds
@@ -311,6 +371,11 @@ distance station1 station2 =
 
         _ ->
             Nothing
+
+
+
+-- stationPos : DistanceMatrix -> StationId -> StationId -> Float -> (Float, Direction, Bool)
+-- stationPos distanceMatrix from to percentageSegment = (yPos, Westwards, skipsStations)
 
 
 stationPos : StationId -> Float

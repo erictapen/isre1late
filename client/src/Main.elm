@@ -6,8 +6,9 @@ port module Main exposing (initDistanceMatrix, main, stationPos, trainPos)
 
 import Browser exposing (Document)
 import Dict exposing (Dict)
-import Html as H exposing (Html, div, text)
+import Html as H exposing (Html, button, div, text)
 import Html.Attributes as HA exposing (class, id, style)
+import Html.Events exposing (onClick)
 import Json.Decode as JD exposing (decodeString)
 import List exposing (filterMap, head, indexedMap, map)
 import String exposing (fromFloat, fromInt)
@@ -52,6 +53,7 @@ type Msg
     | RecvWebsocket String
     | CurrentTime Posix
     | CurrentTimeZone Time.Zone
+    | ToggleDirection
 
 
 subscriptions : Model -> Sub Msg
@@ -390,30 +392,34 @@ posixToSec p =
     posixToMillis p // 1000
 
 
-tripLines : DistanceMatrix -> Int -> Dict TripId (List Delay) -> Posix -> Svg Msg
-tripLines distanceMatrix historicSeconds delayDict now =
+tripLines : DistanceMatrix -> Direction -> Int -> Dict TripId (List Delay) -> Posix -> Svg Msg
+tripLines distanceMatrix selectedDirection historicSeconds delayDict now =
     let
         tripD : Bool -> Delay -> Maybe ( Float, Float )
         tripD secondPass { time, previousStation, nextStation, percentageSegment, delay } =
             case ( previousStation, nextStation ) of
                 ( Just pS, Just nS ) ->
                     case trainPos distanceMatrix pS nS percentageSegment of
-                        Just ( yPos, Westwards, skipsLines ) ->
-                            Just
-                                ( toFloat historicSeconds
-                                    - (toFloat <|
-                                        posixToSec now
-                                            - posixToSec time
-                                            - (if secondPass then
-                                                -- Apparently this is never < 0 anyway?
-                                                max 0 delay
+                        Just ( yPos, direction, skipsLines ) ->
+                            if direction == selectedDirection then
+                                Just
+                                    ( toFloat historicSeconds
+                                        - (toFloat <|
+                                            posixToSec now
+                                                - posixToSec time
+                                                - (if secondPass then
+                                                    -- Apparently this is never < 0 anyway?
+                                                    max 0 delay
 
-                                               else
-                                                0
-                                              )
-                                      )
-                                , 100 * yPos
-                                )
+                                                   else
+                                                    0
+                                                  )
+                                          )
+                                    , 100 * yPos
+                                    )
+
+                            else
+                                Nothing
 
                         _ ->
                             Nothing
@@ -529,7 +535,8 @@ view model =
         case ( model.timeZone, model.now ) of
             ( Just timeZone, Just now ) ->
                 [ div [ id "app" ]
-                    [ div [ id "row1" ]
+                    [ button [ id "reverse-direction-button", onClick ToggleDirection ] [ text "Reverse direction ⮀" ]
+                    , div [ id "row1" ]
                         [ svg
                             [ id "diagram"
                             , preserveAspectRatio "none"
@@ -537,7 +544,7 @@ view model =
                             ]
                             [ timeLegend model.historicSeconds timeZone now
                             , g [ SA.id "station-lines" ] <| stationLines model.distanceMatrix <| map Tuple.first stations
-                            , tripLines model.distanceMatrix model.historicSeconds model.delays now
+                            , tripLines model.distanceMatrix model.direction model.historicSeconds model.delays now
                             ]
                         , div [ class "station-legend" ] <| stationLegend model.distanceMatrix <| map Tuple.first stations
                         ]
@@ -587,6 +594,19 @@ update msg model =
 
         CurrentTimeZone zone ->
             ( { model | timeZone = Just zone }, Cmd.none )
+
+        ToggleDirection ->
+            ( { model
+                | direction =
+                    case model.direction of
+                        Westwards ->
+                            Eastwards
+
+                        Eastwards ->
+                            Westwards
+              }
+            , Cmd.none
+            )
 
 
 main : Program () Model Msg

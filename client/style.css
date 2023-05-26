@@ -90,6 +90,12 @@ body {
   margin-bottom: 5vh;
 }
 
+#reverse-direction-button {
+  position: absolute;
+  left: 85%;
+  top: 3%;
+}
+
 #row1 {
   height: 80vh;
   display: flex;

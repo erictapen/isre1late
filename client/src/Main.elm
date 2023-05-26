@@ -2,7 +2,7 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
 
-port module Main exposing (main)
+port module Main exposing (initDistanceMatrix, main, stationPos, trainPos)
 
 import Browser exposing (Document)
 import Dict exposing (Dict)
@@ -90,13 +90,19 @@ type alias Model =
     }
 
 
-{-| This scales quadratically, so be careful with the number of stations!
+{-| A matrix that contains the positions for every combination of stations,
+along with the direction the two stations are facing and wether they would
+skip any stations on the RE1 track.
+
+This scales quadratically, so be careful with the number of stations!
+
 -}
 initDistanceMatrix : DistanceMatrix
 initDistanceMatrix =
     let
+        -- We subtract one, because we place by zero-led index
         stationsCount =
-            toFloat <| List.length stations
+            toFloat <| List.length stations - 1
 
         stationId =
             Tuple.first
@@ -122,13 +128,19 @@ initDistanceMatrix =
                               }
                             )
                 )
-                stations
+            <|
+                case direction of
+                    Westwards ->
+                        stations
+
+                    Eastwards ->
+                        List.reverse stations
     in
     Dict.fromList <|
         filterMap identity <|
             List.concat <|
-                indexedMap (oneToNDistances Eastwards) stations
-                    ++ (indexedMap (oneToNDistances Westwards) <| List.reverse stations)
+                indexedMap (oneToNDistances Westwards) stations
+                    ++ (indexedMap (oneToNDistances Eastwards) <| List.reverse stations)
 
 
 applicationUrl historicSeconds =
@@ -294,182 +306,44 @@ stationNames =
     Dict.fromList stations
 
 
-{-| Calculate the distance between two station ids. None if it's impossible to
-calculate.
+{-| Place a train going inbetween two stations in the y axis of the entire diagram.
+Result contains the y axis value (between 0 and 1), the direction the train
+must be going in and wether it skips any stations on its path.
 -}
-distance : StationId -> StationId -> Maybe Float
-distance station1 station2 =
-    case ( station1, station2 ) of
-        ( 900311307, 900360000 ) ->
-            Just 1
+trainPos : DistanceMatrix -> StationId -> StationId -> Float -> Maybe ( Float, Direction, Bool )
+trainPos distanceMatrix from to percentageSegment =
+    case Dict.get ( from, to ) distanceMatrix of
+        Just { start, end, direction, skipsStations } ->
+            Just
+                ( case direction of
+                    Eastwards ->
+                        start + (end - start) * percentageSegment
 
-        ( 900360000, 900310001 ) ->
-            Just 1
+                    Westwards ->
+                        start - (start - end) * percentageSegment
+                , direction
+                , skipsStations
+                )
 
-        ( 900310001, 900310002 ) ->
-            Just 1
-
-        ( 900310002, 900310003 ) ->
-            Just 1
-
-        ( 900310003, 900310004 ) ->
-            Just 1
-
-        ( 900310004, 900120003 ) ->
-            Just 1
-
-        ( 900120003, 900120005 ) ->
-            Just 1
-
-        ( 900120005, 900100003 ) ->
-            Just 1
-
-        ( 900100003, 900100001 ) ->
-            Just 1
-
-        ( 900100001, 900003201 ) ->
-            Just 1
-
-        ( 900003201, 900023201 ) ->
-            Just 1
-
-        ( 900023201, 900024101 ) ->
-            Just 1
-
-        ( 900024101, 900053301 ) ->
-            Just 1
-
-        ( 900053301, 900230999 ) ->
-            Just 1
-
-        ( 900230999, 900220009 ) ->
-            Just 1
-
-        ( 900220009, 900275110 ) ->
-            Just 1
-
-        ( 900275110, 900275719 ) ->
-            Just 1
-
-        ( 900275719, 900220249 ) ->
-            Just 1
-
-        ( 900220249, 900550073 ) ->
-            Just 1
-
-        ( 900550073, 900550078 ) ->
-            Just 1
-
-        ( 900550078, 900550062 ) ->
-            Just 1
-
-        ( 900550062, 900550255 ) ->
-            Just 1
-
-        ( 900550255, 900550094 ) ->
-            Just 1
-
-        _ ->
+        Nothing ->
             Nothing
 
 
-
--- stationPos : DistanceMatrix -> StationId -> StationId -> Float -> (Float, Direction, Bool)
--- stationPos distanceMatrix from to percentageSegment = (yPos, Westwards, skipsStations)
-
-
-stationPos : StationId -> Float
-stationPos sid =
-    case sid of
-        900311307 ->
-            0 / 23
-
-        900360000 ->
-            1 / 23
-
-        900310001 ->
-            2 / 23
-
-        900310002 ->
-            3 / 23
-
-        900310003 ->
-            4 / 23
-
-        900310004 ->
-            5 / 23
-
-        900120003 ->
-            6 / 23
-
-        900120005 ->
-            7 / 23
-
-        900100003 ->
-            8 / 23
-
-        900100001 ->
-            9 / 23
-
-        900003201 ->
-            10 / 23
-
-        900023201 ->
-            11 / 23
-
-        900024101 ->
-            12 / 23
-
-        900053301 ->
-            13 / 23
-
-        900230999 ->
-            14 / 23
-
-        900220009 ->
-            15 / 23
-
-        900275110 ->
-            16 / 23
-
-        900275719 ->
-            17 / 23
-
-        900220249 ->
-            18 / 23
-
-        900550073 ->
-            19 / 23
-
-        900550078 ->
-            20 / 23
-
-        900550062 ->
-            21 / 23
-
-        900550255 ->
-            22 / 23
-
-        900550094 ->
-            23 / 23
-
-        _ ->
-            0
-
-
-overallTrackLength : Float
-overallTrackLength =
+{-| Get the y position of a station, e.g. for legends.
+-}
+stationPos : DistanceMatrix -> StationId -> Float
+stationPos distanceMatrix sid =
     let
-        trackStep : List StationId -> Float
-        trackStep stationIds =
-            case stationIds of
-                s1 :: s2 :: sis ->
-                    Maybe.withDefault 0 (distance s1 s2) + trackStep (s2 :: sis)
-
-                _ ->
-                    0
+        magdeburgHbf =
+            900550094
     in
-    trackStep <| map Tuple.first stations
+    -- Magdeburg Hbf is the last one in the track, but distanceMatrix wouldn't
+    -- contain a value for it, so we just hardcode it to 1
+    if sid == magdeburgHbf then
+        1
+
+    else
+        Maybe.withDefault -1 <| Maybe.map (\r -> r.start) <| Dict.get ( sid, magdeburgHbf ) distanceMatrix
 
 
 yPosition : Float -> String
@@ -477,12 +351,12 @@ yPosition p =
     fromFloat (p * 100) ++ "%"
 
 
-stationLegend : Float -> List StationId -> List (Html Msg)
-stationLegend cursor stationIds =
-    case stationIds of
-        sid1 :: sids ->
+stationLegend : DistanceMatrix -> List StationId -> List (Html Msg)
+stationLegend distanceMatrix =
+    map
+        (\sid ->
             div
-                [ style "top" <| yPosition <| cursor / overallTrackLength
+                [ style "top" <| yPosition <| stationPos distanceMatrix sid
                 , style "position" "absolute"
                 , style "text-anchor" "right"
                 , style "margin-top" "-0.5em"
@@ -490,45 +364,25 @@ stationLegend cursor stationIds =
                 [ text <|
                     Maybe.withDefault "Unkown Station" <|
                         Maybe.map .shortName <|
-                            Dict.get sid1 stationNames
+                            Dict.get sid stationNames
                 ]
-                :: stationLegend
-                    (cursor
-                        + (Maybe.withDefault 0 <|
-                            Maybe.andThen (distance sid1) <|
-                                head sids
-                          )
-                    )
-                    sids
-
-        _ ->
-            []
+        )
 
 
-stationLines : Float -> List StationId -> List (Svg Msg)
-stationLines cursor stationIds =
-    case stationIds of
-        sid1 :: sids ->
+stationLines : DistanceMatrix -> List StationId -> List (Svg Msg)
+stationLines distanceMatrix =
+    map
+        (\sid ->
             line
                 [ x1 "100%"
                 , x2 "0%"
-                , y1 <| yPosition <| cursor / overallTrackLength
-                , y2 <| yPosition <| cursor / overallTrackLength
+                , y1 <| yPosition <| stationPos distanceMatrix sid
+                , y2 <| yPosition <| stationPos distanceMatrix sid
                 , stroke "#dddddd"
                 , strokeWidth "0.2px"
                 ]
                 []
-                :: stationLines
-                    (cursor
-                        + (Maybe.withDefault 0 <|
-                            Maybe.andThen (distance sid1) <|
-                                head sids
-                          )
-                    )
-                    sids
-
-        _ ->
-            []
+        )
 
 
 posixToSec : Posix -> Int
@@ -536,43 +390,33 @@ posixToSec p =
     posixToMillis p // 1000
 
 
-{-| Wether two stations are ordered from west to east
--}
-westwards s1 s2 =
-    case distance s1 s2 of
-        Just _ ->
-            True
-
-        Nothing ->
-            False
-
-
-tripLines : Int -> Dict TripId (List Delay) -> Posix -> Svg Msg
-tripLines historicSeconds delayDict now =
+tripLines : DistanceMatrix -> Int -> Dict TripId (List Delay) -> Posix -> Svg Msg
+tripLines distanceMatrix historicSeconds delayDict now =
     let
         tripD : Bool -> Delay -> Maybe ( Float, Float )
         tripD secondPass { time, previousStation, nextStation, percentageSegment, delay } =
             case ( previousStation, nextStation ) of
                 ( Just pS, Just nS ) ->
-                    if westwards pS nS then
-                        Just
-                            ( toFloat historicSeconds
-                                - (toFloat <|
-                                    posixToSec now
-                                        - posixToSec time
-                                        - (if secondPass then
-                                            -- Apparently this is never < 0 anyway?
-                                            max 0 delay
+                    case trainPos distanceMatrix pS nS percentageSegment of
+                        Just ( yPos, Westwards, skipsLines ) ->
+                            Just
+                                ( toFloat historicSeconds
+                                    - (toFloat <|
+                                        posixToSec now
+                                            - posixToSec time
+                                            - (if secondPass then
+                                                -- Apparently this is never < 0 anyway?
+                                                max 0 delay
 
-                                           else
-                                            0
-                                          )
-                                  )
-                            , 100 * (stationPos pS + (percentageSegment / overallTrackLength))
-                            )
+                                               else
+                                                0
+                                              )
+                                      )
+                                , 100 * yPos
+                                )
 
-                    else
-                        Nothing
+                        _ ->
+                            Nothing
 
                 _ ->
                     Nothing
@@ -692,10 +536,10 @@ view model =
                             , viewBox <| "0 0 " ++ fromInt model.historicSeconds ++ " 100"
                             ]
                             [ timeLegend model.historicSeconds timeZone now
-                            , g [ SA.id "station-lines" ] <| stationLines 0 <| map Tuple.first stations
-                            , tripLines model.historicSeconds model.delays now
+                            , g [ SA.id "station-lines" ] <| stationLines model.distanceMatrix <| map Tuple.first stations
+                            , tripLines model.distanceMatrix model.historicSeconds model.delays now
                             ]
-                        , div [ class "station-legend" ] <| stationLegend 0 <| map Tuple.first stations
+                        , div [ class "station-legend" ] <| stationLegend model.distanceMatrix <| map Tuple.first stations
                         ]
                     , div [ id "row2" ]
                         [ timeTextLegend model.historicSeconds timeZone now

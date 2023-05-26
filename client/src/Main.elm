@@ -353,12 +353,23 @@ yPosition p =
     fromFloat (p * 100) ++ "%"
 
 
-stationLegend : DistanceMatrix -> List StationId -> List (Html Msg)
-stationLegend distanceMatrix =
+stationLegend : DistanceMatrix -> Direction -> List StationId -> List (Html Msg)
+stationLegend distanceMatrix selectedDirection =
     map
         (\sid ->
+            let
+                sPos =
+                    stationPos distanceMatrix sid
+            in
             div
-                [ style "top" <| yPosition <| stationPos distanceMatrix sid
+                [ style "top" <|
+                    yPosition <|
+                        case selectedDirection of
+                            Westwards ->
+                                sPos
+
+                            Eastwards ->
+                                1 - sPos
                 , style "position" "absolute"
                 , style "text-anchor" "right"
                 , style "margin-top" "-0.5em"
@@ -546,7 +557,11 @@ view model =
                             , g [ SA.id "station-lines" ] <| stationLines model.distanceMatrix <| map Tuple.first stations
                             , tripLines model.distanceMatrix model.direction model.historicSeconds model.delays now
                             ]
-                        , div [ class "station-legend" ] <| stationLegend model.distanceMatrix <| map Tuple.first stations
+                        , div
+                            [ class "station-legend" ]
+                          <|
+                            stationLegend model.distanceMatrix model.direction <|
+                                map Tuple.first stations
                         ]
                     , div [ id "row2" ]
                         [ timeTextLegend model.historicSeconds timeZone now

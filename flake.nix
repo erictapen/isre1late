@@ -58,7 +58,9 @@
               postgresql
               (import nixpkgs-crate2nix { inherit system; }).crate2nix
               reuse
-              python3
+              (python3.withPackages (ps: with ps; [
+                psycopg2
+              ]))
               qgis
               websocat
             ] ++

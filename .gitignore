@@ -8,3 +8,4 @@ todo
 result*
 *.zstd
 doc/
+data/

@@ -7,7 +7,7 @@ extern crate serde_with;
 
 use self::models::*;
 use crate::client::ClientMsg;
-use bus::{Bus, BusReadHandle};
+use bus::BusReadHandle;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use docopt::Docopt;
@@ -299,7 +299,7 @@ fn main() {
     }
 
     // The spmc bus with which the crawler can communicate with all open websocket threads.
-    let bus: Bus<client::ClientMsg> = bus::Bus::new(10 * 1024);
+    let bus = bus::Bus::new(10 * 1024);
     // With this handle we can produce new channel receivers per new websocket connection.
     let bus_read_handle = bus.read_handle();
 

@@ -181,7 +181,17 @@ type alias StationInfo =
 
 stations : List ( StationId, StationInfo )
 stations =
-    [ ( 900311307
+    [ ( 900470000
+      , { name = "Cottbus, Hauptbahnhof"
+        , shortName = "Cottbus"
+        }
+      )
+    , ( 900445593
+      , { name = "Guben, Bahnhof"
+        , shortName = "Guben"
+        }
+      )
+    , ( 900311307
       , { name = "Eisenhüttenstadt, Bahnhof"
         , shortName = "Eisenhüttenstadt"
         }
@@ -189,6 +199,31 @@ stations =
     , ( 900360000
       , { name = "Frankfurt (Oder), Bahnhof"
         , shortName = "Frankfurt (Oder)"
+        }
+      )
+    , ( 900360004
+      , { name = "Frankfurt (Oder), Rosengarten Bhf"
+        , shortName = "Rosengarten"
+        }
+      )
+    , ( 900310008
+      , { name = "Pillgram, Bahnhof"
+        , shortName = "Pillgram"
+        }
+      )
+    , ( 900310007
+      , { name = "Jacobsdorf (Mark), Bahnhof"
+        , shortName = "Jacobsdorf"
+        }
+      )
+    , ( 900310006
+      , { name = "Briesen (Mark), Bahnhof"
+        , shortName = "Briesen"
+        }
+      )
+    , ( 900310005
+      , { name = "Berkenbrück (LOS), Bahnhof"
+        , shortName = "Berkenbrück"
         }
       )
     , ( 900310001
@@ -256,9 +291,29 @@ stations =
         , shortName = "Potsdam"
         }
       )
+    , ( 900230006
+      , { name = "Potsdam, Charlottenhof Bhf"
+        , shortName = "Potsdam Charlottenhof"
+        }
+      )
+    , ( 900230007
+      , { name = "Potsdam, Park Sanssouci Bhf"
+        , shortName = "Potsdam Park Sanssouci"
+        }
+      )
     , ( 900220009
       , { name = "Werder (Havel), Bahnhof"
         , shortName = "Werder (Havel)"
+        }
+      )
+    , ( 900220699
+      , { name = "Groß Kreutz, Bahnhof"
+        , shortName = "Groß Kreutz"
+        }
+      )
+    , ( 900220182
+      , { name = "Götz, Bahnhof"
+        , shortName = "Götz"
         }
       )
     , ( 900275110

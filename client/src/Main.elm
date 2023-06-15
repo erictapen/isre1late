@@ -293,12 +293,12 @@ stations =
       )
     , ( 900230006
       , { name = "Potsdam, Charlottenhof Bhf"
-        , shortName = "Potsdam Charlottenhof"
+        , shortName = "Charlottenhof"
         }
       )
     , ( 900230007
       , { name = "Potsdam, Park Sanssouci Bhf"
-        , shortName = "Potsdam Park Sanssouci"
+        , shortName = "Park Sanssouci"
         }
       )
     , ( 900220009

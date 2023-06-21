@@ -66,28 +66,51 @@ fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
     info!("Validating HAFAS schema...");
     let start = time::OffsetDateTime::now_utc();
 
-    let bodies_iter =
-        fetched_json.load_iter::<SelectFetchedJson, diesel::pg::PgRowByRowLoadingMode>(db)?;
+    let error_count: u64 = {
+        use std::sync::mpsc::channel;
+        use workerpool::thunk::{Thunk, ThunkWorker};
+        use workerpool::Pool;
 
-    let mut error_count: i64 = 0;
+        let bodies_iter =
+            fetched_json.load_iter::<SelectFetchedJson, diesel::pg::PgRowByRowLoadingMode>(db)?;
 
-    for fj_res in bodies_iter {
-        let SelectFetchedJson { id, body, .. } = match fj_res {
-            Ok(fj) => fj,
-            Err(e) => {
-                error!("{}", e);
-                continue;
-            }
-        };
-        match serde_json::from_str::<HafasMsg>(&body.as_ref()) {
-            Ok(_) => {}
-            Err(err) => {
-                // error!("Couldn't deserialize: {}", body.unwrap());
-                error!("{}: {}", id, err);
-                error_count += 1;
+        let thread_count =
+            std::thread::available_parallelism().map_or(1, std::num::NonZeroUsize::get);
+        let pool = Pool::<ThunkWorker<u64>>::new(thread_count);
+
+        let (tx, rx) = channel();
+
+        for fj_res in bodies_iter {
+            if pool.queued_count() < 10000 {
+                pool.execute_to(
+                    tx.clone(),
+                    Thunk::of(|| {
+                        let SelectFetchedJson { id, body, .. } = match fj_res {
+                            Ok(fj) => fj,
+                            Err(e) => {
+                                error!("{}", e);
+                                return 0;
+                            }
+                        };
+                        match serde_json::from_str::<HafasMsg>(&body.as_ref()) {
+                            Ok(_) => {}
+                            Err(err) => {
+                                // error!("Couldn't deserialize: {}", body.unwrap());
+                                error!("{}: {}", id, err);
+                                return 1;
+                            }
+                        };
+                        0
+                    }),
+                );
+            } else {
+                std::thread::sleep(std::time::Duration::from_millis(200));
             }
         }
-    }
+        pool.join();
+
+        rx.iter().sum()
+    };
 
     let duration = time::OffsetDateTime::now_utc() - start;
 

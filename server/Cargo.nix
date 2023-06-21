@@ -251,7 +251,7 @@ rec {
           }
           {
             name = "parking_lot_core";
-            packageId = "parking_lot_core";
+            packageId = "parking_lot_core 0.5.0";
           }
         ];
         features = {
@@ -2006,6 +2006,10 @@ rec {
             name = "urlencoding";
             packageId = "urlencoding";
           }
+          {
+            name = "workerpool";
+            packageId = "workerpool";
+          }
         ];
 
       };
@@ -2138,6 +2142,31 @@ rec {
           "rustc-dep-of-std" = [ "core" "compiler_builtins" "no_std" ];
         };
         resolvedDefaultFeatures = [ "errno" "general" "ioctl" "no_std" ];
+      };
+      "lock_api" = rec {
+        crateName = "lock_api";
+        version = "0.1.5";
+        edition = "2015";
+        sha256 = "0b24q9mh258xa52ap636q1sxz0j5vrnp0hwbbh7ddjka3wwz3sv2";
+        authors = [
+          "Amanieu d'Antras <amanieu@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "owning_ref";
+            packageId = "owning_ref";
+            optional = true;
+          }
+          {
+            name = "scopeguard";
+            packageId = "scopeguard";
+            usesDefaultFeatures = false;
+          }
+        ];
+        features = {
+          "owning_ref" = [ "dep:owning_ref" ];
+        };
+        resolvedDefaultFeatures = [ "owning_ref" ];
       };
       "log" = rec {
         crateName = "log";
@@ -2760,7 +2789,91 @@ rec {
           "vendored" = [ "openssl-src" ];
         };
       };
-      "parking_lot_core" = rec {
+      "owning_ref" = rec {
+        crateName = "owning_ref";
+        version = "0.4.1";
+        edition = "2015";
+        sha256 = "1kjj9m28wjv452jw49p1mp3d8ql058x78v4bz00avr7rvsnmpxbg";
+        authors = [
+          "Marvin Löbel <loebel.marvin@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "stable_deref_trait";
+            packageId = "stable_deref_trait";
+          }
+        ];
+
+      };
+      "parking_lot" = rec {
+        crateName = "parking_lot";
+        version = "0.7.1";
+        edition = "2015";
+        sha256 = "0dz32cqx9200n1lk3kwyb599vabfid3f8sj1aq85sw42s2pb8hdb";
+        authors = [
+          "Amanieu d'Antras <amanieu@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "lock_api";
+            packageId = "lock_api";
+          }
+          {
+            name = "parking_lot_core";
+            packageId = "parking_lot_core 0.4.0";
+          }
+        ];
+        features = {
+          "deadlock_detection" = [ "parking_lot_core/deadlock_detection" ];
+          "default" = [ "owning_ref" ];
+          "nightly" = [ "parking_lot_core/nightly" "lock_api/nightly" ];
+          "owning_ref" = [ "lock_api/owning_ref" ];
+        };
+        resolvedDefaultFeatures = [ "default" "owning_ref" ];
+      };
+      "parking_lot_core 0.4.0" = rec {
+        crateName = "parking_lot_core";
+        version = "0.4.0";
+        edition = "2015";
+        sha256 = "1jcq8aq4wv9y5fip7jg12jdwjd5g5r3x857xdma8vcin769cgj4l";
+        authors = [
+          "Amanieu d'Antras <amanieu@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "libc";
+            packageId = "libc";
+            target = { target, features }: (target."unix" or false);
+          }
+          {
+            name = "rand";
+            packageId = "rand 0.6.5";
+          }
+          {
+            name = "smallvec";
+            packageId = "smallvec";
+          }
+          {
+            name = "winapi";
+            packageId = "winapi";
+            target = { target, features }: (target."windows" or false);
+            features = [ "winnt" "ntstatus" "minwindef" "winerror" "winbase" "errhandlingapi" "handleapi" ];
+          }
+        ];
+        buildDependencies = [
+          {
+            name = "rustc_version";
+            packageId = "rustc_version";
+          }
+        ];
+        features = {
+          "backtrace" = [ "dep:backtrace" ];
+          "deadlock_detection" = [ "petgraph" "thread-id" "backtrace" ];
+          "petgraph" = [ "dep:petgraph" ];
+          "thread-id" = [ "dep:thread-id" ];
+        };
+      };
+      "parking_lot_core 0.5.0" = rec {
         crateName = "parking_lot_core";
         version = "0.5.0";
         edition = "2018";
@@ -3909,6 +4022,18 @@ rec {
         ];
 
       };
+      "scopeguard" = rec {
+        crateName = "scopeguard";
+        version = "0.3.3";
+        edition = "2015";
+        sha256 = "09sy9wbqp409pkwmqni40qmwa99ldqpl48pp95m1xw8sc19qy9cl";
+        authors = [
+          "bluss"
+        ];
+        features = {
+          "default" = [ "use_std" ];
+        };
+      };
       "security-framework" = rec {
         crateName = "security-framework";
         version = "2.9.1";
@@ -4487,6 +4612,20 @@ rec {
         features = {
         };
         resolvedDefaultFeatures = [ "all" ];
+      };
+      "stable_deref_trait" = rec {
+        crateName = "stable_deref_trait";
+        version = "1.2.0";
+        edition = "2015";
+        sha256 = "1lxjr8q2n534b2lhkxd6l6wcddzjvnksi58zv11f9y0jjmr15wd8";
+        authors = [
+          "Robert Grosse <n210241048576@gmail.com>"
+        ];
+        features = {
+          "default" = [ "std" ];
+          "std" = [ "alloc" ];
+        };
+        resolvedDefaultFeatures = [ "alloc" "default" "std" ];
       };
       "static_assertions" = rec {
         crateName = "static_assertions";
@@ -8067,6 +8206,32 @@ rec {
           "serde" = [ "dep:serde" ];
           "serialization-serde" = [ "transactions" "serde" ];
           "transactions" = [ "winapi/ktmw32" ];
+        };
+      };
+      "workerpool" = rec {
+        crateName = "workerpool";
+        version = "1.2.0";
+        edition = "2015";
+        sha256 = "0p2hcj983f5pdzxa8hir7701yq4xibg9r6v72j8va37mrlknci6d";
+        authors = [
+          "The Rust Project Developers"
+          "Corey Farwell <coreyf@rwell.org>"
+          "Stefan Schindler <dns2utf8@estada.ch>"
+          "Lucas Morales <lucas@lucasem.com>"
+        ];
+        dependencies = [
+          {
+            name = "num_cpus";
+            packageId = "num_cpus";
+          }
+          {
+            name = "parking_lot";
+            packageId = "parking_lot";
+          }
+        ];
+        features = {
+          "crossbeam" = [ "crossbeam-channel" ];
+          "crossbeam-channel" = [ "dep:crossbeam-channel" ];
         };
       };
     };

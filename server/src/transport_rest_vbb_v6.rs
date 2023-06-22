@@ -12,7 +12,7 @@ use time::OffsetDateTime;
 
 /// Wrapper function that allows us to deserialize empty strings.
 pub fn deserialize(json: &str) -> Result<HafasMsg, serde_json::Error> {
-    if json == "" {
+    if json.is_empty() {
         Ok(HafasMsg::EmptyBody())
     } else {
         serde_json::from_str(json)

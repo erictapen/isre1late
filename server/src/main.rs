@@ -73,28 +73,27 @@ fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
 
     let error_count: u64 = {
         use std::sync::mpsc::channel;
-        use workerpool::thunk::{Thunk, ThunkWorker};
-        use workerpool::Pool;
+        use threadpool::ThreadPool;
 
         let bodies_iter =
             fetched_json.load_iter::<SelectFetchedJson, diesel::pg::PgRowByRowLoadingMode>(db)?;
 
         let thread_count =
             std::thread::available_parallelism().map_or(1, std::num::NonZeroUsize::get);
-        let pool = Pool::<ThunkWorker<u64>>::new(thread_count);
+        let pool = ThreadPool::new(thread_count);
 
         let (tx, rx) = channel();
 
         for fj_res in bodies_iter {
             if pool.queued_count() < 10000 {
-                pool.execute_to(
-                    tx.clone(),
-                    Thunk::of(|| {
+                let tx = tx.clone();
+                pool.execute(
+                    move|| {
                         let SelectFetchedJson { id, body, .. } = match fj_res {
                             Ok(fj) => fj,
                             Err(e) => {
                                 error!("{}", e);
-                                return 0;
+                                return
                             }
                         };
                         match transport_rest_vbb_v6::deserialize(&body.as_ref()) {
@@ -102,20 +101,18 @@ fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
                             Err(err) => {
                                 // error!("Couldn't deserialize: {}", body.unwrap());
                                 error!("{}: {}", id, err);
-                                return 1;
+                                tx.send(1).expect("channel will be there waiting for the pool");
                             }
                         };
-                        0
-                    }),
-                );
+                    });
             } else {
                 std::thread::sleep(std::time::Duration::from_millis(200));
             }
             progress_bar.inc(1);
         }
-        info!("Waiting for {} remaining tasks", pool.queued_count());
         pool.join();
 
+        drop(tx);
         rx.iter().sum()
     };
 

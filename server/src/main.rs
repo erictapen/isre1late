@@ -50,6 +50,7 @@ struct CliArgs {
 fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
     use self::schema::fetched_json::dsl::fetched_json;
     use std::fmt;
+    use indicatif::{ProgressStyle, ProgressBar};
 
     #[derive(Debug)]
     struct SomeErrorsEncountered;
@@ -64,6 +65,11 @@ fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
 
     info!("Validating HAFAS schema...");
     let start = time::OffsetDateTime::now_utc();
+
+    let bodies_count: i64 = fetched_json.count().get_result(db)?;
+    let progress_bar = ProgressBar::new(bodies_count as u64);
+    progress_bar.set_style(
+      ProgressStyle::with_template("[{elapsed}] {wide_bar} {per_sec} {human_pos}/{human_len}").unwrap());
 
     let error_count: u64 = {
         use std::sync::mpsc::channel;
@@ -105,11 +111,15 @@ fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
             } else {
                 std::thread::sleep(std::time::Duration::from_millis(200));
             }
+            progress_bar.inc(1);
         }
+        info!("Waiting for {} remaining tasks", pool.queued_count());
         pool.join();
 
         rx.iter().sum()
     };
+
+    progress_bar.finish();
 
     let duration = time::OffsetDateTime::now_utc() - start;
 

@@ -435,6 +435,47 @@ rec {
         features = {
         };
       };
+      "console" = rec {
+        crateName = "console";
+        version = "0.15.7";
+        edition = "2018";
+        sha256 = "1y6cbwadid5g4fyn4xq9c0s7mfavqqfg6prs9p3gvphfqw6f09n9";
+        authors = [
+          "Armin Ronacher <armin.ronacher@active-4.com>"
+        ];
+        dependencies = [
+          {
+            name = "encode_unicode";
+            packageId = "encode_unicode";
+            target = { target, features }: (target."windows" or false);
+          }
+          {
+            name = "lazy_static";
+            packageId = "lazy_static";
+          }
+          {
+            name = "libc";
+            packageId = "libc";
+          }
+          {
+            name = "unicode-width";
+            packageId = "unicode-width";
+            optional = true;
+          }
+          {
+            name = "windows-sys";
+            packageId = "windows-sys 0.45.0";
+            target = { target, features }: (target."windows" or false);
+            features = [ "Win32_Foundation" "Win32_System_Console" "Win32_Storage_FileSystem" "Win32_UI_Input_KeyboardAndMouse" ];
+          }
+        ];
+        features = {
+          "default" = [ "unicode-width" "ansi-parsing" ];
+          "unicode-width" = [ "dep:unicode-width" ];
+          "windows-console-colors" = [ "ansi-parsing" ];
+        };
+        resolvedDefaultFeatures = [ "ansi-parsing" "unicode-width" ];
+      };
       "core-foundation" = rec {
         crateName = "core-foundation";
         version = "0.9.3";
@@ -903,6 +944,21 @@ rec {
           }
         ];
 
+      };
+      "encode_unicode" = rec {
+        crateName = "encode_unicode";
+        version = "0.3.6";
+        edition = "2015";
+        sha256 = "07w3vzrhxh9lpjgsg2y5bwzfar2aq35mdznvcp3zjl0ssj7d4mx3";
+        authors = [
+          "Torbjørn Birch Moltu <t.b.moltu@lyse.net>"
+        ];
+        features = {
+          "ascii" = [ "dep:ascii" ];
+          "clippy" = [ "dep:clippy" ];
+          "default" = [ "std" ];
+        };
+        resolvedDefaultFeatures = [ "default" "std" ];
       };
       "encoding_rs" = rec {
         crateName = "encoding_rs";
@@ -1832,6 +1888,49 @@ rec {
         };
         resolvedDefaultFeatures = [ "serde" "serde-1" "std" ];
       };
+      "indicatif" = rec {
+        crateName = "indicatif";
+        version = "0.17.5";
+        edition = "2018";
+        sha256 = "0myhjp1l6c5hd2wjm4grm6mp59ybcminxxfps5z3jfirlwiwry4g";
+        dependencies = [
+          {
+            name = "console";
+            packageId = "console";
+            usesDefaultFeatures = false;
+            features = [ "ansi-parsing" ];
+          }
+          {
+            name = "instant";
+            packageId = "instant";
+            target = { target, features }: ("wasm32" == target."arch");
+          }
+          {
+            name = "number_prefix";
+            packageId = "number_prefix";
+          }
+          {
+            name = "portable-atomic";
+            packageId = "portable-atomic";
+          }
+          {
+            name = "unicode-width";
+            packageId = "unicode-width";
+            optional = true;
+          }
+        ];
+        features = {
+          "default" = [ "unicode-width" "console/unicode-width" ];
+          "improved_unicode" = [ "unicode-segmentation" "unicode-width" "console/unicode-width" ];
+          "in_memory" = [ "vt100" ];
+          "rayon" = [ "dep:rayon" ];
+          "tokio" = [ "dep:tokio" ];
+          "unicode-segmentation" = [ "dep:unicode-segmentation" ];
+          "unicode-width" = [ "dep:unicode-width" ];
+          "vt100" = [ "dep:vt100" ];
+        };
+        resolvedDefaultFeatures = [ "default" "unicode-width" ];
+      };
       "instant" = rec {
         crateName = "instant";
         version = "0.1.12";
@@ -1950,6 +2049,10 @@ rec {
           {
             name = "docopt";
             packageId = "docopt";
+          }
+          {
+            name = "indicatif";
+            packageId = "indicatif";
           }
           {
             name = "log";
@@ -2650,6 +2753,19 @@ rec {
         ];
 
       };
+      "number_prefix" = rec {
+        crateName = "number_prefix";
+        version = "0.4.0";
+        edition = "2015";
+        sha256 = "1wvh13wvlajqxkb1filsfzbrnq0vrmrw298v2j3sy82z1rm282w3";
+        authors = [
+          "Benjamin Sago <ogham@bsago.me>"
+        ];
+        features = {
+          "default" = [ "std" ];
+        };
+        resolvedDefaultFeatures = [ "default" "std" ];
+      };
       "once_cell" = rec {
         crateName = "once_cell";
         version = "1.17.1";
@@ -2968,6 +3084,18 @@ rec {
           "Alex Crichton <alex@alexcrichton.com>"
         ];
 
+      };
+      "portable-atomic" = rec {
+        crateName = "portable-atomic";
+        version = "1.3.3";
+        edition = "2018";
+        sha256 = "152700ziqjhr4hp87xmbfc9h2g59b0h4abdzkfrvqpjagpqbjzkn";
+        features = {
+          "critical-section" = [ "dep:critical-section" ];
+          "default" = [ "fallback" ];
+          "serde" = [ "dep:serde" ];
+        };
+        resolvedDefaultFeatures = [ "default" "fallback" ];
       };
       "ppv-lite86" = rec {
         crateName = "ppv-lite86";
@@ -5415,6 +5543,23 @@ rec {
         };
         resolvedDefaultFeatures = [ "default" "std" ];
       };
+      "unicode-width" = rec {
+        crateName = "unicode-width";
+        version = "0.1.10";
+        edition = "2015";
+        sha256 = "12vc3wv0qwg8rzcgb9bhaf5119dlmd6lmkhbfy1zfls6n7jx3vf0";
+        authors = [
+          "kwantam <kwantam@gmail.com>"
+          "Manish Goregaokar <manishsmail@gmail.com>"
+        ];
+        features = {
+          "compiler_builtins" = [ "dep:compiler_builtins" ];
+          "core" = [ "dep:core" ];
+          "rustc-dep-of-std" = [ "std" "core" "compiler_builtins" ];
+          "std" = [ "dep:std" ];
+        };
+        resolvedDefaultFeatures = [ "default" ];
+      };
       "url" = rec {
         crateName = "url";
         version = "2.3.1";
@@ -7632,7 +7777,7 @@ rec {
           "Win32_UI_WindowsAndMessaging" = [ "Win32_UI" ];
           "Win32_UI_Wpf" = [ "Win32_UI" ];
         };
-        resolvedDefaultFeatures = [ "Win32" "Win32_Foundation" "Win32_Networking" "Win32_Networking_WinSock" "Win32_Security" "Win32_Storage" "Win32_Storage_FileSystem" "Win32_System" "Win32_System_IO" "Win32_System_Pipes" "Win32_System_WindowsProgramming" "default" ];
+        resolvedDefaultFeatures = [ "Win32" "Win32_Foundation" "Win32_Networking" "Win32_Networking_WinSock" "Win32_Security" "Win32_Storage" "Win32_Storage_FileSystem" "Win32_System" "Win32_System_Console" "Win32_System_IO" "Win32_System_Pipes" "Win32_System_WindowsProgramming" "Win32_UI" "Win32_UI_Input" "Win32_UI_Input_KeyboardAndMouse" "default" ];
       };
       "windows-sys 0.48.0" = rec {
         crateName = "windows-sys";

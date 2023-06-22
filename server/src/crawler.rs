@@ -4,7 +4,7 @@
 
 use crate::client::ClientMsg;
 use crate::models::*;
-use crate::transport_rest_vbb_v6::{TripOverview, TripsOverview};
+use crate::transport_rest_vbb_v6::{deserialize, HafasMsg, TripOverview, TripsOverview};
 use bus::Bus;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
@@ -58,8 +58,12 @@ pub fn crawler(db: &mut PgConnection, mut bus: Bus<ClientMsg>) -> Result<(), Box
                     continue;
                 }
             };
-            match serde_json::from_str(&json) {
-                Ok(res) => res,
+            match deserialize(&json) {
+                Ok(HafasMsg::TripsOverview(res)) => res,
+                Ok(_) => {
+                    error!("HafasMsg is not a TripsOverview");
+                    continue;
+                }
                 Err(e) => {
                     error!("Failed to deserialize trips overview: {}", e);
                     continue;
@@ -87,8 +91,12 @@ pub fn crawler(db: &mut PgConnection, mut bus: Bus<ClientMsg>) -> Result<(), Box
                     continue;
                 }
             };
-            let trip_overview: TripOverview = match serde_json::from_str(&json) {
-                Ok(res) => res,
+            let trip_overview: TripOverview = match deserialize(&json) {
+                Ok(HafasMsg::TripOverview(res)) => res,
+                Ok(_) => {
+                    error!("HafasMsg is not a TripOverview");
+                    continue;
+                }
                 Err(e) => {
                     error!("Failed to deserialize trip overview: {}", e);
                     continue;

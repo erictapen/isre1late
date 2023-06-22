@@ -10,6 +10,15 @@ use serde::Deserialize;
 use serde_with::DisplayFromStr;
 use time::OffsetDateTime;
 
+/// Wrapper function that allows us to deserialize empty strings.
+pub fn deserialize(json: &str) -> Result<HafasMsg, serde_json::Error> {
+    if json == "" {
+        Ok(HafasMsg::EmptyBody())
+    } else {
+        serde_json::from_str(json)
+    }
+}
+
 /// Some kind of umbrella type for all the stuff we can receive from HAFAS.
 #[derive(Deserialize, Debug)]
 #[serde(untagged)]
@@ -18,6 +27,7 @@ pub enum HafasMsg {
     TripsOverview(TripsOverview),
     TransportRestErr(TransportRestErr),
     HafasErr(HafasErr),
+    EmptyBody(),
 }
 
 #[derive(Deserialize, Debug)]

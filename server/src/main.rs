@@ -50,7 +50,6 @@ struct CliArgs {
 fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
     use self::schema::fetched_json::dsl::fetched_json;
     use std::fmt;
-    use transport_rest_vbb_v6::HafasMsg;
 
     #[derive(Debug)]
     struct SomeErrorsEncountered;
@@ -92,7 +91,7 @@ fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
                                 return 0;
                             }
                         };
-                        match serde_json::from_str::<HafasMsg>(&body.as_ref()) {
+                        match transport_rest_vbb_v6::deserialize(&body.as_ref()) {
                             Ok(_) => {}
                             Err(err) => {
                                 // error!("Couldn't deserialize: {}", body.unwrap());

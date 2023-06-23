@@ -49,8 +49,8 @@ struct CliArgs {
 /// Validate our representation of HAFAS types.
 fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
     use self::schema::fetched_json::dsl::fetched_json;
+    use indicatif::{ProgressBar, ProgressStyle};
     use std::fmt;
-    use indicatif::{ProgressStyle, ProgressBar};
 
     #[derive(Debug)]
     struct SomeErrorsEncountered;
@@ -69,7 +69,9 @@ fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
     let bodies_count: i64 = fetched_json.count().get_result(db)?;
     let progress_bar = ProgressBar::new(bodies_count as u64);
     progress_bar.set_style(
-      ProgressStyle::with_template("[{elapsed}] {wide_bar} {per_sec} {human_pos}/{human_len}").unwrap());
+        ProgressStyle::with_template("[{elapsed}] {wide_bar} {per_sec} {human_pos}/{human_len}")
+            .unwrap(),
+    );
 
     let error_count: u64 = {
         use std::sync::mpsc::channel;
@@ -85,26 +87,26 @@ fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
         let (tx, rx) = channel();
 
         for fj_res in bodies_iter {
-            if pool.queued_count() < 10000 {
+            if pool.queued_count() < 1024 * 1024 {
                 let tx = tx.clone();
-                pool.execute(
-                    move|| {
-                        let SelectFetchedJson { id, body, .. } = match fj_res {
-                            Ok(fj) => fj,
-                            Err(e) => {
-                                error!("{}", e);
-                                return
-                            }
-                        };
-                        match transport_rest_vbb_v6::deserialize(&body.as_ref()) {
-                            Ok(_) => {}
-                            Err(err) => {
-                                // error!("Couldn't deserialize: {}", body.unwrap());
-                                error!("{}: {}", id, err);
-                                tx.send(1).expect("channel will be there waiting for the pool");
-                            }
-                        };
-                    });
+                pool.execute(move || {
+                    let SelectFetchedJson { id, body, .. } = match fj_res {
+                        Ok(fj) => fj,
+                        Err(e) => {
+                            error!("{}", e);
+                            return;
+                        }
+                    };
+                    match transport_rest_vbb_v6::deserialize(&body.as_ref()) {
+                        Ok(_) => {}
+                        Err(err) => {
+                            // error!("Couldn't deserialize: {}", body.unwrap());
+                            error!("{}: {}: \"{}\"", id, err, body);
+                            tx.send(1)
+                                .expect("channel will be there waiting for the pool");
+                        }
+                    };
+                });
             } else {
                 std::thread::sleep(std::time::Duration::from_millis(200));
             }

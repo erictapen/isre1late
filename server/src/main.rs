@@ -28,6 +28,7 @@ pub mod schema;
 const USAGE: &'static str = "
 Usage: isre1late-server --port <port>
        isre1late-server validate-hafas-schema
+       isre1late-server rebuild-cache
        isre1late-server run-db-migrations
        isre1late-server --help
 
@@ -43,6 +44,7 @@ struct CliArgs {
     flag_port: u16,
     flag_listen: std::net::IpAddr,
     cmd_validate_hafas_schema: bool,
+    cmd_rebuild_cache: bool,
     cmd_run_db_migrations: bool,
 }
 

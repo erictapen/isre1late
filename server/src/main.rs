@@ -79,6 +79,8 @@ fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
         use std::sync::mpsc::channel;
         use threadpool::ThreadPool;
 
+        const MAX_QUEUED_COUNT: usize = 1024 * 1024 * 16;
+
         let bodies_iter =
             fetched_json.load_iter::<SelectFetchedJson, diesel::pg::PgRowByRowLoadingMode>(db)?;
 
@@ -89,7 +91,7 @@ fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
         let (tx, rx) = channel();
 
         for fj_res in bodies_iter {
-            if pool.queued_count() < 1024 * 1024 {
+            if pool.queued_count() < MAX_QUEUED_COUNT {
                 let tx = tx.clone();
                 pool.execute(move || {
                     let SelectFetchedJson { id, body, .. } = match fj_res {

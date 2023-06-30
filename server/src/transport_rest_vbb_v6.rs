@@ -10,13 +10,20 @@ use serde::Deserialize;
 use serde_with::DisplayFromStr;
 use time::OffsetDateTime;
 
+/// Sometimes the nginx server itself returns an error.
+const BAD_GATEWAY_FRAGMENT: &'static str = "502 Bad Gateway";
+
 /// Wrapper function that allows us to deserialize empty strings.
 pub fn deserialize(json: &str) -> Result<HafasMsg, serde_json::Error> {
-    if json.is_empty() {
-        Ok(HafasMsg::EmptyBody())
-    } else {
-        serde_json::from_str(json)
-    }
+    serde_json::from_str(json).or_else(|e| {
+        if json.is_empty() {
+            Ok(HafasMsg::EmptyBody())
+        } else if json.contains(BAD_GATEWAY_FRAGMENT) {
+            Ok(HafasMsg::BadGatewayError())
+        } else {
+            Err(e)
+        }
+    })
 }
 
 /// Some kind of umbrella type for all the stuff we can receive from HAFAS.
@@ -28,6 +35,7 @@ pub enum HafasMsg {
     TransportRestErr(TransportRestErr),
     HafasErr(HafasErr),
     EmptyBody(),
+    BadGatewayError(),
 }
 
 #[derive(Deserialize, Debug)]
@@ -42,7 +50,7 @@ pub struct TransportRestErr {
 pub struct HafasErr {
     pub message: String,
     pub isHafasError: MustBe!(true),
-    pub hafasDescription: String,
+    pub hafasDescription: Option<String>,
 }
 
 /// Message we get from calling https://v6.vbb.transport.rest/trips

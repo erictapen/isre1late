@@ -601,7 +601,9 @@ view model =
         case ( model.timeZone, model.now ) of
             ( Just timeZone, Just now ) ->
                 [ div [ id "app" ]
-                    [ button [ id "reverse-direction-button", onClick ToggleDirection ] [ text "⮀" ]
+                    [ button
+                        [ id "reverse-direction-button", onClick ToggleDirection ]
+                        [ text "⮀" ]
                     , div [ id "row1" ]
                         [ svg
                             [ id "diagram"
@@ -609,8 +611,15 @@ view model =
                             , viewBox <| "0 0 " ++ fromInt model.historicSeconds ++ " 100"
                             ]
                             [ timeLegend model.historicSeconds timeZone now
-                            , g [ SA.id "station-lines" ] <| stationLines model.distanceMatrix <| map Tuple.first stations
-                            , tripLines model.distanceMatrix model.direction model.historicSeconds model.delays now
+                            , g [ SA.id "station-lines" ] <|
+                                stationLines model.distanceMatrix <|
+                                    map Tuple.first stations
+                            , tripLines
+                                model.distanceMatrix
+                                model.direction
+                                model.historicSeconds
+                                model.delays
+                                now
                             ]
                         , div
                             [ class "station-legend" ]

@@ -24,6 +24,7 @@ pub mod client;
 pub mod crawler;
 pub mod models;
 pub mod schema;
+mod cli_utils;
 
 const USAGE: &'static str = "
 Usage: isre1late-server --port <port>
@@ -48,92 +49,6 @@ struct CliArgs {
     cmd_run_db_migrations: bool,
 }
 
-/// Validate our representation of HAFAS types.
-fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn Error>> {
-    use self::schema::fetched_json::dsl::fetched_json;
-    use indicatif::{ProgressBar, ProgressStyle};
-    use std::fmt;
-
-    #[derive(Debug)]
-    struct SomeErrorsEncountered;
-
-    impl Error for SomeErrorsEncountered {}
-
-    impl fmt::Display for SomeErrorsEncountered {
-        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            write!(f, "Some errors encountered")
-        }
-    }
-
-    info!("Validating HAFAS schema...");
-    let start = time::OffsetDateTime::now_utc();
-
-    let bodies_count: i64 = fetched_json.count().get_result(db)?;
-    let progress_bar = ProgressBar::new(bodies_count as u64);
-    progress_bar.set_style(
-        ProgressStyle::with_template("[{elapsed}] {wide_bar} {per_sec} {human_pos}/{human_len}")
-            .unwrap(),
-    );
-
-    let error_count: u64 = {
-        use std::sync::mpsc::channel;
-        use threadpool::ThreadPool;
-
-        const MAX_QUEUED_COUNT: usize = 1024 * 1024 * 16;
-
-        let bodies_iter =
-            fetched_json.load_iter::<SelectFetchedJson, diesel::pg::PgRowByRowLoadingMode>(db)?;
-
-        let thread_count =
-            std::thread::available_parallelism().map_or(1, std::num::NonZeroUsize::get);
-        let pool = ThreadPool::new(thread_count);
-
-        let (tx, rx) = channel();
-
-        for fj_res in bodies_iter {
-            if pool.queued_count() < MAX_QUEUED_COUNT {
-                let tx = tx.clone();
-                pool.execute(move || {
-                    let SelectFetchedJson { id, body, .. } = match fj_res {
-                        Ok(fj) => fj,
-                        Err(e) => {
-                            error!("{}", e);
-                            return;
-                        }
-                    };
-                    match transport_rest_vbb_v6::deserialize(&body.as_ref()) {
-                        Ok(_) => {}
-                        Err(err) => {
-                            // error!("Couldn't deserialize: {}", body.unwrap());
-                            error!("{}: {}: \"{}\"", id, err, body);
-                            tx.send(1)
-                                .expect("channel will be there waiting for the pool");
-                        }
-                    };
-                });
-            } else {
-                std::thread::sleep(std::time::Duration::from_millis(200));
-            }
-            progress_bar.inc(1);
-        }
-        pool.join();
-
-        drop(tx);
-        rx.iter().sum()
-    };
-
-    progress_bar.finish();
-
-    let duration = time::OffsetDateTime::now_utc() - start;
-
-    if error_count > 0 {
-        error!("Encountered {} errors in {duration:.3}", error_count);
-        Err(Box::new(SomeErrorsEncountered))
-    } else {
-        info!("Encountered no errors in {duration:.3}");
-        Ok(())
-    }
-}
 
 fn run_db_migrations(db: &mut PgConnection) -> () {
     info!("Runnung migrations...");
@@ -321,7 +236,7 @@ fn main() {
         let mut db: PgConnection = PgConnection::establish(&db_url)
             .unwrap_or_else(|_| panic!("Error connecting to {}", db_url));
         if args.cmd_validate_hafas_schema {
-            validate_hafas_schema(&mut db).unwrap_or_else(|e| {
+            crate::cli_utils::validate_hafas_schema(&mut db).unwrap_or_else(|e| {
                 error!("{}", e);
                 std::process::exit(1);
             });

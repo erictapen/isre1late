@@ -601,7 +601,7 @@ view model =
         case ( model.timeZone, model.now ) of
             ( Just timeZone, Just now ) ->
                 [ div [ id "app" ]
-                    [ button [ id "reverse-direction-button", onClick ToggleDirection ] [ text "Reverse direction ⮀" ]
+                    [ button [ id "reverse-direction-button", onClick ToggleDirection ] [ text "⮀" ]
                     , div [ id "row1" ]
                         [ svg
                             [ id "diagram"

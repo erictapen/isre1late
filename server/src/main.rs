@@ -20,11 +20,11 @@ pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
 
 mod transport_rest_vbb_v6;
 
+mod cli_utils;
 pub mod client;
 pub mod crawler;
 pub mod models;
 pub mod schema;
-mod cli_utils;
 
 const USAGE: &'static str = "
 Usage: isre1late-server --port <port>
@@ -48,7 +48,6 @@ struct CliArgs {
     cmd_rebuild_cache: bool,
     cmd_run_db_migrations: bool,
 }
-
 
 fn run_db_migrations(db: &mut PgConnection) -> () {
     info!("Runnung migrations...");

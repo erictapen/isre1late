@@ -1,12 +1,12 @@
-use log::{error, info};
-use diesel::prelude::*;
 use diesel::pg::PgConnection;
+use diesel::prelude::*;
+use log::{error, info};
 
 /// Validate our representation of HAFAS types.
 pub fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn std::error::Error>> {
     use crate::schema::fetched_json::dsl::fetched_json;
-    use indicatif::{ProgressBar, ProgressStyle};
     use crate::SelectFetchedJson;
+    use indicatif::{ProgressBar, ProgressStyle};
     use std::fmt;
 
     #[derive(Debug)]

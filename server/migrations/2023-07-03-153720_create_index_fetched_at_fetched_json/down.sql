@@ -1,0 +1,1 @@
+DROP INDEX fetched_json_fetched_at_index

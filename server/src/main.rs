@@ -164,9 +164,15 @@ fn websocket_server(
                 }
 
                 {
+                    use std::time::Duration;
+                    use time::OffsetDateTime;
+
                     let old_delays = fetched_json
-                        .filter(fetched_at.gt(time::OffsetDateTime::now_utc()
-                            - std::time::Duration::from_secs(historic_seconds)))
+                        .filter(
+                            fetched_at
+                                .gt(OffsetDateTime::now_utc()
+                                    - Duration::from_secs(historic_seconds)),
+                        )
                         .then_order_by(fetched_at.asc())
                         .load_iter::<SelectFetchedJson, diesel::pg::PgRowByRowLoadingMode>(db)
                         .unwrap_or_else(|e| {

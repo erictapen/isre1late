@@ -53,13 +53,13 @@ pub struct HafasErr {
     pub hafasDescription: Option<String>,
 }
 
-/// Message we get from calling https://v6.vbb.transport.rest/trips
+/// Message we get from calling <https://v6.vbb.transport.rest/trips>
 #[derive(Deserialize, Debug)]
 pub struct TripsOverview {
     pub trips: Vec<Trip>,
 }
 
-/// Message we get from calling https://v6.vbb.transport.rest/trips/{id}
+/// Message we get from calling <https://v6.vbb.transport.rest/trips/{id}>
 #[derive(Deserialize, Debug)]
 pub struct TripOverview {
     pub trip: Trip,

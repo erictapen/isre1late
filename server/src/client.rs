@@ -9,13 +9,13 @@ use time::OffsetDateTime;
 
 #[derive(Serialize, Debug, Clone)]
 pub struct ClientMsg {
-    trip_id: String,
+    pub trip_id: String,
     #[serde(with = "time::serde::timestamp")]
-    time: OffsetDateTime,
-    previous_station: Option<i64>,
-    next_station: Option<i64>,
-    percentage_segment: f64,
-    delay: i64,
+    pub time: OffsetDateTime,
+    pub previous_station: Option<i64>,
+    pub next_station: Option<i64>,
+    pub percentage_segment: f64,
+    pub delay: i64,
 }
 
 /// Convert a TripOverview into a ClientMsg, intended for the webclient.

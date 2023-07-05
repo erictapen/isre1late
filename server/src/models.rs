@@ -29,12 +29,14 @@ pub struct FetchedJson {
 #[derive(Queryable, Insertable, Serialize, Debug, Clone)]
 #[diesel(table_name = delay_events)]
 pub struct DelayEvent {
-    trip_id: String,
+    pub from_id: i64,
+    pub to_id: i64,
+    pub trip_id: String,
     #[serde(with = "time::serde::timestamp")]
-    time: OffsetDateTime,
-    previous_station: i64,
-    next_station: i64,
-    percentage_segment_from: f64,
-    percentage_segment_to: f64,
-    delay: i64,
+    pub time: OffsetDateTime,
+    pub duration: i64,
+    pub previous_station: i64,
+    pub next_station: i64,
+    pub percentage_segment: f64,
+    pub delay: i64,
 }

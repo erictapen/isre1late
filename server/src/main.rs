@@ -20,6 +20,7 @@ pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
 
 mod transport_rest_vbb_v6;
 
+mod cache;
 mod cli_utils;
 pub mod client;
 pub mod crawler;
@@ -29,7 +30,6 @@ pub mod schema;
 const USAGE: &'static str = "
 Usage: isre1late-server --port <port>
        isre1late-server validate-hafas-schema
-       isre1late-server rebuild-cache
        isre1late-server run-db-migrations
        isre1late-server --help
 
@@ -45,7 +45,6 @@ struct CliArgs {
     flag_port: u16,
     flag_listen: std::net::IpAddr,
     cmd_validate_hafas_schema: bool,
-    cmd_rebuild_cache: bool,
     cmd_run_db_migrations: bool,
 }
 
@@ -253,9 +252,18 @@ fn main() {
         run_db_migrations(&mut db);
     }
 
+    {
+        let mut db1: PgConnection = PgConnection::establish(&db_url)
+            .unwrap_or_else(|_| panic!("Error connecting to {}", db_url));
+        let mut db2: PgConnection = PgConnection::establish(&db_url)
+            .unwrap_or_else(|_| panic!("Error connecting to {}", db_url));
+        crate::cache::update_caches(&mut db1, &mut db2)
+            .expect("Unable to update cache tables in DB");
+    }
+
     // The spmc bus with which the crawler can communicate with all open websocket threads.
     let bus = bus::Bus::new(10 * 1024);
-    // With this handle we can produce new channel receivers per new websocket connection.
+    // With this handle we can produce a new channel receiver per new websocket connection.
     let bus_read_handle = bus.read_handle();
 
     {

@@ -100,7 +100,7 @@ pub fn crawler(db: &mut PgConnection, mut bus: Bus<DelayRecord>) -> Result<(), B
                 }
             };
 
-            let delay_record = delay_record_from_trip_overview(trip_overview, fetched_at);
+            let delay_record = delay_record_from_trip_overview(trip_overview, None, fetched_at);
             debug!("{:?}", delay_record);
             if let Some(delay_record) = delay_record {
                 bus.broadcast(delay_record);

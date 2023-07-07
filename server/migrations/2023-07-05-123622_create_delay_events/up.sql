@@ -2,8 +2,8 @@ DROP TABLE IF EXISTS delay_events;
 
 CREATE TABLE IF NOT EXISTS delay_events
           ( id BIGSERIAL NOT NULL PRIMARY KEY
-          , from_id BIGSERIAL REFERENCES fetched_json(id)
-          , to_id BIGSERIAL REFERENCES fetched_json(id)
+          , from_id BIGSERIAL NOT NULL REFERENCES fetched_json(id)
+          , to_id BIGSERIAL NOT NULL REFERENCES fetched_json(id)
           , trip_id TEXT NOT NULL
           , time TIMESTAMP WITH TIME ZONE NOT NULL
           , duration BIGINT NOT NULL

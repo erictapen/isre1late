@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use crate::schema::*;
+use crate::transport_rest_vbb_v6::TripOverview;
 use diesel::prelude::*;
+use log::debug;
 use serde::Serialize;
 use time::OffsetDateTime;
-use crate::transport_rest_vbb_v6::TripOverview;
-use log::debug;
 
 #[derive(Queryable, Insertable)]
 #[diesel(table_name = fetched_json)]
@@ -26,8 +26,12 @@ pub struct FetchedJson {
     pub body: String,
 }
 
-#[derive(Serialize, Debug, Clone)]
-pub struct DelayRecord {
+/// Don't take any assumptions about this struct's id field!
+#[derive(Queryable, Insertable, Serialize, Debug, Clone)]
+#[diesel(table_name = delay_records)]
+pub struct DelayRecordWithID {
+    pub id: i64,
+    pub fetched_json_id: i64,
     pub trip_id: String,
     #[serde(with = "time::serde::timestamp")]
     pub time: OffsetDateTime,
@@ -35,6 +39,32 @@ pub struct DelayRecord {
     pub next_station: i64,
     pub percentage_segment: f64,
     pub delay: i64,
+}
+
+#[derive(Queryable, Insertable, Serialize, Debug, Clone)]
+pub struct DelayRecord {
+    pub fetched_json_id: i64,
+    pub trip_id: String,
+    #[serde(with = "time::serde::timestamp")]
+    pub time: OffsetDateTime,
+    pub previous_station: i64,
+    pub next_station: i64,
+    pub percentage_segment: f64,
+    pub delay: i64,
+}
+
+impl From<DelayRecordWithID> for DelayRecord {
+    fn from(item: DelayRecordWithID) -> Self {
+        DelayRecord {
+            fetched_json_id: item.fetched_json_id,
+            trip_id: item.trip_id,
+            time: item.time,
+            previous_station: item.previous_station,
+            next_station: item.next_station,
+            percentage_segment: item.percentage_segment,
+            delay: item.delay,
+        }
+    }
 }
 
 /// Convert a TripOverview into a DelayRecord.
@@ -47,6 +77,7 @@ pub struct DelayRecord {
 /// should be used from the fetched_at field from the database.
 pub fn delay_record_from_trip_overview(
     to: TripOverview,
+    fetched_json_id: Option<i64>,
     fetched_at: OffsetDateTime,
 ) -> Option<DelayRecord> {
     // Sometimes realtimeDataUpdatedAt is null, we just use the time the crawler got the response
@@ -126,6 +157,7 @@ pub fn delay_record_from_trip_overview(
 
     if let (Some(previous_station), Some(next_station)) = (previous_station, next_station) {
         Some(DelayRecord {
+            fetched_json_id: fetched_json_id.unwrap_or(0),
             trip_id: trip.id,
             time: current_time,
             previous_station: previous_station,

@@ -48,7 +48,7 @@ struct CliArgs {
 }
 
 fn run_db_migrations(db: &mut PgConnection) -> () {
-    info!("Runnung migrations...");
+    info!("Running migrations...");
     let migrations_run = db
         .run_pending_migrations(MIGRATIONS)
         .expect("Failed to run migrations.");
@@ -182,6 +182,7 @@ fn websocket_server(
                         if let Ok(trip_overview) = serde_json::from_str(&fj.body) {
                             if let Some(delay_record) = models::delay_record_from_trip_overview(
                                 trip_overview,
+                                None,
                                 fj.fetched_at,
                             ) {
                                 let _ = send_message(&mut websocket, delay_record);
@@ -258,8 +259,7 @@ fn main() {
             .unwrap_or_else(|_| panic!("Error connecting to {}", db_url));
         let mut db2: PgConnection = PgConnection::establish(&db_url)
             .unwrap_or_else(|_| panic!("Error connecting to {}", db_url));
-        crate::cache::update_caches(&mut db1, &mut db2)
-            .expect("Unable to update cache tables in DB");
+        crate::cache::update_caches(&mut db1, db2).expect("Unable to update cache tables in DB");
     }
 
     // The spmc bus with which the crawler can communicate with all open websocket threads.

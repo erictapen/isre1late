@@ -1,40 +1,53 @@
-use crate::models::{DelayRecord, DelayEvent};
+use crate::models::{DelayEvent, DelayRecord, DelayRecordWithID};
 use diesel::pg::PgConnection;
-use log::debug;
+use log::{debug, info};
 use std::collections::HashMap;
 use std::error::Error;
 use time::Duration;
 use time::OffsetDateTime;
 
-pub fn update_caches(db1: &mut PgConnection, db2: &mut PgConnection) -> Result<(), Box<dyn Error>> {
+pub fn update_caches(db1: &mut PgConnection, mut db2: PgConnection) -> Result<(), Box<dyn Error>> {
+    update_delay_records(db1, &mut db2)?;
     update_delay_events(db1, db2)?;
     Ok(())
 }
 
-pub fn update_delay_events(
+pub fn update_delay_records(
     db1: &mut PgConnection,
     db2: &mut PgConnection,
 ) -> Result<(), Box<dyn Error>> {
-    use crate::schema::delay_events;
+    use crate::models::delay_record_from_trip_overview;
+    use crate::schema::delay_records;
     use crate::schema::fetched_json;
     use diesel::pg::PgRowByRowLoadingMode;
     use diesel::QueryDsl;
-    // use diesel::query_dsl::methods::{FilterDsl, LimitDsl, OrderDsl, SelectDsl, ThenOrderDsl};
-    use crate::models::delay_record_from_trip_overview;
     use diesel::{ExpressionMethods, RunQueryDsl};
     use indicatif::{ProgressBar, ProgressStyle};
+    use std::sync::mpsc::channel;
+    use threadpool::ThreadPool;
 
     let bodies_count: i64 = fetched_json::dsl::fetched_json.count().get_result(db1)?;
 
-    let latest_to_id: i64 = *delay_events::dsl::delay_events
-        .select(delay_events::to_id)
-        .order(delay_events::id.desc())
+    let latest_fetched_json_id: i64 = *delay_records::dsl::delay_records
+        .select(delay_records::fetched_json_id)
+        .order(delay_records::fetched_json_id.desc())
         .limit(1)
         .load::<i64>(db1)?
         .first()
         .unwrap_or(&0);
 
-    let progress_bar = ProgressBar::new((bodies_count - latest_to_id) as u64);
+    let todo = (bodies_count - latest_fetched_json_id) as u64;
+
+    if todo <= 0 {
+        return Ok(());
+    }
+
+    info!(
+        "Generationg {} DelayRecord's for delay_records table.",
+        todo
+    );
+
+    let progress_bar = ProgressBar::new(todo);
     progress_bar.set_style(
         ProgressStyle::with_template(
             "[{elapsed}/{eta}] {wide_bar} {per_sec} {human_pos}/{human_len}",
@@ -48,9 +61,110 @@ pub fn update_delay_events(
             fetched_json::fetched_at,
             fetched_json::body,
         ))
-        .filter(fetched_json::id.gt(latest_to_id))
+        .filter(fetched_json::id.gt(latest_fetched_json_id))
         .then_order_by(fetched_json::id.asc())
         .load_iter::<(i64, OffsetDateTime, String), PgRowByRowLoadingMode>(db1)?;
+
+    const MAX_QUEUED_COUNT: usize = 1024 * 1024 * 16;
+
+    let thread_count = std::thread::available_parallelism().map_or(1, std::num::NonZeroUsize::get);
+    let pool = ThreadPool::new(thread_count);
+
+    let (tx, rx) = channel();
+
+    for select_result in fetched_json_iter {
+        if pool.queued_count() < MAX_QUEUED_COUNT {
+            let (row_id, fetched_at, json_body) = select_result?;
+            let tx = tx.clone();
+            pool.execute(move || {
+                if let Ok(trip_overview) = serde_json::from_str(&json_body) {
+                    if let Some(dr) =
+                        delay_record_from_trip_overview(trip_overview, Some(row_id), fetched_at)
+                    {
+                        tx.send(dr).expect("Can't send DelayRecord through channel");
+                    }
+                }
+            });
+        } else {
+            std::thread::sleep(std::time::Duration::from_millis(200));
+        }
+        progress_bar.inc(1);
+    }
+    pool.join();
+
+    progress_bar.finish();
+
+    drop(tx);
+
+    let delay_records = rx.iter().collect::<Vec<DelayRecord>>();
+
+    info!(
+        "Inserting {} DelayRecord's into delay_records table.",
+        &delay_records.len()
+    );
+
+    let progress_bar = ProgressBar::new(delay_records.len() as u64);
+    progress_bar.set_style(
+        ProgressStyle::with_template(
+            "[{elapsed}/{eta}] {wide_bar} {per_sec} {human_pos}/{human_len}",
+        )
+        .unwrap(),
+    );
+
+    // PostgreSQL doesn't allow more than 65535 parameters per statement
+    let chunk_size = 1024;
+    for dr_chunk in delay_records.chunks(chunk_size) {
+        diesel::insert_into(delay_records::table)
+            .values(dr_chunk)
+            .execute(db2)?;
+        progress_bar.inc(chunk_size as u64);
+    }
+
+    progress_bar.finish();
+
+    Ok(())
+}
+
+pub fn update_delay_events(
+    db1: &mut PgConnection,
+    mut db2: PgConnection,
+) -> Result<(), Box<dyn Error>> {
+    use crate::schema::delay_events;
+    use crate::schema::delay_records;
+    use diesel::QueryDsl;
+    use diesel::{ExpressionMethods, RunQueryDsl};
+    use indicatif::{ProgressBar, ProgressStyle};
+
+    let delay_records_count: i64 = delay_records::dsl::delay_records.count().get_result(db1)?;
+
+    let latest_to_id: i64 = *delay_events::dsl::delay_events
+        .select(delay_events::to_id)
+        .order(delay_events::id.desc())
+        .limit(1)
+        .load::<i64>(db1)?
+        .first()
+        .unwrap_or(&0);
+
+    let todo = (delay_records_count - latest_to_id) as u64;
+
+    if todo <= 0 {
+        return Ok(());
+    }
+
+    info!("Updating {} entries in delay_events table.", todo);
+
+    let progress_bar = ProgressBar::new(todo);
+    progress_bar.set_style(
+        ProgressStyle::with_template(
+            "[{elapsed}/{eta}] {wide_bar} {per_sec} {human_pos}/{human_len}",
+        )
+        .unwrap(),
+    );
+
+    let delay_records_iter = delay_records::dsl::delay_records
+        .filter(delay_records::fetched_json_id.gt(latest_to_id))
+        .then_order_by(delay_records::fetched_json_id.asc())
+        .load::<DelayRecordWithID>(db1)?;
 
     // This is going to grow over the entirety of the db, but it should never get larger than a few
     // MB anyway.
@@ -59,26 +173,40 @@ pub fn update_delay_events(
     // at the last 48 hours would be enough?
     let mut trip_id_map = HashMap::new();
 
-    for select_result in fetched_json_iter {
-        let (new_row_id, fetched_at, json_body) = select_result?;
+    let (tx, rx) = std::sync::mpsc::channel::<DelayEvent>();
 
-        if let Ok(trip_overview) = serde_json::from_str(&json_body) {
-            if let Some(new_delay_record) =
-                delay_record_from_trip_overview(trip_overview, fetched_at)
-            {
-                let delay_events =
-                    delay_events_from_delay_record(&mut trip_id_map, new_row_id, new_delay_record);
-
-                if !delay_events.is_empty() {
-                    diesel::insert_into(delay_events::table)
-                        .values(&delay_events)
-                        .execute(db2)?;
-                }
+    let insert_thread = std::thread::spawn(move || {
+        let mut buffer = Vec::new();
+        for de in rx.iter() {
+            buffer.push(de);
+            if buffer.len() > 1024 {
+                diesel::insert_into(delay_events::table)
+                    .values(&buffer)
+                    .execute(&mut db2)
+                    .unwrap();
             }
+        }
+        diesel::insert_into(delay_events::table)
+            .values(&buffer)
+            .execute(&mut db2)
+            .unwrap();
+    });
+
+    for new_delay_record_with_id in delay_records_iter {
+        let new_delay_record = DelayRecord::from(new_delay_record_with_id);
+
+        for de in delay_events_from_delay_record(&mut trip_id_map, new_delay_record) {
+            tx.send(de).expect("Can't send over channel.");
         }
 
         progress_bar.inc(1);
     }
+
+    drop(tx);
+
+    insert_thread
+        .join()
+        .expect("Inserting thread didn't exit cleanly.");
 
     progress_bar.finish();
 
@@ -91,10 +219,11 @@ pub fn update_delay_events(
 /// Zero, if nothing of the above applies.
 fn delay_events_from_delay_record(
     trip_id_map: &mut HashMap<String, (i64, DelayRecord)>,
-    new_row_id: i64,
     new_delay_record: DelayRecord,
 ) -> Vec<DelayEvent> {
     let trip_id = new_delay_record.trip_id.clone();
+
+    let new_row_id: i64 = new_delay_record.fetched_json_id;
 
     let mut result = vec![];
 

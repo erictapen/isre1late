@@ -16,6 +16,19 @@ diesel::table! {
 }
 
 diesel::table! {
+    delay_records (id) {
+        id -> Int8,
+        fetched_json_id -> Int8,
+        trip_id -> Text,
+        time -> Timestamptz,
+        previous_station -> Int8,
+        next_station -> Int8,
+        percentage_segment -> Float8,
+        delay -> Int8,
+    }
+}
+
+diesel::table! {
     fetched_json (id) {
         id -> Int8,
         fetched_at -> Timestamptz,
@@ -24,4 +37,6 @@ diesel::table! {
     }
 }
 
-diesel::allow_tables_to_appear_in_same_query!(delay_events, fetched_json,);
+diesel::joinable!(delay_records -> fetched_json (fetched_json_id));
+
+diesel::allow_tables_to_appear_in_same_query!(delay_events, delay_records, fetched_json,);

@@ -26,7 +26,7 @@ pub struct FetchedJson {
 
 /// The serialisation of an delay event; A time and a span in space where a given trip had a
 /// certain delay.
-#[derive(Queryable, Insertable, Serialize, Debug, Clone)]
+#[derive(Queryable, Insertable, Serialize, Debug, Clone, PartialEq)]
 #[diesel(table_name = delay_events)]
 pub struct DelayEvent {
     pub from_id: i64,

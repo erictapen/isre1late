@@ -1,5 +1,4 @@
-use crate::client::ClientMsg;
-use crate::models::DelayEvent;
+use crate::models::{DelayRecord, DelayEvent};
 use diesel::pg::PgConnection;
 use log::debug;
 use std::collections::HashMap;
@@ -21,7 +20,7 @@ pub fn update_delay_events(
     use diesel::pg::PgRowByRowLoadingMode;
     use diesel::QueryDsl;
     // use diesel::query_dsl::methods::{FilterDsl, LimitDsl, OrderDsl, SelectDsl, ThenOrderDsl};
-    use crate::client::client_msg_from_trip_overview;
+    use crate::models::delay_record_from_trip_overview;
     use diesel::{ExpressionMethods, RunQueryDsl};
     use indicatif::{ProgressBar, ProgressStyle};
 
@@ -56,7 +55,7 @@ pub fn update_delay_events(
     // This is going to grow over the entirety of the db, but it should never get larger than a few
     // MB anyway.
     // TODO An empty HashMap is only correct when we start at row 1. Otherwise we need to read the
-    // last ClientMsg's for every trip_id from DB! Maybe it would be safe to assume, that a looking
+    // last DelayRecord's for every trip_id from DB! Maybe it would be safe to assume, that a looking
     // at the last 48 hours would be enough?
     let mut trip_id_map = HashMap::new();
 
@@ -64,16 +63,17 @@ pub fn update_delay_events(
         let (new_row_id, fetched_at, json_body) = select_result?;
 
         if let Ok(trip_overview) = serde_json::from_str(&json_body) {
-            let new_client_msg: ClientMsg =
-                client_msg_from_trip_overview(trip_overview, fetched_at);
+            if let Some(new_delay_record) =
+                delay_record_from_trip_overview(trip_overview, fetched_at)
+            {
+                let delay_events =
+                    delay_events_from_delay_record(&mut trip_id_map, new_row_id, new_delay_record);
 
-            let delay_events =
-                delay_events_from_client_msg(&mut trip_id_map, new_row_id, new_client_msg);
-
-            if !delay_events.is_empty() {
-                diesel::insert_into(delay_events::table)
-                    .values(&delay_events)
-                    .execute(db2)?;
+                if !delay_events.is_empty() {
+                    diesel::insert_into(delay_events::table)
+                        .values(&delay_events)
+                        .execute(db2)?;
+                }
             }
         }
 
@@ -85,47 +85,16 @@ pub fn update_delay_events(
     Ok(())
 }
 
-// stripped down version of ClientMsg
-#[derive(Debug)]
-struct DelayRecord {
-    time: OffsetDateTime,
-    previous_station: i64,
-    next_station: i64,
-    percentage_segment: f64,
-    delay: i64,
-}
-
 /// Creates zero, one or two delay events from two rows (datapoints) from the fetched_json table.
 /// One, if the two datapoints happened in the same track segment.
 /// Two, if the train changed the track segment to an adjacent track segment.
 /// Zero, if nothing of the above applies.
-fn delay_events_from_client_msg(
+fn delay_events_from_delay_record(
     trip_id_map: &mut HashMap<String, (i64, DelayRecord)>,
     new_row_id: i64,
-    new_client_msg: ClientMsg,
+    new_delay_record: DelayRecord,
 ) -> Vec<DelayEvent> {
-    let trip_id = new_client_msg.trip_id.clone();
-
-    let new_delay_record = {
-        let new_cm = new_client_msg;
-
-        if let (Some(previous_station), Some(next_station)) =
-            (new_cm.previous_station, new_cm.next_station)
-        {
-            assert!(previous_station != next_station);
-
-            DelayRecord {
-                time: new_cm.time,
-                previous_station: previous_station,
-                next_station: next_station,
-                percentage_segment: new_cm.percentage_segment,
-                delay: new_cm.delay,
-            }
-        } else {
-            // We only consider ClientMsg's that have both stations set.
-            return vec![];
-        }
-    };
+    let trip_id = new_delay_record.trip_id.clone();
 
     let mut result = vec![];
 
@@ -220,10 +189,10 @@ mod tests {
     fn normal_delay_event() -> Result<(), Box<dyn Error>> {
         let mut trip_id_map = HashMap::new();
 
-        let mut delay_events = delay_events_from_client_msg(
+        let mut delay_events = delay_events_from_delay_record(
             &mut trip_id_map,
             0,
-            ClientMsg {
+            DelayRecord {
                 trip_id: "t1".to_string(),
                 time: OffsetDateTime::UNIX_EPOCH,
                 previous_station: Some(0),
@@ -235,10 +204,10 @@ mod tests {
 
         assert_eq!(delay_events, vec![]);
 
-        delay_events = delay_events_from_client_msg(
+        delay_events = delay_events_from_delay_record(
             &mut trip_id_map,
             1,
-            ClientMsg {
+            DelayRecord {
                 trip_id: "t1".to_string(),
                 time: OffsetDateTime::UNIX_EPOCH + Duration::seconds(2),
                 previous_station: Some(0),

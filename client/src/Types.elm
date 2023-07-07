@@ -33,8 +33,8 @@ type alias StationId =
 -}
 type alias Delay =
     { time : Posix
-    , previousStation : Maybe StationId
-    , nextStation : Maybe StationId
+    , previousStation : StationId
+    , nextStation : StationId
     , percentageSegment : Float
     , delay : Int
     }
@@ -47,7 +47,7 @@ decodeClientMsg =
     <|
         map5 Delay
             (J.map ((*) 1000 >> millisToPosix) <| field "time" int)
-            (maybe <| field "previous_station" int)
-            (maybe <| field "next_station" int)
+            (field "previous_station" int)
+            (field "next_station" int)
             (field "percentage_segment" float)
             (field "delay" int)

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-use crate::client::ClientMsg;
 use crate::models::*;
 use crate::transport_rest_vbb_v6::{deserialize, HafasMsg, TripOverview, TripsOverview};
 use bus::Bus;
@@ -13,8 +12,6 @@ use std::error::Error;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 use time::OffsetDateTime;
-
-use crate::client::client_msg_from_trip_overview;
 
 const TRIPS_PATH: &'static str = "/trips";
 
@@ -38,7 +35,7 @@ fn fetch_json_and_store_in_db(
     Ok(response_text)
 }
 
-pub fn crawler(db: &mut PgConnection, mut bus: Bus<ClientMsg>) -> Result<(), Box<dyn Error>> {
+pub fn crawler(db: &mut PgConnection, mut bus: Bus<DelayRecord>) -> Result<(), Box<dyn Error>> {
     // It looks like, HAFAS is only cabable of showing new state every 30seconds anyway.
     let loop_interval = Duration::from_secs(30);
 
@@ -103,9 +100,11 @@ pub fn crawler(db: &mut PgConnection, mut bus: Bus<ClientMsg>) -> Result<(), Box
                 }
             };
 
-            let client_msg = client_msg_from_trip_overview(trip_overview, fetched_at);
-            debug!("{:?}", client_msg);
-            bus.broadcast(client_msg);
+            let delay_record = delay_record_from_trip_overview(trip_overview, fetched_at);
+            debug!("{:?}", delay_record);
+            if let Some(delay_record) = delay_record {
+                bus.broadcast(delay_record);
+            }
         }
         sleep(next_execution - Instant::now());
     }

@@ -463,9 +463,7 @@ tripLines distanceMatrix selectedDirection historicSeconds delayDict now =
     let
         tripD : Bool -> Delay -> Maybe ( Float, Float )
         tripD secondPass { time, previousStation, nextStation, percentageSegment, delay } =
-            case ( previousStation, nextStation ) of
-                ( Just pS, Just nS ) ->
-                    case trainPos distanceMatrix pS nS percentageSegment of
+                    case trainPos distanceMatrix previousStation nextStation percentageSegment of
                         Just ( yPos, direction, skipsLines ) ->
                             if direction == selectedDirection then
                                 Just
@@ -490,8 +488,6 @@ tripLines distanceMatrix selectedDirection historicSeconds delayDict now =
                         _ ->
                             Nothing
 
-                _ ->
-                    Nothing
 
         tripLine : ( TripId, List Delay ) -> Svg Msg
         tripLine ( tripId, delays ) =

@@ -6,7 +6,7 @@
 extern crate serde_with;
 
 use self::models::*;
-use crate::client::ClientMsg;
+use crate::models::DelayRecord;
 use bus::BusReadHandle;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
@@ -22,7 +22,6 @@ mod transport_rest_vbb_v6;
 
 mod cache;
 mod cli_utils;
-pub mod client;
 pub mod crawler;
 pub mod models;
 pub mod schema;
@@ -63,7 +62,7 @@ fn run_db_migrations(db: &mut PgConnection) -> () {
 /// Open the webserver and publish fetched data via Websockets.
 fn websocket_server(
     db: &mut PgConnection,
-    bus_read_handle: BusReadHandle<ClientMsg>,
+    bus_read_handle: BusReadHandle<DelayRecord>,
     listen: std::net::IpAddr,
     port: u16,
 ) -> Result<(), Box<dyn Error>> {
@@ -139,7 +138,7 @@ fn websocket_server(
 
                 fn send_message(
                     websocket: &mut WebSocket<TcpStream>,
-                    msg: ClientMsg,
+                    msg: DelayRecord,
                 ) -> Result<(), ()> {
                     match websocket.write_message(Text(
                         serde_json::to_string(&msg).expect("This shouldn't fail."),
@@ -181,10 +180,12 @@ fn websocket_server(
                     for fj_result in old_delays {
                         let fj = fj_result?;
                         if let Ok(trip_overview) = serde_json::from_str(&fj.body) {
-                            let _ = send_message(
-                                &mut websocket,
-                                client::client_msg_from_trip_overview(trip_overview, fj.fetched_at),
-                            );
+                            if let Some(delay_record) = models::delay_record_from_trip_overview(
+                                trip_overview,
+                                fj.fetched_at,
+                            ) {
+                                let _ = send_message(&mut websocket, delay_record);
+                            }
                         }
                     }
                 }

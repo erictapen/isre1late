@@ -175,41 +175,29 @@ pub fn update_delay_events(
     // at the last 48 hours would be enough?
     let mut trip_id_map = HashMap::new();
 
-    let (tx, rx) = std::sync::mpsc::channel::<DelayEvent>();
-
-    let insert_thread = std::thread::spawn(move || {
-        let mut buffer = Vec::new();
-        for de in rx.iter() {
-            buffer.push(de);
-            if buffer.len() > 1024 {
-                diesel::insert_into(delay_events::table)
-                    .values(&buffer)
-                    .execute(&mut db2)
-                    .unwrap();
-                buffer = Vec::new();
-            }
-        }
-        diesel::insert_into(delay_events::table)
-            .values(&buffer)
-            .execute(&mut db2)
-            .unwrap();
-    });
-
+    let mut chunk = Vec::new();
     for new_delay_record_with_id in delay_records_iter {
         let new_delay_record = DelayRecord::from(new_delay_record_with_id);
 
-        for de in delay_events_from_delay_record(&mut trip_id_map, new_delay_record) {
-            tx.send(de).expect("Can't send over channel.");
+        let des = delay_events_from_delay_record(&mut trip_id_map, new_delay_record);
+        for de in des {
+            chunk.push(de);
+        }
+        if chunk.len() > 1024 {
+            diesel::insert_into(delay_events::table)
+                .values(&chunk)
+                .execute(&mut db2)
+                .unwrap();
+            chunk = Vec::new();
         }
 
         progress_bar.inc(1);
     }
 
-    drop(tx);
-
-    insert_thread
-        .join()
-        .expect("Inserting thread didn't exit cleanly.");
+    diesel::insert_into(delay_events::table)
+        .values(&chunk)
+        .execute(&mut db2)
+        .unwrap();
 
     progress_bar.finish();
 

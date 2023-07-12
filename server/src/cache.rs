@@ -6,6 +6,8 @@ use std::error::Error;
 use time::Duration;
 use time::OffsetDateTime;
 
+/// Update all the cache tables. This is everytime on startup, but would only do actual work in the
+/// case of a manual cache deletion or when a new kind of cache got added.
 pub fn update_caches(db1: &mut PgConnection, mut db2: PgConnection) -> Result<(), Box<dyn Error>> {
     update_delay_records(db1, &mut db2)?;
     update_delay_events(db1, db2)?;
@@ -169,7 +171,7 @@ pub fn update_delay_events(
     // This is going to grow over the entirety of the db, but it should never get larger than a few
     // MB anyway.
     // TODO An empty HashMap is only correct when we start at row 1. Otherwise we need to read the
-    // last DelayRecord's for every trip_id from DB! Maybe it would be safe to assume, that a looking
+    // last DelayRecord's for every trip_id from DB! Maybe it would be safe to assume, that looking
     // at the last 48 hours would be enough?
     let mut trip_id_map = HashMap::new();
 
@@ -184,6 +186,7 @@ pub fn update_delay_events(
                     .values(&buffer)
                     .execute(&mut db2)
                     .unwrap();
+                buffer = Vec::new();
             }
         }
         diesel::insert_into(delay_events::table)
@@ -237,7 +240,8 @@ fn delay_events_from_delay_record(
         let duration = (new.time - old.time).whole_seconds();
 
         if old.previous_station == new.previous_station && old.next_station == new.next_station {
-            // The trip didn't change the segment inbetween the two datapoints.
+            // The trip didn't change the segment inbetween the two datapoints
+
             let delay_event = DelayEvent {
                 from_id: *old_row_id,
                 to_id: new_row_id,
@@ -259,7 +263,23 @@ fn delay_events_from_delay_record(
             // The ratio we assume between the two delay events. This is inaccurate and
             // will likely cause artifacts, as we are using percentage of distance as a
             // proxy for time. For the real value we'd need an actual timetable.
-            let ratio = (1.0 - old.percentage_segment) / new.percentage_segment;
+            let ratio = {
+                let mut v = (1.0 - old.percentage_segment)
+                    * (1.0 / (1.0 - old.percentage_segment + new.percentage_segment));
+                if v.is_nan() {
+                    // In this case (e.g. if the train is in a station for the entire duration) we
+                    // just divide the event 50/50.
+                    v = 0.5;
+                }
+                v
+            };
+            assert!(
+                ratio >= 0.0 && ratio <= 1.0,
+                "{:?} --- {:?}: {}",
+                old,
+                new,
+                ratio
+            );
 
             // The timestamp inbetween the two delay events, e.g. an idealised point in
             // time where the train was in the station.

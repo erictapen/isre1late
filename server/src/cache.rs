@@ -51,14 +51,14 @@ pub fn update_delay_records(
         .first()
         .unwrap_or(&0);
 
-    let todo = (bodies_count - latest_fetched_json_id) as u64;
+    let todo = u64::try_from(bodies_count - latest_fetched_json_id).unwrap_or(0);
 
     if todo <= 0 {
         return Ok(());
     }
 
     info!(
-        "Generationg {} DelayRecord's for delay_records table.",
+        "Generating {} DelayRecord's for delay_records table.",
         todo.to_formatted_string(&Locale::en)
     );
 
@@ -160,13 +160,18 @@ pub fn update_delay_events(
         .first()
         .unwrap_or(&0);
 
-    let todo = (delay_records_count - latest_to_id) as u64;
+    let todo = u64::try_from(delay_records_count - latest_to_id).unwrap_or(0);
 
-    if todo <= 0 {
+    if todo > 0 {
         info!("Updating {} entries in delay_events table.", todo);
     }
 
-    let progress_bar = ProgressBar::new(todo);
+    info!(
+        "Building trip_id_map from {} delay records.",
+        delay_records_count.to_formatted_string(&Locale::en)
+    );
+
+    let progress_bar = ProgressBar::new(u64::try_from(delay_records_count).unwrap_or(0));
     progress_bar.set_style(
         ProgressStyle::with_template(
             "[{elapsed}/{eta}] {wide_bar} {per_sec} {human_pos}/{human_len}",
@@ -191,7 +196,7 @@ pub fn update_delay_events(
         let des = delay_events_from_delay_record(&mut trip_id_map, &new_delay_record);
 
         // We only write to db if the delay event isn't there yet.
-        if latest_to_id < new_delay_record.fetched_json_id {
+        if latest_to_id <= new_delay_record.fetched_json_id {
             for de in des {
                 chunk.push(de);
             }

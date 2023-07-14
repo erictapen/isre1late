@@ -257,7 +257,7 @@ fn main() {
     {
         let mut db1: PgConnection = PgConnection::establish(&db_url)
             .unwrap_or_else(|_| panic!("Error connecting to {}", db_url));
-        let mut db2: PgConnection = PgConnection::establish(&db_url)
+        let db2: PgConnection = PgConnection::establish(&db_url)
             .unwrap_or_else(|_| panic!("Error connecting to {}", db_url));
         crate::cache::update_caches(&mut db1, db2).expect("Unable to update cache tables in DB");
     }

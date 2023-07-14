@@ -182,7 +182,7 @@ fn websocket_server(
                         if let Ok(trip_overview) = serde_json::from_str(&fj.body) {
                             if let Some(delay_record) = models::delay_record_from_trip_overview(
                                 trip_overview,
-                                None,
+                                fj.id,
                                 fj.fetched_at,
                             ) {
                                 let _ = send_message(&mut websocket, delay_record);

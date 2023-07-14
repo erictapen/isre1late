@@ -77,7 +77,7 @@ impl From<DelayRecordWithID> for DelayRecord {
 /// should be used from the fetched_at field from the database.
 pub fn delay_record_from_trip_overview(
     to: TripOverview,
-    fetched_json_id: Option<i64>,
+    fetched_json_id: i64,
     fetched_at: OffsetDateTime,
 ) -> Option<DelayRecord> {
     // Sometimes realtimeDataUpdatedAt is null, we just use the time the crawler got the response
@@ -157,7 +157,7 @@ pub fn delay_record_from_trip_overview(
 
     if let (Some(previous_station), Some(next_station)) = (previous_station, next_station) {
         Some(DelayRecord {
-            fetched_json_id: fetched_json_id.unwrap_or(0),
+            fetched_json_id: fetched_json_id,
             trip_id: trip.id,
             time: current_time,
             previous_station: previous_station,

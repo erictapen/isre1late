@@ -1,11 +1,11 @@
 use crate::models::{DelayEvent, DelayRecord, DelayRecordWithID};
 use diesel::pg::PgConnection;
 use log::{debug, info};
+use num_format::{Locale, ToFormattedString};
 use std::collections::HashMap;
 use std::error::Error;
 use time::Duration;
 use time::OffsetDateTime;
-use num_format::{Locale, ToFormattedString};
 
 /// Cache state that we don't save in db but generate on each startup.
 /// Nothing too expensive should get in here, in order to preserve fast startup times.
@@ -94,7 +94,7 @@ pub fn update_delay_records(
             pool.execute(move || {
                 if let Ok(trip_overview) = serde_json::from_str(&json_body) {
                     if let Some(dr) =
-                        delay_record_from_trip_overview(trip_overview, Some(row_id), fetched_at)
+                        delay_record_from_trip_overview(trip_overview, row_id, fetched_at)
                     {
                         tx.send(dr).expect("Can't send DelayRecord through channel");
                     }

@@ -20,7 +20,7 @@ fn fetch_json_and_store_in_db(
     db: &mut PgConnection,
     url: String,
     fetched_at: OffsetDateTime,
-) -> Result<String, Box<dyn Error>> {
+) -> Result<(i64, String), Box<dyn Error>> {
     use crate::schema::fetched_json;
 
     let response_text = reqwest::blocking::get(url.clone())?.text()?;
@@ -29,11 +29,13 @@ fn fetch_json_and_store_in_db(
         url: url,
         body: response_text.clone(),
     };
-    diesel::insert_into(fetched_json::table)
+    match &diesel::insert_into(fetched_json::table)
         .values(&fetched_json)
-        .execute(db)?;
-
-    Ok(response_text)
+        .get_results::<SelectFetchedJson>(db)?[..]
+    {
+        [sfj] => Ok((sfj.id, response_text)),
+        _ => Err("Invalid amount of rows returned".into()),
+    }
 }
 
 pub fn crawler(
@@ -53,7 +55,7 @@ pub fn crawler(
             info!("Fetching currently running trips.");
             let url = format!("{hafas_base_url}{TRIPS_PATH}?lineName=RE1&operatorNames=ODEG");
             let fetched_at = OffsetDateTime::now_utc();
-            let json = match fetch_json_and_store_in_db(db, url, fetched_at) {
+            let (_, json) = match fetch_json_and_store_in_db(db, url, fetched_at) {
                 Ok(fj) => fj,
                 Err(e) => {
                     error!("{}", e);
@@ -86,7 +88,7 @@ pub fn crawler(
             );
             info!("Fetching trip data from {}", url);
             let fetched_at = OffsetDateTime::now_utc();
-            let json = match fetch_json_and_store_in_db(db, url, fetched_at) {
+            let (row_id, json) = match fetch_json_and_store_in_db(db, url, fetched_at) {
                 Ok(fj) => fj,
                 Err(e) => {
                     error!("{}", e);
@@ -105,7 +107,7 @@ pub fn crawler(
                 }
             };
 
-            let delay_record = delay_record_from_trip_overview(trip_overview, None, fetched_at);
+            let delay_record = delay_record_from_trip_overview(trip_overview, row_id, fetched_at);
             debug!("{:?}", delay_record);
             if let Some(delay_record) = delay_record {
                 bus.broadcast(delay_record.clone());

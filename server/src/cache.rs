@@ -345,7 +345,7 @@ mod tests {
 
         let mut delay_events = delay_events_from_delay_record(
             &mut trip_id_map,
-            DelayRecord {
+            &DelayRecord {
                 fetched_json_id: 0,
                 trip_id: "t1".to_string(),
                 time: OffsetDateTime::UNIX_EPOCH,
@@ -360,7 +360,7 @@ mod tests {
 
         delay_events = delay_events_from_delay_record(
             &mut trip_id_map,
-            DelayRecord {
+            &DelayRecord {
                 fetched_json_id: 1,
                 trip_id: "t1".to_string(),
                 time: OffsetDateTime::UNIX_EPOCH + Duration::seconds(2),

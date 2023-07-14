@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use time::Duration;
 use time::OffsetDateTime;
+use num_format::{Locale, ToFormattedString};
 
 /// Cache state that we don't save in db but generate on each startup.
 /// Nothing too expensive should get in here, in order to preserve fast startup times.
@@ -58,7 +59,7 @@ pub fn update_delay_records(
 
     info!(
         "Generationg {} DelayRecord's for delay_records table.",
-        todo
+        todo.to_formatted_string(&Locale::en)
     );
 
     let progress_bar = ProgressBar::new(todo);
@@ -114,7 +115,7 @@ pub fn update_delay_records(
 
     info!(
         "Inserting {} DelayRecord's into delay_records table.",
-        &delay_records.len()
+        &delay_records.len().to_formatted_string(&Locale::en)
     );
 
     let progress_bar = ProgressBar::new(delay_records.len() as u64);

@@ -29,3 +29,4 @@ bus = { version = "*", git = "https://github.com/agausmann/bus", rev = "faca2750
 tungstenite = "*"
 threadpool = "*"
 indicatif = "*"
+num-format = "*"

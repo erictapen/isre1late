@@ -103,7 +103,12 @@ pub fn crawler(db: &mut PgConnection, mut bus: Bus<DelayRecord>) -> Result<(), B
             let delay_record = delay_record_from_trip_overview(trip_overview, None, fetched_at);
             debug!("{:?}", delay_record);
             if let Some(delay_record) = delay_record {
-                bus.broadcast(delay_record);
+                bus.broadcast(delay_record.clone());
+
+                use crate::schema::delay_records;
+                diesel::insert_into(delay_records::table)
+                    .values(delay_record)
+                    .execute(db)?;
             }
         }
         sleep(next_execution - Instant::now());

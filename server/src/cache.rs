@@ -6,12 +6,24 @@ use std::error::Error;
 use time::Duration;
 use time::OffsetDateTime;
 
+/// Cache state that we don't save in db but generate on each startup.
+/// Nothing too expensive should get in here, in order to preserve fast startup times.
+pub struct CacheState {
+    pub trip_id_map: HashMap<String, (i64, DelayRecord)>,
+}
+
 /// Update all the cache tables. This is everytime on startup, but would only do actual work in the
 /// case of a manual cache deletion or when a new kind of cache got added.
-pub fn update_caches(db1: &mut PgConnection, mut db2: PgConnection) -> Result<(), Box<dyn Error>> {
+/// The return object CacheState is then used by the crawler.
+pub fn update_caches(
+    db1: &mut PgConnection,
+    mut db2: PgConnection,
+) -> Result<CacheState, Box<dyn Error>> {
     update_delay_records(db1, &mut db2)?;
-    update_delay_events(db1, db2)?;
-    Ok(())
+    let trip_id_map = update_delay_events(db1, db2)?;
+    Ok(CacheState {
+        trip_id_map: trip_id_map,
+    })
 }
 
 pub fn update_delay_records(
@@ -130,7 +142,7 @@ pub fn update_delay_records(
 pub fn update_delay_events(
     db1: &mut PgConnection,
     mut db2: PgConnection,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<HashMap<String, (i64, DelayRecord)>, Box<dyn Error>> {
     use crate::schema::delay_events;
     use crate::schema::delay_records;
     use diesel::QueryDsl;
@@ -150,10 +162,8 @@ pub fn update_delay_events(
     let todo = (delay_records_count - latest_to_id) as u64;
 
     if todo <= 0 {
-        return Ok(());
+        info!("Updating {} entries in delay_events table.", todo);
     }
-
-    info!("Updating {} entries in delay_events table.", todo);
 
     let progress_bar = ProgressBar::new(todo);
     progress_bar.set_style(
@@ -164,31 +174,32 @@ pub fn update_delay_events(
     );
 
     let delay_records_iter = delay_records::dsl::delay_records
-        .filter(delay_records::fetched_json_id.gt(latest_to_id))
         .then_order_by(delay_records::fetched_json_id.asc())
         .load::<DelayRecordWithID>(db1)?;
 
     // This is going to grow over the entirety of the db, but it should never get larger than a few
     // MB anyway.
-    // TODO An empty HashMap is only correct when we start at row 1. Otherwise we need to read the
-    // last DelayRecord's for every trip_id from DB! Maybe it would be safe to assume, that looking
-    // at the last 48 hours would be enough?
-    let mut trip_id_map = HashMap::new();
+    // For now we are reading all the delay records to build this HashMap. Maybe it would be safe
+    // to assume, that looking at the last 48 hours would be enough?
+    let mut trip_id_map: HashMap<String, (i64, DelayRecord)> = HashMap::new();
 
     let mut chunk = Vec::new();
     for new_delay_record_with_id in delay_records_iter {
         let new_delay_record = DelayRecord::from(new_delay_record_with_id);
 
-        let des = delay_events_from_delay_record(&mut trip_id_map, new_delay_record);
-        for de in des {
-            chunk.push(de);
-        }
-        if chunk.len() > 1024 {
-            diesel::insert_into(delay_events::table)
-                .values(&chunk)
-                .execute(&mut db2)
-                .unwrap();
-            chunk = Vec::new();
+        let des = delay_events_from_delay_record(&mut trip_id_map, &new_delay_record);
+
+        // We only write to db if the delay event isn't there yet.
+        if latest_to_id < new_delay_record.fetched_json_id {
+            for de in des {
+                chunk.push(de);
+            }
+            if chunk.len() > 1024 {
+                diesel::insert_into(delay_events::table)
+                    .values(&chunk)
+                    .execute(&mut db2)?;
+                chunk = Vec::new();
+            }
         }
 
         progress_bar.inc(1);
@@ -201,16 +212,16 @@ pub fn update_delay_events(
 
     progress_bar.finish();
 
-    Ok(())
+    Ok(trip_id_map)
 }
 
 /// Creates zero, one or two delay events from two rows (datapoints) from the fetched_json table.
 /// One, if the two datapoints happened in the same track segment.
 /// Two, if the train changed the track segment to an adjacent track segment.
 /// Zero, if nothing of the above applies.
-fn delay_events_from_delay_record(
+pub fn delay_events_from_delay_record(
     trip_id_map: &mut HashMap<String, (i64, DelayRecord)>,
-    new_delay_record: DelayRecord,
+    new_delay_record: &DelayRecord,
 ) -> Vec<DelayEvent> {
     let trip_id = new_delay_record.trip_id.clone();
 
@@ -312,7 +323,7 @@ fn delay_events_from_delay_record(
             result = vec![];
         }
     };
-    trip_id_map.insert(trip_id.clone(), (new_row_id, new_delay_record));
+    trip_id_map.insert(trip_id.clone(), (new_row_id, new_delay_record.clone()));
     result
 }
 

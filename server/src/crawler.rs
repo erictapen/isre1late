@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+use crate::cache::{delay_events_from_delay_record, CacheState};
 use crate::models::*;
 use crate::transport_rest_vbb_v6::{deserialize, HafasMsg, TripOverview, TripsOverview};
 use bus::Bus;
@@ -35,7 +36,11 @@ fn fetch_json_and_store_in_db(
     Ok(response_text)
 }
 
-pub fn crawler(db: &mut PgConnection, mut bus: Bus<DelayRecord>) -> Result<(), Box<dyn Error>> {
+pub fn crawler(
+    db: &mut PgConnection,
+    mut bus: Bus<DelayRecord>,
+    mut cache_state: CacheState,
+) -> Result<(), Box<dyn Error>> {
     // It looks like, HAFAS is only cabable of showing new state every 30seconds anyway.
     let loop_interval = Duration::from_secs(30);
 
@@ -107,8 +112,17 @@ pub fn crawler(db: &mut PgConnection, mut bus: Bus<DelayRecord>) -> Result<(), B
 
                 use crate::schema::delay_records;
                 diesel::insert_into(delay_records::table)
-                    .values(delay_record)
+                    .values(&delay_record)
                     .execute(db)?;
+
+                let delay_events: Vec<DelayEvent> =
+                    delay_events_from_delay_record(&mut cache_state.trip_id_map, &delay_record);
+
+                use crate::schema::delay_events;
+                diesel::insert_into(delay_events::table)
+                    .values(&delay_events)
+                    .execute(db)
+                    .unwrap();
             }
         }
         sleep(next_execution - Instant::now());

@@ -256,13 +256,14 @@ fn main() {
         }
     }
 
-    {
+    let cache_state: cache::CacheState = {
         let mut db1: PgConnection = PgConnection::establish(&db_url)
             .unwrap_or_else(|_| panic!("Error connecting to {}", db_url));
         let db2: PgConnection = PgConnection::establish(&db_url)
             .unwrap_or_else(|_| panic!("Error connecting to {}", db_url));
-        crate::cache::update_caches(&mut db1, db2).expect("Unable to update cache tables in DB");
-    }
+        crate::cache::update_caches(&mut db1, db2)
+            .unwrap_or_else(|e| panic!("Unable to update cache tables in DB: {}", e))
+    };
 
     // The spmc bus with which the crawler can communicate with all open websocket threads.
     let bus = bus::Bus::new(10 * 1024);
@@ -274,7 +275,7 @@ fn main() {
         std::thread::spawn(move || {
             let mut db: PgConnection = PgConnection::establish(&db_url)
                 .unwrap_or_else(|_| panic!("Error connecting to {}", db_url));
-            crawler::crawler(&mut db, bus).unwrap_or_else(|e| {
+            crawler::crawler(&mut db, bus, cache_state).unwrap_or_else(|e| {
                 error!("{}", e);
                 std::process::exit(1);
             });

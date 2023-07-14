@@ -241,6 +241,9 @@ fn main() {
     {
         let mut db: PgConnection = PgConnection::establish(&db_url)
             .unwrap_or_else(|_| panic!("Error connecting to {}", db_url));
+
+        run_db_migrations(&mut db);
+
         if args.cmd_validate_hafas_schema {
             crate::cli_utils::validate_hafas_schema(&mut db).unwrap_or_else(|e| {
                 error!("{}", e);
@@ -248,10 +251,9 @@ fn main() {
             });
             std::process::exit(0);
         } else if args.cmd_run_db_migrations {
-            run_db_migrations(&mut db);
+            // We already ran the migrations above.
             std::process::exit(0);
         }
-        run_db_migrations(&mut db);
     }
 
     {

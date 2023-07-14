@@ -22,6 +22,7 @@ pub fn update_caches(
 ) -> Result<CacheState, Box<dyn Error>> {
     update_delay_records(db1, &mut db2)?;
     let trip_id_map = update_delay_events(db1, db2)?;
+    info!("Generated trip_id_map containing {} trip_id's", trip_id_map.len());
     Ok(CacheState {
         trip_id_map: trip_id_map,
     })
@@ -58,7 +59,7 @@ pub fn update_delay_records(
     }
 
     info!(
-        "Generating {} DelayRecord's for delay_records table.",
+        "Generating DelayRecord's from {} json blobs for delay_records table.",
         todo.to_formatted_string(&Locale::en)
     );
 

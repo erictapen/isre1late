@@ -22,6 +22,10 @@ pub fn update_caches(
 ) -> Result<CacheState, Box<dyn Error>> {
     update_delay_records(db1, &mut db2)?;
     let trip_id_map = update_delay_events(db1, db2)?;
+    info!(
+        "Built trip_id_map containing {} trip_id's",
+        trip_id_map.len().to_formatted_string(&Locale::en)
+    );
     Ok(CacheState {
         trip_id_map: trip_id_map,
     })
@@ -58,7 +62,7 @@ pub fn update_delay_records(
     }
 
     info!(
-        "Generating {} DelayRecord's for delay_records table.",
+        "Generating DelayRecord's from {} json blobs for delay_records table.",
         todo.to_formatted_string(&Locale::en)
     );
 
@@ -183,8 +187,9 @@ pub fn update_delay_events(
         .then_order_by(delay_records::fetched_json_id.asc())
         .load::<DelayRecordWithID>(db1)?;
 
-    // This is going to grow over the entirety of the db, but it should never get larger than a few
-    // MB anyway.
+    // TODO This is going to grow over the entirety of the db, and is already taking a huge portion of
+    // the RAM!
+    //
     // For now we are reading all the delay records to build this HashMap. Maybe it would be safe
     // to assume, that looking at the last 48 hours would be enough?
     let mut trip_id_map: HashMap<String, (i64, DelayRecord)> = HashMap::new();

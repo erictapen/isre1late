@@ -2,4 +2,6 @@
 
 sudo -u postgres psql -c "DROP DATABASE isre1late;"
 
-unzstd --stdout isre1late.sql.zstd | pv | sudo -u postgres psql
+sudo systemctl restart postgresql.service
+
+unzstd --stdout isre1late.sql.zstd | pv | psql

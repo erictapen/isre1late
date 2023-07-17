@@ -6,6 +6,7 @@ use crate::schema::*;
 use crate::transport_rest_vbb_v6::TripOverview;
 use diesel::prelude::*;
 use log::debug;
+use memuse::DynamicUsage;
 use serde::Serialize;
 use time::OffsetDateTime;
 
@@ -52,6 +53,8 @@ pub struct DelayRecord {
     pub percentage_segment: f64,
     pub delay: i64,
 }
+
+memuse::impl_no_dynamic_usage!(DelayRecord);
 
 impl From<DelayRecordWithID> for DelayRecord {
     fn from(item: DelayRecordWithID) -> Self {

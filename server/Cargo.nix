@@ -397,6 +397,22 @@ rec {
         features = {
         };
       };
+      "bytefmt" = rec {
+        crateName = "bytefmt";
+        version = "0.1.7";
+        edition = "2015";
+        sha256 = "0x1xxlxfbmqhbqmcyjjvifsr46cbw02izlbwvba4f752b7q1l2sr";
+        authors = [
+          "Muhammad Syifa <emsifa@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "regex";
+            packageId = "regex";
+          }
+        ];
+
+      };
       "byteorder" = rec {
         crateName = "byteorder";
         version = "1.4.3";
@@ -2253,6 +2269,10 @@ rec {
             packageId = "bus";
           }
           {
+            name = "bytefmt";
+            packageId = "bytefmt";
+          }
+          {
             name = "diesel";
             packageId = "diesel";
             features = [ "postgres" "postgres_backend" "time" ];
@@ -2273,6 +2293,10 @@ rec {
           {
             name = "log";
             packageId = "log";
+          }
+          {
+            name = "memuse";
+            packageId = "memuse";
           }
           {
             name = "monostate";
@@ -2564,6 +2588,18 @@ rec {
         features = {
         };
         resolvedDefaultFeatures = [ "default" ];
+      };
+      "memuse" = rec {
+        crateName = "memuse";
+        version = "0.2.1";
+        edition = "2018";
+        sha256 = "06kgsfv8fnhqbwnq3q841ndfq5wkanz5jpykldpfmrdc6na8ci91";
+        authors = [
+          "Jack Grigg <thestr4d@gmail.com>"
+        ];
+        features = {
+          "nonempty" = [ "dep:nonempty" ];
+        };
       };
       "migrations_internals" = rec {
         crateName = "migrations_internals";
@@ -3872,7 +3908,7 @@ rec {
           "unstable" = [ "pattern" ];
           "use_std" = [ "std" ];
         };
-        resolvedDefaultFeatures = [ "std" "unicode" "unicode-age" "unicode-bool" "unicode-case" "unicode-gencat" "unicode-perl" "unicode-script" "unicode-segment" ];
+        resolvedDefaultFeatures = [ "default" "perf" "perf-backtrack" "perf-cache" "perf-dfa" "perf-inline" "perf-literal" "perf-onepass" "std" "unicode" "unicode-age" "unicode-bool" "unicode-case" "unicode-gencat" "unicode-perl" "unicode-script" "unicode-segment" ];
       };
       "regex-automata" = rec {
         crateName = "regex-automata";
@@ -3932,7 +3968,7 @@ rec {
           "unicode-script" = [ "regex-syntax?/unicode-script" ];
           "unicode-segment" = [ "regex-syntax?/unicode-segment" ];
         };
-        resolvedDefaultFeatures = [ "alloc" "meta" "nfa-pikevm" "nfa-thompson" "std" "syntax" "unicode" "unicode-age" "unicode-bool" "unicode-case" "unicode-gencat" "unicode-perl" "unicode-script" "unicode-segment" "unicode-word-boundary" ];
+        resolvedDefaultFeatures = [ "alloc" "dfa-onepass" "hybrid" "meta" "nfa-backtrack" "nfa-pikevm" "nfa-thompson" "perf-inline" "perf-literal" "perf-literal-multisubstring" "perf-literal-substring" "std" "syntax" "unicode" "unicode-age" "unicode-bool" "unicode-case" "unicode-gencat" "unicode-perl" "unicode-script" "unicode-segment" "unicode-word-boundary" ];
       };
       "regex-syntax" = rec {
         crateName = "regex-syntax";
@@ -3948,7 +3984,7 @@ rec {
           "default" = [ "std" "unicode" ];
           "unicode" = [ "unicode-age" "unicode-bool" "unicode-case" "unicode-gencat" "unicode-perl" "unicode-script" "unicode-segment" ];
         };
-        resolvedDefaultFeatures = [ "std" "unicode" "unicode-age" "unicode-bool" "unicode-case" "unicode-gencat" "unicode-perl" "unicode-script" "unicode-segment" ];
+        resolvedDefaultFeatures = [ "default" "std" "unicode" "unicode-age" "unicode-bool" "unicode-case" "unicode-gencat" "unicode-perl" "unicode-script" "unicode-segment" ];
       };
       "reqwest" = rec {
         crateName = "reqwest";

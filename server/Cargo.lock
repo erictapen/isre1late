@@ -128,6 +128,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bytefmt"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "590b1af059a21c47d4da7cd11f05e08b1992b58b5b4acf2a5e10d7e53aed3d74"
+dependencies = [
+ "regex",
+]
+
+[[package]]
 name = "byteorder"
 version = "1.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -767,11 +776,13 @@ name = "isre1late-server"
 version = "0.1.0"
 dependencies = [
  "bus",
+ "bytefmt",
  "diesel",
  "diesel_migrations",
  "docopt",
  "indicatif",
  "log",
+ "memuse",
  "monostate",
  "num-format",
  "reqwest",
@@ -874,6 +885,12 @@ checksum = "5de893c32cde5f383baa4c04c5d6dbdd735cfd4a794b0debdb2bb1b421da5ff4"
 dependencies = [
  "autocfg 1.1.0",
 ]
+
+[[package]]
+name = "memuse"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2145869435ace5ea6ea3d35f59be559317ec9a0d04e1812d5f185a87b6d36f1a"
 
 [[package]]
 name = "migrations_internals"

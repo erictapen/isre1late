@@ -1,6 +1,8 @@
 use crate::models::{DelayEvent, DelayRecord, DelayRecordWithID};
+use bytefmt;
 use diesel::pg::PgConnection;
 use log::{debug, info};
+use memuse::DynamicUsage;
 use num_format::{Locale, ToFormattedString};
 use std::collections::HashMap;
 use std::error::Error;
@@ -22,9 +24,11 @@ pub fn update_caches(
 ) -> Result<CacheState, Box<dyn Error>> {
     update_delay_records(db1, &mut db2)?;
     let trip_id_map = update_delay_events(db1, db2)?;
+    let usage: u64 = trip_id_map.dynamic_usage().try_into().unwrap();
     info!(
-        "Built trip_id_map containing {} trip_id's",
-        trip_id_map.len().to_formatted_string(&Locale::en)
+        "Built trip_id_map containing {} trip_id's, allocating about {} of memory.",
+        trip_id_map.len().to_formatted_string(&Locale::en),
+        bytefmt::format(usage)
     );
     Ok(CacheState {
         trip_id_map: trip_id_map,

@@ -148,7 +148,7 @@ initDistanceMatrix =
 applicationUrl historicSeconds =
     Url.Builder.crossOrigin
         "wss://isre1late.erictapen.name"
-        [ "api", "delays" ]
+        [ "api", "ws", "delays" ]
         [ Url.Builder.int "historic" historicSeconds ]
 
 

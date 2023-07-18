@@ -54,8 +54,8 @@ pub fn websocket_server(
             }
 
             match request.uri().path() {
-                "/api/delays" => {
-                    debug!("The request's route is: /api/delays");
+                "/api/ws/delays" => {
+                    debug!("The request's route is: /api/ws/delays");
                     Ok(response)
                 }
                 other_path => {

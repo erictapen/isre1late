@@ -99,6 +99,11 @@
               example = 8080;
               description = "TCP port to use.";
             };
+            websocketPort = mkOption {
+              type = types.int;
+              example = 8081;
+              description = "TCP port to use for the websocket server.";
+            };
             hafasBaseUrl = mkOption {
               type = types.str;
               default = "https://v6.vbb.transport.rest";
@@ -132,7 +137,8 @@
                 Type = "simple";
                 ExecStart = ''
                   ${server}/bin/isre1late-server \
-                    --port ${builtins.toString cfg.port}
+                    --port ${builtins.toString cfg.port} \
+                    --ws-port ${builtins.toString cfg.websocketPort}
                 '';
                 Restart = "always";
                 RestartSec = "30s";
@@ -158,8 +164,9 @@
               locations = {
                 "/".alias = "${client}/";
                 "/api".return = "301 /api/";
-                "/api/" = {
-                  proxyPass = "http://[::1]:${toString cfg.port}";
+                "/api/ws".return = "301 /api/ws/";
+                "/api/ws/" = {
+                  proxyPass = "http://[::1]:${toString cfg.websocketPort}";
                   extraConfig = ''
                     proxy_http_version 1.1;
                     proxy_set_header Upgrade $http_upgrade;

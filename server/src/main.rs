@@ -28,14 +28,15 @@ mod web_api;
 /// I gave up on giving validate-hafas-schema an extra argument where one could just validate one
 /// id. Docopt won here.
 const USAGE: &'static str = "
-Usage: isre1late-server --port <port>
+Usage: isre1late-server --port <port> --ws-port <wsport>
        isre1late-server validate-hafas-schema
        isre1late-server run-db-migrations
        isre1late-server --help
 
 Options:
     -h, --help           Show this message.
-    --port <port>        TCP port on which the server listens. [default: 8080]
+    --port <port>        TCP port on which the webserver listens. [default: 8080]
+    --ws-port <wsport>   TCP port on which the websocket server listens. [default: 8081]
     -l, --listen IP      IP address to listen on, e.g. ::. [default: ::1]
 
 ";
@@ -43,6 +44,7 @@ Options:
 #[derive(Deserialize)]
 struct CliArgs {
     flag_port: u16,
+    flag_ws_port: u16,
     flag_listen: std::net::IpAddr,
     cmd_validate_hafas_schema: bool,
     cmd_run_db_migrations: bool,
@@ -131,7 +133,7 @@ fn main() {
             &mut db,
             bus_read_handle,
             args.flag_listen,
-            args.flag_port,
+            args.flag_ws_port,
         )
         .unwrap();
     }

@@ -23,7 +23,7 @@ mod cli_utils;
 mod crawler;
 mod models;
 mod schema;
-mod web_api;
+mod ws_api;
 
 /// I gave up on giving validate-hafas-schema an extra argument where one could just validate one
 /// id. Docopt won here.
@@ -129,7 +129,7 @@ fn main() {
     {
         let mut db: PgConnection = PgConnection::establish(&(db_url.clone()))
             .unwrap_or_else(|_| panic!("Error connecting to {}", db_url));
-        crate::web_api::websocket_server(
+        crate::ws_api::websocket_server(
             &mut db,
             bus_read_handle,
             args.flag_listen,

@@ -25,6 +25,8 @@ mod models;
 mod schema;
 mod web_api;
 
+/// I gave up on giving validate-hafas-schema an extra argument where one could just validate one
+/// id. Docopt won here.
 const USAGE: &'static str = "
 Usage: isre1late-server --port <port>
        isre1late-server validate-hafas-schema

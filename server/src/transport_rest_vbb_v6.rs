@@ -18,6 +18,12 @@ pub fn deserialize(json: &str) -> Result<HafasMsg, serde_json::Error> {
     serde_json::from_str(json).or_else(|e| {
         if json.is_empty() {
             Ok(HafasMsg::EmptyBody())
+        } else if let Ok(json_value) = serde_json::from_str::<serde_json::Value>(json) {
+            if json_value["trip"]["line"]["id"] != "re1" {
+                Ok(HafasMsg::TripOverviewNotRE1())
+            } else {
+                Err(e)
+            }
         } else if json.contains(BAD_GATEWAY_FRAGMENT) {
             Ok(HafasMsg::BadGatewayError())
         } else {
@@ -36,6 +42,7 @@ pub enum HafasMsg {
     HafasErr(HafasErr),
     EmptyBody(),
     BadGatewayError(),
+    TripOverviewNotRE1(),
 }
 
 #[derive(Deserialize, Debug)]

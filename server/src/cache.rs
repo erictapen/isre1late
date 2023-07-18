@@ -1,6 +1,8 @@
+use crate::cli_utils::progress_style;
 use crate::models::{DelayEvent, DelayRecord, DelayRecordWithID};
 use bytefmt;
 use diesel::pg::PgConnection;
+use indicatif::ProgressBar;
 use log::{debug, info};
 use memuse::DynamicUsage;
 use num_format::{Locale, ToFormattedString};
@@ -45,7 +47,6 @@ pub fn update_delay_records(
     use diesel::pg::PgRowByRowLoadingMode;
     use diesel::QueryDsl;
     use diesel::{ExpressionMethods, RunQueryDsl};
-    use indicatif::{ProgressBar, ProgressStyle};
     use std::sync::mpsc::channel;
     use threadpool::ThreadPool;
 
@@ -71,12 +72,7 @@ pub fn update_delay_records(
     );
 
     let progress_bar = ProgressBar::new(todo);
-    progress_bar.set_style(
-        ProgressStyle::with_template(
-            "[{elapsed}/{eta}] {wide_bar} {per_sec} {human_pos}/{human_len}",
-        )
-        .unwrap(),
-    );
+    progress_bar.set_style(progress_style());
 
     let fetched_json_iter = fetched_json::dsl::fetched_json
         .select((
@@ -127,12 +123,7 @@ pub fn update_delay_records(
     );
 
     let progress_bar = ProgressBar::new(delay_records.len() as u64);
-    progress_bar.set_style(
-        ProgressStyle::with_template(
-            "[{elapsed}/{eta}] {wide_bar} {per_sec} {human_pos}/{human_len}",
-        )
-        .unwrap(),
-    );
+    progress_bar.set_style(progress_style());
 
     // PostgreSQL doesn't allow more than 65535 parameters per statement
     let chunk_size = 1024;
@@ -156,7 +147,6 @@ pub fn update_delay_events(
     use crate::schema::delay_records;
     use diesel::QueryDsl;
     use diesel::{ExpressionMethods, RunQueryDsl};
-    use indicatif::{ProgressBar, ProgressStyle};
 
     let delay_records_count: i64 = delay_records::dsl::delay_records.count().get_result(db1)?;
 
@@ -180,12 +170,7 @@ pub fn update_delay_events(
     );
 
     let progress_bar = ProgressBar::new(u64::try_from(delay_records_count).unwrap_or(0));
-    progress_bar.set_style(
-        ProgressStyle::with_template(
-            "[{elapsed}/{eta}] {wide_bar} {per_sec} {human_pos}/{human_len}",
-        )
-        .unwrap(),
-    );
+    progress_bar.set_style(progress_style());
 
     let delay_records_iter = delay_records::dsl::delay_records
         .then_order_by(delay_records::fetched_json_id.asc())

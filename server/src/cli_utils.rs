@@ -1,12 +1,18 @@
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
+use indicatif::{ProgressBar, ProgressStyle};
 use log::{error, info};
+
+/// Our progress bar template.
+pub fn progress_style() -> ProgressStyle {
+    ProgressStyle::with_template("[{elapsed}/{eta}] {wide_bar} {per_sec} {human_pos}/{human_len}")
+        .unwrap()
+}
 
 /// Validate our representation of HAFAS types.
 pub fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn std::error::Error>> {
     use crate::schema::fetched_json::dsl::fetched_json;
     use crate::SelectFetchedJson;
-    use indicatif::{ProgressBar, ProgressStyle};
     use std::fmt;
 
     #[derive(Debug)]
@@ -25,10 +31,7 @@ pub fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn std::e
 
     let bodies_count: i64 = fetched_json.count().get_result(db)?;
     let progress_bar = ProgressBar::new(bodies_count as u64);
-    progress_bar.set_style(
-        ProgressStyle::with_template("[{elapsed}] {wide_bar} {per_sec} {human_pos}/{human_len}")
-            .unwrap(),
-    );
+    progress_bar.set_style(progress_style());
 
     let error_count: u64 = {
         use std::sync::mpsc::channel;

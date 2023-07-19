@@ -11,6 +11,7 @@ edition = "2021"
 
 [dependencies]
 rocket = "=0.5.0-rc.3"
+rocket_sync_db_pools = { version = "=0.1.0-rc.3", features = ["diesel_postgres_pool"] }
 reqwest = { version = "*", features = [ "blocking", "json" ] }
 diesel = { version = "2.0.0", features = [ "postgres", "postgres_backend", "time" ] }
 diesel_migrations = { version = "2.0.0", features = [ "postgres" ] }

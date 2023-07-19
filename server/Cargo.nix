@@ -1121,6 +1121,11 @@ rec {
             optional = true;
           }
           {
+            name = "r2d2";
+            packageId = "r2d2";
+            optional = true;
+          }
+          {
             name = "time";
             packageId = "time";
             optional = true;
@@ -1168,7 +1173,7 @@ rec {
           "with-deprecated" = [ "diesel_derives/with-deprecated" ];
           "without-deprecated" = [ "diesel_derives/without-deprecated" ];
         };
-        resolvedDefaultFeatures = [ "32-column-tables" "bitflags" "byteorder" "default" "itoa" "postgres" "postgres_backend" "pq-sys" "time" "with-deprecated" ];
+        resolvedDefaultFeatures = [ "32-column-tables" "bitflags" "byteorder" "default" "itoa" "postgres" "postgres_backend" "pq-sys" "r2d2" "time" "with-deprecated" ];
       };
       "diesel_derives" = rec {
         crateName = "diesel_derives";
@@ -1200,7 +1205,7 @@ rec {
           "64-column-tables" = [ "32-column-tables" ];
           "nightly" = [ "proc-macro2/nightly" ];
         };
-        resolvedDefaultFeatures = [ "32-column-tables" "default" "postgres" "with-deprecated" ];
+        resolvedDefaultFeatures = [ "32-column-tables" "default" "postgres" "r2d2" "with-deprecated" ];
       };
       "diesel_migrations" = rec {
         crateName = "diesel_migrations";
@@ -2745,6 +2750,11 @@ rec {
             packageId = "rocket";
           }
           {
+            name = "rocket_sync_db_pools";
+            packageId = "rocket_sync_db_pools";
+            features = [ "diesel_postgres_pool" ];
+          }
+          {
             name = "serde";
             packageId = "serde";
             features = [ "derive" ];
@@ -4216,6 +4226,30 @@ rec {
         };
         resolvedDefaultFeatures = [ "default" "proc-macro" ];
       };
+      "r2d2" = rec {
+        crateName = "r2d2";
+        version = "0.8.10";
+        edition = "2018";
+        sha256 = "14qw32y4m564xb1f5ya8ii7dwqyknvk8bsx2r0lljlmn7zxqbpji";
+        authors = [
+          "Steven Fackler <sfackler@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "log";
+            packageId = "log";
+          }
+          {
+            name = "parking_lot";
+            packageId = "parking_lot";
+          }
+          {
+            name = "scheduled-thread-pool";
+            packageId = "scheduled-thread-pool";
+          }
+        ];
+
+      };
       "rand 0.6.5" = rec {
         crateName = "rand";
         version = "0.6.5";
@@ -5446,6 +5480,89 @@ rec {
         };
         resolvedDefaultFeatures = [ "default" "http2" "serde" "serde_" ];
       };
+      "rocket_sync_db_pools" = rec {
+        crateName = "rocket_sync_db_pools";
+        version = "0.1.0-rc.3";
+        edition = "2021";
+        sha256 = "020dfip131121pyyafa7kv5qdv4gmc15rh2k8r00bhrkdf5bvdpn";
+        authors = [
+          "Sergio Benitez <sb@sergio.bz>"
+        ];
+        dependencies = [
+          {
+            name = "diesel";
+            packageId = "diesel";
+            optional = true;
+            usesDefaultFeatures = false;
+          }
+          {
+            name = "r2d2";
+            packageId = "r2d2";
+          }
+          {
+            name = "rocket";
+            packageId = "rocket";
+            usesDefaultFeatures = false;
+          }
+          {
+            name = "rocket_sync_db_pools_codegen";
+            packageId = "rocket_sync_db_pools_codegen";
+          }
+          {
+            name = "serde";
+            packageId = "serde";
+            features = [ "derive" ];
+          }
+          {
+            name = "tokio";
+            packageId = "tokio";
+            features = [ "rt" "rt-multi-thread" ];
+          }
+        ];
+        buildDependencies = [
+          {
+            name = "version_check";
+            packageId = "version_check";
+          }
+        ];
+        features = {
+          "diesel" = [ "dep:diesel" ];
+          "diesel_mysql_pool" = [ "diesel/mysql" "diesel/r2d2" ];
+          "diesel_postgres_pool" = [ "diesel/postgres" "diesel/r2d2" ];
+          "diesel_sqlite_pool" = [ "diesel/sqlite" "diesel/r2d2" ];
+          "memcache" = [ "dep:memcache" ];
+          "memcache_pool" = [ "memcache" "r2d2-memcache" ];
+          "postgres" = [ "dep:postgres" ];
+          "postgres_pool" = [ "postgres" "r2d2_postgres" ];
+          "r2d2-memcache" = [ "dep:r2d2-memcache" ];
+          "r2d2_postgres" = [ "dep:r2d2_postgres" ];
+          "r2d2_sqlite" = [ "dep:r2d2_sqlite" ];
+          "rusqlite" = [ "dep:rusqlite" ];
+          "sqlite_pool" = [ "rusqlite" "r2d2_sqlite" ];
+        };
+        resolvedDefaultFeatures = [ "diesel" "diesel_postgres_pool" ];
+      };
+      "rocket_sync_db_pools_codegen" = rec {
+        crateName = "rocket_sync_db_pools_codegen";
+        version = "0.1.0-rc.3";
+        edition = "2021";
+        sha256 = "0x14xgqxr3fp4kkn44k5b3djw374qnfxkvwxsy1b2ijancnxf9nx";
+        procMacro = true;
+        authors = [
+          "Sergio Benitez <sb@sergio.bz>"
+        ];
+        dependencies = [
+          {
+            name = "devise";
+            packageId = "devise";
+          }
+          {
+            name = "quote";
+            packageId = "quote";
+          }
+        ];
+
+      };
       "rustc-demangle" = rec {
         crateName = "rustc-demangle";
         version = "0.1.23";
@@ -5752,6 +5869,22 @@ rec {
             name = "windows-sys";
             packageId = "windows-sys 0.48.0";
             features = [ "Win32_System_SystemInformation" "Win32_System_Time" ];
+          }
+        ];
+
+      };
+      "scheduled-thread-pool" = rec {
+        crateName = "scheduled-thread-pool";
+        version = "0.2.7";
+        edition = "2018";
+        sha256 = "068s77f9xcpvzl70nsxk8750dzzc6f9pixajhd979815cj0ndg1w";
+        authors = [
+          "Steven Fackler <sfackler@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "parking_lot";
+            packageId = "parking_lot";
           }
         ];
 

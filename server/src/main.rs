@@ -145,6 +145,6 @@ fn main() {
 
     // Start webserver
     {
-        crate::web_api::webserver(args.flag_port).unwrap();
+        crate::web_api::webserver(&db_url, args.flag_listen, args.flag_port).unwrap();
     }
 }

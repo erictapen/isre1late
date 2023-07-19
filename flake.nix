@@ -73,7 +73,7 @@
               elm-json
               elm2nix
               (python3.withPackages (ps: with ps; [ requests ]))
-
+              (import ./nginx.nix pkgs)
             ]);
             RUST_LOG = "info";
             DATABASE_URL = "postgres://localhost/isre1late?host=/run/postgresql";
@@ -162,7 +162,13 @@
               enableACME = true;
               forceSSL = true;
               locations = {
-                "/".alias = "${client}/";
+                "/" = {
+                  root = client;
+                  tryFiles = "/index.html =404";
+                };
+                "/assets/" = {
+                  alias = client + "/assets/";
+                };
                 "/api".return = "301 /api/";
                 "/api/".proxyPass = "http://[::1]:${toString cfg.port}";
                 "/api/ws".return = "301 /api/ws/";

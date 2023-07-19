@@ -2748,6 +2748,7 @@ rec {
           {
             name = "rocket";
             packageId = "rocket";
+            features = [ "json" ];
           }
           {
             name = "rocket_sync_db_pools";
@@ -5255,6 +5256,11 @@ rec {
             features = [ "derive" ];
           }
           {
+            name = "serde_json";
+            packageId = "serde_json";
+            optional = true;
+          }
+          {
             name = "state";
             packageId = "state";
           }
@@ -5319,7 +5325,7 @@ rec {
           "uuid" = [ "uuid_" "rocket_http/uuid" ];
           "uuid_" = [ "dep:uuid_" ];
         };
-        resolvedDefaultFeatures = [ "default" "http2" ];
+        resolvedDefaultFeatures = [ "default" "http2" "json" "serde_json" ];
       };
       "rocket_codegen" = rec {
         crateName = "rocket_codegen";

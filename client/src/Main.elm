@@ -39,6 +39,7 @@ import Time exposing (Posix, posixToMillis)
 import Types exposing (DelayRecord, StationId, TripId, decodeClientMsg)
 import Url
 import Url.Builder
+import Url.Parser as UP
 
 
 port sendMessage : String -> Cmd msg
@@ -84,8 +85,17 @@ type alias DistanceMatrix =
         }
 
 
+type Mode
+    = SingleTrip
+    | Hour
+    | Day
+    | Week
+    | Year
+
+
 type alias Model =
     { navigationKey : Browser.Navigation.Key
+    , mode : Mode
     , delayRecords : Dict TripId (List DelayRecord)
     , errors : List String
     , now : Maybe Posix
@@ -94,6 +104,17 @@ type alias Model =
     , direction : Direction
     , distanceMatrix : DistanceMatrix
     }
+
+
+urlParser : UP.Parser (Mode -> a) a
+urlParser =
+    UP.oneOf
+        [ UP.map SingleTrip (UP.s "trip")
+        , UP.map Hour (UP.s "hour")
+        , UP.map Day (UP.s "day")
+        , UP.map Week (UP.s "week")
+        , UP.map Year (UP.s "year")
+        ]
 
 
 {-| A matrix that contains the positions for every combination of stations,
@@ -161,16 +182,28 @@ init _ url key =
     let
         defaultHistoricSeconds =
             3600 * 3
+
+        modeFromUrl =
+            case UP.parse urlParser url of
+                Just newMode ->
+                    newMode
+
+                Nothing ->
+                    Hour
+
+        initModel =
+            { navigationKey = key
+            , mode = modeFromUrl
+            , delayRecords = Dict.empty
+            , errors = []
+            , now = Nothing
+            , timeZone = Nothing
+            , historicSeconds = defaultHistoricSeconds
+            , direction = Eastwards
+            , distanceMatrix = initDistanceMatrix
+            }
     in
-    ( { navigationKey = key
-      , delayRecords = Dict.empty
-      , errors = []
-      , now = Nothing
-      , timeZone = Nothing
-      , historicSeconds = defaultHistoricSeconds
-      , direction = Eastwards
-      , distanceMatrix = initDistanceMatrix
-      }
+    ( initModel
     , Cmd.batch
         [ rebuildSocket <| applicationUrl defaultHistoricSeconds
         , Task.perform CurrentTimeZone Time.here
@@ -643,11 +676,46 @@ view model =
     }
 
 
+buildUrl : Mode -> String
+buildUrl mode =
+    "/"
+        ++ (case mode of
+                SingleTrip ->
+                    "trip"
+
+                Hour ->
+                    "hour"
+
+                Day ->
+                    "day"
+
+                Week ->
+                    "week"
+
+                Year ->
+                    "year"
+           )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        UrlChange _ ->
-            ( model, Cmd.none )
+        UrlChange urlRequest ->
+            case urlRequest of
+                External url ->
+                    ( model
+                    , Browser.Navigation.load url
+                    )
+
+                Internal url ->
+                    case UP.parse urlParser url of
+                        Just newMode ->
+                            ( { model | mode = newMode }
+                            , Browser.Navigation.pushUrl model.navigationKey <| buildUrl model.mode
+                            )
+
+                        Nothing ->
+                            ( model, Cmd.none )
 
         RecvWebsocket jsonStr ->
             case decodeString decodeClientMsg jsonStr of

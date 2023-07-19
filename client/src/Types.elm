@@ -2,7 +2,7 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
 
-module Types exposing (Delay, StationId, TripId, decodeClientMsg)
+module Types exposing (DelayRecord, StationId, TripId, decodeClientMsg)
 
 import Json.Decode as J
     exposing
@@ -31,7 +31,7 @@ type alias StationId =
 
 {-| TODO find a better name for this
 -}
-type alias Delay =
+type alias DelayRecord =
     { time : Posix
     , previousStation : StationId
     , nextStation : StationId
@@ -40,12 +40,12 @@ type alias Delay =
     }
 
 
-decodeClientMsg : Decoder ( TripId, Delay )
+decodeClientMsg : Decoder ( TripId, DelayRecord )
 decodeClientMsg =
     map2 Tuple.pair
         (field "trip_id" string)
     <|
-        map5 Delay
+        map5 DelayRecord
             (J.map ((*) 1000 >> millisToPosix) <| field "time" int)
             (field "previous_station" int)
             (field "next_station" int)

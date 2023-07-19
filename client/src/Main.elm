@@ -4,7 +4,9 @@
 
 port module Main exposing (initDistanceMatrix, main, stationPos, trainPos)
 
-import Browser exposing (Document)
+import Browser exposing (UrlRequest(..))
+import Browser.Events
+import Browser.Navigation
 import Dict exposing (Dict)
 import Html as H exposing (Html, button, div, text)
 import Html.Attributes as HA exposing (class, id, style)
@@ -34,7 +36,7 @@ import Svg.Attributes as SA
 import Svg.Loaders
 import Task
 import Time exposing (Posix, posixToMillis)
-import Types exposing (Delay, StationId, TripId, decodeClientMsg)
+import Types exposing (DelayRecord, StationId, TripId, decodeClientMsg)
 import Url
 import Url.Builder
 
@@ -49,7 +51,8 @@ port rebuildSocket : String -> Cmd msg
 
 
 type Msg
-    = Send
+    = UrlChange UrlRequest
+    | Send
     | RecvWebsocket String
     | CurrentTime Posix
     | CurrentTimeZone Time.Zone
@@ -82,7 +85,8 @@ type alias DistanceMatrix =
 
 
 type alias Model =
-    { delays : Dict TripId (List Delay)
+    { navigationKey : Browser.Navigation.Key
+    , delayRecords : Dict TripId (List DelayRecord)
     , errors : List String
     , now : Maybe Posix
     , timeZone : Maybe Time.Zone
@@ -152,13 +156,14 @@ applicationUrl historicSeconds =
         [ Url.Builder.int "historic" historicSeconds ]
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
+init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
+init _ url key =
     let
         defaultHistoricSeconds =
             3600 * 3
     in
-    ( { delays = Dict.empty
+    ( { navigationKey = key
+      , delayRecords = Dict.empty
       , errors = []
       , now = Nothing
       , timeZone = Nothing
@@ -458,39 +463,38 @@ posixToSec p =
     posixToMillis p // 1000
 
 
-tripLines : DistanceMatrix -> Direction -> Int -> Dict TripId (List Delay) -> Posix -> Svg Msg
+tripLines : DistanceMatrix -> Direction -> Int -> Dict TripId (List DelayRecord) -> Posix -> Svg Msg
 tripLines distanceMatrix selectedDirection historicSeconds delayDict now =
     let
-        tripD : Bool -> Delay -> Maybe ( Float, Float )
+        tripD : Bool -> DelayRecord -> Maybe ( Float, Float )
         tripD secondPass { time, previousStation, nextStation, percentageSegment, delay } =
-                    case trainPos distanceMatrix previousStation nextStation percentageSegment of
-                        Just ( yPos, direction, skipsLines ) ->
-                            if direction == selectedDirection then
-                                Just
-                                    ( toFloat historicSeconds
-                                        - (toFloat <|
-                                            posixToSec now
-                                                - posixToSec time
-                                                - (if secondPass then
-                                                    -- Apparently this is never < 0 anyway?
-                                                    max 0 delay
+            case trainPos distanceMatrix previousStation nextStation percentageSegment of
+                Just ( yPos, direction, skipsLines ) ->
+                    if direction == selectedDirection then
+                        Just
+                            ( toFloat historicSeconds
+                                - (toFloat <|
+                                    posixToSec now
+                                        - posixToSec time
+                                        - (if secondPass then
+                                            -- Apparently this is never < 0 anyway?
+                                            max 0 delay
 
-                                                   else
-                                                    0
-                                                  )
+                                           else
+                                            0
                                           )
-                                    , 100 * yPos
-                                    )
+                                  )
+                            , 100 * yPos
+                            )
 
-                            else
-                                Nothing
+                    else
+                        Nothing
 
-                        _ ->
-                            Nothing
+                _ ->
+                    Nothing
 
-
-        tripLine : ( TripId, List Delay ) -> Svg Msg
-        tripLine ( tripId, delays ) =
+        tripLine : ( TripId, List DelayRecord ) -> Svg Msg
+        tripLine ( tripId, delayRecords ) =
             g
                 [ SA.title tripId
                 , SA.id tripId
@@ -508,8 +512,8 @@ tripLines distanceMatrix selectedDirection historicSeconds delayDict now =
                                     <|
                                         filterMap identity <|
                                             List.concat
-                                                [ map (tripD False) delays
-                                                , map (tripD True) <| List.reverse delays
+                                                [ map (tripD False) delayRecords
+                                                , map (tripD True) <| List.reverse delayRecords
                                                 ]
                                )
                     ]
@@ -526,7 +530,7 @@ tripLines distanceMatrix selectedDirection historicSeconds delayDict now =
                                         (Tuple.mapBoth fromFloat fromFloat >> (\( x, y ) -> x ++ " " ++ y))
                                     <|
                                         filterMap identity <|
-                                            map (tripD False) delays
+                                            map (tripD False) delayRecords
                                )
                     ]
                     []
@@ -590,7 +594,7 @@ timeTextLegend historicSeconds tz now =
                 List.range 0 (historicSeconds // 3600)
 
 
-view : Model -> Document Msg
+view : Model -> Browser.Document Msg
 view model =
     { title = "Is RE1 late?"
     , body =
@@ -614,7 +618,7 @@ view model =
                                 model.distanceMatrix
                                 model.direction
                                 model.historicSeconds
-                                model.delays
+                                model.delayRecords
                                 now
                             ]
                         , div
@@ -642,18 +646,21 @@ view model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        UrlChange _ ->
+            ( model, Cmd.none )
+
         RecvWebsocket jsonStr ->
             case decodeString decodeClientMsg jsonStr of
                 Ok ( tripId, delay ) ->
                     ( { model
-                        | delays =
+                        | delayRecords =
                             Dict.update tripId
                                 (\maybeList ->
                                     Just <|
                                         delay
                                             :: Maybe.withDefault [] maybeList
                                 )
-                                model.delays
+                                model.delayRecords
                       }
                     , Cmd.none
                     )
@@ -686,9 +693,11 @@ update msg model =
 
 main : Program () Model Msg
 main =
-    Browser.document
+    Browser.application
         { init = init
         , view = view
         , update = update
         , subscriptions = subscriptions
+        , onUrlRequest = UrlChange
+        , onUrlChange = UrlChange << Browser.Internal
         }

@@ -164,6 +164,7 @@
               locations = {
                 "/".alias = "${client}/";
                 "/api".return = "301 /api/";
+                "/api/".proxyPass = "http://[::1]:${toString cfg.port}";
                 "/api/ws".return = "301 /api/ws/";
                 "/api/ws/" = {
                   proxyPass = "http://[::1]:${toString cfg.websocketPort}";

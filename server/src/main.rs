@@ -23,6 +23,7 @@ mod cli_utils;
 mod crawler;
 mod models;
 mod schema;
+mod web_api;
 mod ws_api;
 
 /// I gave up on giving validate-hafas-schema an extra argument where one could just validate one
@@ -114,6 +115,7 @@ fn main() {
     // With this handle we can produce a new channel receiver per new websocket connection.
     let bus_read_handle = bus.read_handle();
 
+    // Start crawler
     {
         let db_url = db_url.clone();
         std::thread::spawn(move || {
@@ -126,15 +128,23 @@ fn main() {
         });
     }
 
+    // Start websocket server
     {
         let mut db: PgConnection = PgConnection::establish(&(db_url.clone()))
             .unwrap_or_else(|_| panic!("Error connecting to {}", db_url));
-        crate::ws_api::websocket_server(
-            &mut db,
-            bus_read_handle,
-            args.flag_listen,
-            args.flag_ws_port,
-        )
-        .unwrap();
+        std::thread::spawn(move || {
+            crate::ws_api::websocket_server(
+                &mut db,
+                bus_read_handle,
+                args.flag_listen,
+                args.flag_ws_port,
+            )
+            .unwrap();
+        });
+    }
+
+    // Start webserver
+    {
+        crate::web_api::webserver(args.flag_port).unwrap();
     }
 }

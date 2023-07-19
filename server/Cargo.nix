@@ -193,6 +193,95 @@ rec {
         };
         resolvedDefaultFeatures = [ "default" "std" ];
       };
+      "async-stream" = rec {
+        crateName = "async-stream";
+        version = "0.3.5";
+        edition = "2018";
+        sha256 = "0l8sjq1rylkb1ak0pdyjn83b3k6x36j22myngl4sqqgg7whdsmnd";
+        authors = [
+          "Carl Lerche <me@carllerche.com>"
+        ];
+        dependencies = [
+          {
+            name = "async-stream-impl";
+            packageId = "async-stream-impl";
+          }
+          {
+            name = "futures-core";
+            packageId = "futures-core";
+          }
+          {
+            name = "pin-project-lite";
+            packageId = "pin-project-lite";
+          }
+        ];
+
+      };
+      "async-stream-impl" = rec {
+        crateName = "async-stream-impl";
+        version = "0.3.5";
+        edition = "2018";
+        sha256 = "14q179j4y8p2z1d0ic6aqgy9fhwz8p9cai1ia8kpw4bw7q12mrhn";
+        procMacro = true;
+        authors = [
+          "Carl Lerche <me@carllerche.com>"
+        ];
+        dependencies = [
+          {
+            name = "proc-macro2";
+            packageId = "proc-macro2";
+          }
+          {
+            name = "quote";
+            packageId = "quote";
+          }
+          {
+            name = "syn";
+            packageId = "syn";
+            features = [ "full" "visit-mut" ];
+          }
+        ];
+
+      };
+      "async-trait" = rec {
+        crateName = "async-trait";
+        version = "0.1.71";
+        edition = "2018";
+        sha256 = "1grf5p4m1bb79isbb3g4b8w7wpz51sw003a88x69ql2nvlhxar55";
+        procMacro = true;
+        authors = [
+          "David Tolnay <dtolnay@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "proc-macro2";
+            packageId = "proc-macro2";
+          }
+          {
+            name = "quote";
+            packageId = "quote";
+          }
+          {
+            name = "syn";
+            packageId = "syn";
+            features = [ "full" "visit-mut" ];
+          }
+        ];
+
+      };
+      "atomic" = rec {
+        crateName = "atomic";
+        version = "0.5.3";
+        edition = "2018";
+        sha256 = "1fhc6ayg4d5vw1cibqwff15d45fc5448zg9i3drk42k5phsdp6y5";
+        authors = [
+          "Amanieu d'Antras <amanieu@gmail.com>"
+        ];
+        features = {
+          "default" = [ "fallback" ];
+        };
+        resolvedDefaultFeatures = [ "default" "fallback" ];
+      };
       "atomic-option" = rec {
         crateName = "atomic-option";
         version = "0.1.2";
@@ -300,6 +389,19 @@ rec {
         };
         resolvedDefaultFeatures = [ "alloc" "default" "std" ];
       };
+      "binascii" = rec {
+        crateName = "binascii";
+        version = "0.1.4";
+        edition = "2015";
+        sha256 = "0wnaglgl72pn5ilv61q6y34w76gbg7crb8ifqk6lsxnq2gajjg9q";
+        authors = [
+          "Naim A. <naim@abda.nl>"
+        ];
+        features = {
+          "default" = [ "encode" "decode" ];
+        };
+        resolvedDefaultFeatures = [ "decode" "default" "encode" ];
+      };
       "bitflags 1.3.2" = rec {
         crateName = "bitflags";
         version = "1.3.2";
@@ -391,7 +493,7 @@ rec {
           }
           {
             name = "parking_lot_core";
-            packageId = "parking_lot_core";
+            packageId = "parking_lot_core 0.5.0";
           }
         ];
         features = {
@@ -631,6 +733,51 @@ rec {
         };
         resolvedDefaultFeatures = [ "ansi-parsing" "unicode-width" ];
       };
+      "cookie" = rec {
+        crateName = "cookie";
+        version = "0.17.0";
+        edition = "2018";
+        sha256 = "096c52jg9iq4lfcps2psncswv33fc30mmnaa2sbzzcfcw71kgyvy";
+        authors = [
+          "Sergio Benitez <sb@sergio.bz>"
+          "Alex Crichton <alex@alexcrichton.com>"
+        ];
+        dependencies = [
+          {
+            name = "percent-encoding";
+            packageId = "percent-encoding";
+            optional = true;
+          }
+          {
+            name = "time";
+            packageId = "time";
+            usesDefaultFeatures = false;
+            features = [ "std" "parsing" "formatting" "macros" ];
+          }
+        ];
+        buildDependencies = [
+          {
+            name = "version_check";
+            packageId = "version_check";
+          }
+        ];
+        features = {
+          "aes-gcm" = [ "dep:aes-gcm" ];
+          "base64" = [ "dep:base64" ];
+          "hkdf" = [ "dep:hkdf" ];
+          "hmac" = [ "dep:hmac" ];
+          "key-expansion" = [ "sha2" "hkdf" ];
+          "percent-encode" = [ "percent-encoding" ];
+          "percent-encoding" = [ "dep:percent-encoding" ];
+          "private" = [ "aes-gcm" "base64" "rand" "subtle" ];
+          "rand" = [ "dep:rand" ];
+          "secure" = [ "private" "signed" "key-expansion" ];
+          "sha2" = [ "dep:sha2" ];
+          "signed" = [ "hmac" "sha2" "base64" "rand" "subtle" ];
+          "subtle" = [ "dep:subtle" ];
+        };
+        resolvedDefaultFeatures = [ "percent-encode" "percent-encoding" ];
+      };
       "core-foundation" = rec {
         crateName = "core-foundation";
         version = "0.9.3";
@@ -869,6 +1016,80 @@ rec {
         };
         resolvedDefaultFeatures = [ "alloc" "default" "std" ];
       };
+      "devise" = rec {
+        crateName = "devise";
+        version = "0.4.1";
+        edition = "2015";
+        sha256 = "1y45iag4hyvspkdsf6d856hf0ihf9vjnaga3c7y6c72l7zywxsnn";
+        authors = [
+          "Sergio Benitez <sb@sergio.bz>"
+        ];
+        dependencies = [
+          {
+            name = "devise_codegen";
+            packageId = "devise_codegen";
+          }
+          {
+            name = "devise_core";
+            packageId = "devise_core";
+          }
+        ];
+
+      };
+      "devise_codegen" = rec {
+        crateName = "devise_codegen";
+        version = "0.4.1";
+        edition = "2015";
+        sha256 = "1mpy5mmsigkj5f72gby82yk4advcqj97am2wzn0dwkj8vnwg934w";
+        procMacro = true;
+        authors = [
+          "Sergio Benitez <sb@sergio.bz>"
+        ];
+        dependencies = [
+          {
+            name = "devise_core";
+            packageId = "devise_core";
+          }
+          {
+            name = "quote";
+            packageId = "quote";
+          }
+        ];
+
+      };
+      "devise_core" = rec {
+        crateName = "devise_core";
+        version = "0.4.1";
+        edition = "2015";
+        sha256 = "0sp5idq0idng9i5kwjd8slvc724s97r28arrhyqq1jpx1ax0vd9m";
+        authors = [
+          "Sergio Benitez <sb@sergio.bz>"
+        ];
+        dependencies = [
+          {
+            name = "bitflags";
+            packageId = "bitflags 2.3.3";
+          }
+          {
+            name = "proc-macro2";
+            packageId = "proc-macro2";
+          }
+          {
+            name = "proc-macro2-diagnostics";
+            packageId = "proc-macro2-diagnostics";
+          }
+          {
+            name = "quote";
+            packageId = "quote";
+          }
+          {
+            name = "syn";
+            packageId = "syn";
+            features = [ "full" "parsing" "extra-traits" "visit-mut" ];
+          }
+        ];
+
+      };
       "diesel" = rec {
         crateName = "diesel";
         version = "2.1.0";
@@ -1091,6 +1312,20 @@ rec {
         ];
 
       };
+      "either" = rec {
+        crateName = "either";
+        version = "1.8.1";
+        edition = "2018";
+        sha256 = "14bdy4qsxlfnm4626z4shwaiffi8l5krzkn7ykki1jgqzsrapjkz";
+        authors = [
+          "bluss"
+        ];
+        features = {
+          "default" = [ "use_std" ];
+          "serde" = [ "dep:serde" ];
+        };
+        resolvedDefaultFeatures = [ "default" "use_std" ];
+      };
       "encode_unicode" = rec {
         crateName = "encode_unicode";
         version = "0.3.6";
@@ -1224,6 +1459,67 @@ rec {
         ];
 
       };
+      "figment" = rec {
+        crateName = "figment";
+        version = "0.10.10";
+        edition = "2018";
+        sha256 = "19f932h57nzw6kd3ispch1aigcwj841sjw70f42qday9yhkf4is5";
+        authors = [
+          "Sergio Benitez <sb@sergio.bz>"
+        ];
+        dependencies = [
+          {
+            name = "atomic";
+            packageId = "atomic";
+            target = { target, features }: (("8" == target."pointer_width") || ("16" == target."pointer_width") || ("32" == target."pointer_width"));
+          }
+          {
+            name = "pear";
+            packageId = "pear";
+            optional = true;
+          }
+          {
+            name = "serde";
+            packageId = "serde";
+          }
+          {
+            name = "toml";
+            packageId = "toml";
+            optional = true;
+          }
+          {
+            name = "uncased";
+            packageId = "uncased";
+          }
+        ];
+        buildDependencies = [
+          {
+            name = "version_check";
+            packageId = "version_check";
+          }
+        ];
+        devDependencies = [
+          {
+            name = "serde";
+            packageId = "serde";
+            features = [ "derive" ];
+          }
+        ];
+        features = {
+          "env" = [ "pear" "parse-value" ];
+          "json" = [ "serde_json" ];
+          "parking_lot" = [ "dep:parking_lot" ];
+          "parse-value" = [ "pear" ];
+          "pear" = [ "dep:pear" ];
+          "serde_json" = [ "dep:serde_json" ];
+          "serde_yaml" = [ "dep:serde_yaml" ];
+          "tempfile" = [ "dep:tempfile" ];
+          "test" = [ "tempfile" "parking_lot" ];
+          "toml" = [ "dep:toml" ];
+          "yaml" = [ "serde_yaml" ];
+        };
+        resolvedDefaultFeatures = [ "env" "parse-value" "pear" "toml" ];
+      };
       "fnv" = rec {
         crateName = "fnv";
         version = "1.0.7";
@@ -1296,6 +1592,61 @@ rec {
         ];
 
       };
+      "futures" = rec {
+        crateName = "futures";
+        version = "0.3.28";
+        edition = "2018";
+        sha256 = "0h7c1xvxk751c7xlnph6fh3rb77z4lig4qif7f8q79db2az2ld13";
+        dependencies = [
+          {
+            name = "futures-channel";
+            packageId = "futures-channel";
+            usesDefaultFeatures = false;
+            features = [ "sink" ];
+          }
+          {
+            name = "futures-core";
+            packageId = "futures-core";
+            usesDefaultFeatures = false;
+          }
+          {
+            name = "futures-io";
+            packageId = "futures-io";
+            usesDefaultFeatures = false;
+          }
+          {
+            name = "futures-sink";
+            packageId = "futures-sink";
+            usesDefaultFeatures = false;
+          }
+          {
+            name = "futures-task";
+            packageId = "futures-task";
+            usesDefaultFeatures = false;
+          }
+          {
+            name = "futures-util";
+            packageId = "futures-util";
+            usesDefaultFeatures = false;
+            features = [ "sink" ];
+          }
+        ];
+        features = {
+          "alloc" = [ "futures-core/alloc" "futures-task/alloc" "futures-sink/alloc" "futures-channel/alloc" "futures-util/alloc" ];
+          "async-await" = [ "futures-util/async-await" "futures-util/async-await-macro" ];
+          "bilock" = [ "futures-util/bilock" ];
+          "compat" = [ "std" "futures-util/compat" ];
+          "default" = [ "std" "async-await" "executor" ];
+          "executor" = [ "std" "futures-executor/std" ];
+          "futures-executor" = [ "dep:futures-executor" ];
+          "io-compat" = [ "compat" "futures-util/io-compat" ];
+          "std" = [ "alloc" "futures-core/std" "futures-task/std" "futures-io/std" "futures-sink/std" "futures-util/std" "futures-util/io" "futures-util/channel" ];
+          "thread-pool" = [ "executor" "futures-executor/thread-pool" ];
+          "unstable" = [ "futures-core/unstable" "futures-task/unstable" "futures-channel/unstable" "futures-io/unstable" "futures-util/unstable" ];
+          "write-all-vectored" = [ "futures-util/write-all-vectored" ];
+        };
+        resolvedDefaultFeatures = [ "alloc" "std" ];
+      };
       "futures-channel" = rec {
         crateName = "futures-channel";
         version = "0.3.28";
@@ -1307,6 +1658,12 @@ rec {
             packageId = "futures-core";
             usesDefaultFeatures = false;
           }
+          {
+            name = "futures-sink";
+            packageId = "futures-sink";
+            optional = true;
+            usesDefaultFeatures = false;
+          }
         ];
         features = {
           "alloc" = [ "futures-core/alloc" ];
@@ -1315,7 +1672,7 @@ rec {
           "sink" = [ "futures-sink" ];
           "std" = [ "alloc" "futures-core/std" ];
         };
-        resolvedDefaultFeatures = [ "alloc" "default" "std" ];
+        resolvedDefaultFeatures = [ "alloc" "default" "futures-sink" "sink" "std" ];
       };
       "futures-core" = rec {
         crateName = "futures-core";
@@ -1368,6 +1725,13 @@ rec {
         sha256 = "0cwmls9369w6q6hwlbm10q0plr6hmg8w28fpqvv4rmbjnx01xc16";
         dependencies = [
           {
+            name = "futures-channel";
+            packageId = "futures-channel";
+            optional = true;
+            usesDefaultFeatures = false;
+            features = [ "std" ];
+          }
+          {
             name = "futures-core";
             packageId = "futures-core";
             usesDefaultFeatures = false;
@@ -1378,6 +1742,12 @@ rec {
             optional = true;
             usesDefaultFeatures = false;
             features = [ "std" ];
+          }
+          {
+            name = "futures-sink";
+            packageId = "futures-sink";
+            optional = true;
+            usesDefaultFeatures = false;
           }
           {
             name = "futures-task";
@@ -1425,7 +1795,44 @@ rec {
           "unstable" = [ "futures-core/unstable" "futures-task/unstable" ];
           "write-all-vectored" = [ "io" ];
         };
-        resolvedDefaultFeatures = [ "alloc" "futures-io" "io" "memchr" "slab" "std" ];
+        resolvedDefaultFeatures = [ "alloc" "channel" "futures-channel" "futures-io" "futures-sink" "io" "memchr" "sink" "slab" "std" ];
+      };
+      "generator" = rec {
+        crateName = "generator";
+        version = "0.7.5";
+        edition = "2021";
+        sha256 = "0knp7cllkf90l4wmfbhmb3c0ha9xn9afrzmphain1d12zy26bhaw";
+        authors = [
+          "Xudong Huang <huangxu008@hotmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "libc";
+            packageId = "libc";
+            target = { target, features }: (target."unix" or false);
+          }
+          {
+            name = "log";
+            packageId = "log";
+          }
+          {
+            name = "windows";
+            packageId = "windows";
+            target = { target, features }: (target."windows" or false);
+            features = [ "Win32_System_Memory" "Win32_Foundation" "Win32_System_SystemInformation" "Win32_System_Diagnostics_Debug" ];
+          }
+        ];
+        buildDependencies = [
+          {
+            name = "cc";
+            packageId = "cc";
+          }
+          {
+            name = "rustversion";
+            packageId = "rustversion";
+          }
+        ];
+
       };
       "generic-array" = rec {
         crateName = "generic-array";
@@ -1511,6 +1918,16 @@ rec {
           "write" = [ "indexmap" ];
         };
         resolvedDefaultFeatures = [ "read" "read-core" ];
+      };
+      "glob" = rec {
+        crateName = "glob";
+        version = "0.3.1";
+        edition = "2015";
+        sha256 = "16zca52nglanv23q5qrwd5jinw3d3as5ylya6y1pbx47vkxvrynj";
+        authors = [
+          "The Rust Project Developers"
+        ];
+
       };
       "h2" = rec {
         crateName = "h2";
@@ -1867,7 +2284,7 @@ rec {
           "socket2" = [ "dep:socket2" ];
           "tcp" = [ "socket2" "tokio/net" "tokio/rt" "tokio/time" ];
         };
-        resolvedDefaultFeatures = [ "client" "h2" "http1" "http2" "runtime" "socket2" "tcp" ];
+        resolvedDefaultFeatures = [ "client" "h2" "http1" "http2" "runtime" "server" "socket2" "stream" "tcp" ];
       };
       "hyper-tls" = rec {
         crateName = "hyper-tls";
@@ -2124,6 +2541,18 @@ rec {
         };
         resolvedDefaultFeatures = [ "default" "unicode-width" ];
       };
+      "inlinable_string" = rec {
+        crateName = "inlinable_string";
+        version = "0.1.15";
+        edition = "2018";
+        sha256 = "1ysjci8yfvxgf51z0ny2nnwhxrclhmb3vbngin8v4bznhr3ybyn8";
+        authors = [
+          "Nick Fitzgerald <fitzgen@gmail.com>"
+        ];
+        features = {
+          "serde" = [ "dep:serde" ];
+        };
+      };
       "instant" = rec {
         crateName = "instant";
         version = "0.1.12";
@@ -2310,6 +2739,10 @@ rec {
             name = "reqwest";
             packageId = "reqwest";
             features = [ "blocking" "json" ];
+          }
+          {
+            name = "rocket";
+            packageId = "rocket";
           }
           {
             name = "serde";
@@ -2506,6 +2939,34 @@ rec {
         };
         resolvedDefaultFeatures = [ "errno" "general" "ioctl" "no_std" ];
       };
+      "lock_api" = rec {
+        crateName = "lock_api";
+        version = "0.4.10";
+        edition = "2018";
+        sha256 = "05nd9nzxqidg24d1k8y5vlc8lz9gscpskrikycib46qbl8brgk61";
+        authors = [
+          "Amanieu d'Antras <amanieu@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "scopeguard";
+            packageId = "scopeguard";
+            usesDefaultFeatures = false;
+          }
+        ];
+        buildDependencies = [
+          {
+            name = "autocfg";
+            packageId = "autocfg 1.1.0";
+          }
+        ];
+        features = {
+          "default" = [ "atomic_usize" ];
+          "owning_ref" = [ "dep:owning_ref" ];
+          "serde" = [ "dep:serde" ];
+        };
+        resolvedDefaultFeatures = [ "atomic_usize" "default" ];
+      };
       "log" = rec {
         crateName = "log";
         version = "0.4.19";
@@ -2540,6 +3001,73 @@ rec {
           "value-bag" = [ "dep:value-bag" ];
         };
         resolvedDefaultFeatures = [ "kv_unstable" "std" "value-bag" ];
+      };
+      "loom" = rec {
+        crateName = "loom";
+        version = "0.5.6";
+        edition = "2018";
+        sha256 = "1x9hmiv00ir79kypcg0jdw0j0fkd3ymq6rpv6pli6q5qifrfql7z";
+        authors = [
+          "Carl Lerche <me@carllerche.com>"
+        ];
+        dependencies = [
+          {
+            name = "cfg-if";
+            packageId = "cfg-if 1.0.0";
+          }
+          {
+            name = "generator";
+            packageId = "generator";
+          }
+          {
+            name = "scoped-tls";
+            packageId = "scoped-tls";
+          }
+          {
+            name = "serde";
+            packageId = "serde";
+            optional = true;
+            features = [ "derive" ];
+          }
+          {
+            name = "serde_json";
+            packageId = "serde_json";
+            optional = true;
+          }
+          {
+            name = "tracing";
+            packageId = "tracing";
+          }
+          {
+            name = "tracing-subscriber";
+            packageId = "tracing-subscriber";
+            features = [ "env-filter" ];
+          }
+        ];
+        features = {
+          "checkpoint" = [ "serde" "serde_json" ];
+          "futures" = [ "pin-utils" ];
+          "pin-utils" = [ "dep:pin-utils" ];
+          "serde" = [ "dep:serde" ];
+          "serde_json" = [ "dep:serde_json" ];
+        };
+        resolvedDefaultFeatures = [ "checkpoint" "default" "serde" "serde_json" ];
+      };
+      "matchers" = rec {
+        crateName = "matchers";
+        version = "0.1.0";
+        edition = "2018";
+        sha256 = "0n2mbk7lg2vf962c8xwzdq96yrc9i0p8dbmm4wa1nnkcp1dhfqw2";
+        authors = [
+          "Eliza Weisman <eliza@buoyant.io>"
+        ];
+        dependencies = [
+          {
+            name = "regex-automata";
+            packageId = "regex-automata 0.1.10";
+          }
+        ];
+
       };
       "maybe-uninit" = rec {
         crateName = "maybe-uninit";
@@ -2787,6 +3315,90 @@ rec {
         ];
 
       };
+      "multer" = rec {
+        crateName = "multer";
+        version = "2.1.0";
+        edition = "2018";
+        sha256 = "1hjiphaypj3phqaj5igrzcia9xfmf4rr4ddigbh8zzb96k1bvb01";
+        authors = [
+          "Rousan Ali <hello@rousan.io>"
+        ];
+        dependencies = [
+          {
+            name = "bytes";
+            packageId = "bytes";
+          }
+          {
+            name = "encoding_rs";
+            packageId = "encoding_rs";
+          }
+          {
+            name = "futures-util";
+            packageId = "futures-util";
+            usesDefaultFeatures = false;
+          }
+          {
+            name = "http";
+            packageId = "http";
+          }
+          {
+            name = "httparse";
+            packageId = "httparse";
+          }
+          {
+            name = "log";
+            packageId = "log";
+          }
+          {
+            name = "memchr";
+            packageId = "memchr";
+          }
+          {
+            name = "mime";
+            packageId = "mime";
+          }
+          {
+            name = "spin";
+            packageId = "spin";
+            usesDefaultFeatures = false;
+            features = [ "spin_mutex" ];
+          }
+          {
+            name = "tokio";
+            packageId = "tokio";
+            optional = true;
+          }
+          {
+            name = "tokio-util";
+            packageId = "tokio-util";
+            optional = true;
+            features = [ "io" ];
+          }
+        ];
+        buildDependencies = [
+          {
+            name = "version_check";
+            packageId = "version_check";
+          }
+        ];
+        devDependencies = [
+          {
+            name = "tokio";
+            packageId = "tokio";
+            features = [ "full" ];
+          }
+        ];
+        features = {
+          "all" = [ "json" ];
+          "json" = [ "serde" "serde_json" ];
+          "serde" = [ "dep:serde" ];
+          "serde_json" = [ "dep:serde_json" ];
+          "tokio" = [ "dep:tokio" ];
+          "tokio-io" = [ "tokio" "tokio-util" ];
+          "tokio-util" = [ "dep:tokio-util" ];
+        };
+        resolvedDefaultFeatures = [ "default" "tokio" "tokio-io" "tokio-util" ];
+      };
       "native-tls" = rec {
         crateName = "native-tls";
         version = "0.2.11";
@@ -2935,6 +3547,34 @@ rec {
           "std" = [ "alloc" "memchr/std" "minimal-lexical/std" ];
         };
         resolvedDefaultFeatures = [ "alloc" "default" "std" ];
+      };
+      "nu-ansi-term" = rec {
+        crateName = "nu-ansi-term";
+        version = "0.46.0";
+        edition = "2018";
+        sha256 = "115sywxh53p190lyw97alm14nc004qj5jm5lvdj608z84rbida3p";
+        authors = [
+          "ogham@bsago.me"
+          "Ryan Scheel (Havvy) <ryan.havvy@gmail.com>"
+          "Josh Triplett <josh@joshtriplett.org>"
+          "The Nushell Project Developers"
+        ];
+        dependencies = [
+          {
+            name = "overload";
+            packageId = "overload";
+          }
+          {
+            name = "winapi";
+            packageId = "winapi";
+            target = { target, features }: ("windows" == target."os");
+            features = [ "consoleapi" "errhandlingapi" "fileapi" "handleapi" "processenv" ];
+          }
+        ];
+        features = {
+          "derive_serde_style" = [ "serde" ];
+          "serde" = [ "dep:serde" ];
+        };
       };
       "num-format" = rec {
         crateName = "num-format";
@@ -3219,7 +3859,44 @@ rec {
           "vendored" = [ "openssl-src" ];
         };
       };
-      "parking_lot_core" = rec {
+      "overload" = rec {
+        crateName = "overload";
+        version = "0.1.1";
+        edition = "2018";
+        sha256 = "0fdgbaqwknillagy1xq7xfgv60qdbk010diwl7s1p0qx7hb16n5i";
+        authors = [
+          "Daniel Salvadori <danaugrs@gmail.com>"
+        ];
+
+      };
+      "parking_lot" = rec {
+        crateName = "parking_lot";
+        version = "0.12.1";
+        edition = "2018";
+        sha256 = "13r2xk7mnxfc5g0g6dkdxqdqad99j7s7z8zhzz4npw5r0g0v4hip";
+        authors = [
+          "Amanieu d'Antras <amanieu@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "lock_api";
+            packageId = "lock_api";
+          }
+          {
+            name = "parking_lot_core";
+            packageId = "parking_lot_core 0.9.8";
+          }
+        ];
+        features = {
+          "arc_lock" = [ "lock_api/arc_lock" ];
+          "deadlock_detection" = [ "parking_lot_core/deadlock_detection" ];
+          "nightly" = [ "parking_lot_core/nightly" "lock_api/nightly" ];
+          "owning_ref" = [ "lock_api/owning_ref" ];
+          "serde" = [ "lock_api/serde" ];
+        };
+        resolvedDefaultFeatures = [ "default" ];
+      };
+      "parking_lot_core 0.5.0" = rec {
         crateName = "parking_lot_core";
         version = "0.5.0";
         edition = "2018";
@@ -3253,7 +3930,7 @@ rec {
           }
           {
             name = "smallvec";
-            packageId = "smallvec";
+            packageId = "smallvec 0.6.14";
           }
           {
             name = "winapi";
@@ -3274,6 +3951,106 @@ rec {
           "petgraph" = [ "dep:petgraph" ];
           "thread-id" = [ "dep:thread-id" ];
         };
+      };
+      "parking_lot_core 0.9.8" = rec {
+        crateName = "parking_lot_core";
+        version = "0.9.8";
+        edition = "2018";
+        sha256 = "0ixlak319bpzldq20yvyfqk0y1vi736zxbw101jvzjp7by30rw4k";
+        authors = [
+          "Amanieu d'Antras <amanieu@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "cfg-if";
+            packageId = "cfg-if 1.0.0";
+          }
+          {
+            name = "libc";
+            packageId = "libc";
+            target = { target, features }: (target."unix" or false);
+          }
+          {
+            name = "redox_syscall";
+            packageId = "redox_syscall 0.3.5";
+            target = { target, features }: ("redox" == target."os");
+          }
+          {
+            name = "smallvec";
+            packageId = "smallvec 1.11.0";
+          }
+          {
+            name = "windows-targets";
+            packageId = "windows-targets 0.48.1";
+            target = { target, features }: (target."windows" or false);
+          }
+        ];
+        features = {
+          "backtrace" = [ "dep:backtrace" ];
+          "deadlock_detection" = [ "petgraph" "thread-id" "backtrace" ];
+          "petgraph" = [ "dep:petgraph" ];
+          "thread-id" = [ "dep:thread-id" ];
+        };
+      };
+      "pear" = rec {
+        crateName = "pear";
+        version = "0.2.7";
+        edition = "2018";
+        sha256 = "077pd1lbr5g99gsmcbglcrq6izl32qvd2l2bc2cx6aajf76qd8v1";
+        authors = [
+          "Sergio Benitez <sb@sergio.bz>"
+        ];
+        dependencies = [
+          {
+            name = "inlinable_string";
+            packageId = "inlinable_string";
+          }
+          {
+            name = "pear_codegen";
+            packageId = "pear_codegen";
+          }
+          {
+            name = "yansi";
+            packageId = "yansi 1.0.0-rc";
+            optional = true;
+          }
+        ];
+        features = {
+          "color" = [ "yansi" ];
+          "default" = [ "color" ];
+          "yansi" = [ "dep:yansi" ];
+        };
+        resolvedDefaultFeatures = [ "color" "default" "yansi" ];
+      };
+      "pear_codegen" = rec {
+        crateName = "pear_codegen";
+        version = "0.2.7";
+        edition = "2018";
+        sha256 = "0m0dras73cm92sqn1715ypn46h9z1r8sc043kq9rq1n8v89hz7ys";
+        procMacro = true;
+        authors = [
+          "Sergio Benitez <sb@sergio.bz>"
+        ];
+        dependencies = [
+          {
+            name = "proc-macro2";
+            packageId = "proc-macro2";
+          }
+          {
+            name = "proc-macro2-diagnostics";
+            packageId = "proc-macro2-diagnostics";
+          }
+          {
+            name = "quote";
+            packageId = "quote";
+          }
+          {
+            name = "syn";
+            packageId = "syn";
+            features = [ "full" "extra-traits" "visit-mut" ];
+          }
+        ];
+
       };
       "percent-encoding" = rec {
         crateName = "percent-encoding";
@@ -3377,6 +4154,46 @@ rec {
           "default" = [ "proc-macro" ];
         };
         resolvedDefaultFeatures = [ "default" "proc-macro" ];
+      };
+      "proc-macro2-diagnostics" = rec {
+        crateName = "proc-macro2-diagnostics";
+        version = "0.10.1";
+        edition = "2018";
+        sha256 = "1j48ipc80pykvhx6yhndfa774s58ax1h6sm6mlhf09ls76f6l1mg";
+        authors = [
+          "Sergio Benitez <sb@sergio.bz>"
+        ];
+        dependencies = [
+          {
+            name = "proc-macro2";
+            packageId = "proc-macro2";
+          }
+          {
+            name = "quote";
+            packageId = "quote";
+          }
+          {
+            name = "syn";
+            packageId = "syn";
+          }
+          {
+            name = "yansi";
+            packageId = "yansi 1.0.0-rc";
+            optional = true;
+          }
+        ];
+        buildDependencies = [
+          {
+            name = "version_check";
+            packageId = "version_check";
+          }
+        ];
+        features = {
+          "colors" = [ "yansi" ];
+          "default" = [ "colors" ];
+          "yansi" = [ "dep:yansi" ];
+        };
+        resolvedDefaultFeatures = [ "colors" "default" "yansi" ];
       };
       "quote" = rec {
         crateName = "quote";
@@ -3854,6 +4671,47 @@ rec {
           "rustc-dep-of-std" = [ "core" "bitflags/rustc-dep-of-std" ];
         };
       };
+      "ref-cast" = rec {
+        crateName = "ref-cast";
+        version = "1.0.18";
+        edition = "2018";
+        sha256 = "0sxzy3f0zmclsmi1z17n16xbjbp99d5c6nh7592yy6f3fya82h8n";
+        authors = [
+          "David Tolnay <dtolnay@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "ref-cast-impl";
+            packageId = "ref-cast-impl";
+          }
+        ];
+
+      };
+      "ref-cast-impl" = rec {
+        crateName = "ref-cast-impl";
+        version = "1.0.18";
+        edition = "2018";
+        sha256 = "05kjg9g9akzb0yns255a5zvdkbwk0wa9kp1cf8k6h25nv7d57gv8";
+        procMacro = true;
+        authors = [
+          "David Tolnay <dtolnay@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "proc-macro2";
+            packageId = "proc-macro2";
+          }
+          {
+            name = "quote";
+            packageId = "quote";
+          }
+          {
+            name = "syn";
+            packageId = "syn";
+          }
+        ];
+
+      };
       "regex" = rec {
         crateName = "regex";
         version = "1.9.1";
@@ -3876,13 +4734,13 @@ rec {
           }
           {
             name = "regex-automata";
-            packageId = "regex-automata";
+            packageId = "regex-automata 0.3.3";
             usesDefaultFeatures = false;
             features = [ "alloc" "syntax" "meta" "nfa-pikevm" ];
           }
           {
             name = "regex-syntax";
-            packageId = "regex-syntax";
+            packageId = "regex-syntax 0.7.4";
             usesDefaultFeatures = false;
           }
         ];
@@ -3910,7 +4768,31 @@ rec {
         };
         resolvedDefaultFeatures = [ "default" "perf" "perf-backtrack" "perf-cache" "perf-dfa" "perf-inline" "perf-literal" "perf-onepass" "std" "unicode" "unicode-age" "unicode-bool" "unicode-case" "unicode-gencat" "unicode-perl" "unicode-script" "unicode-segment" ];
       };
-      "regex-automata" = rec {
+      "regex-automata 0.1.10" = rec {
+        crateName = "regex-automata";
+        version = "0.1.10";
+        edition = "2015";
+        sha256 = "0ci1hvbzhrfby5fdpf4ganhf7kla58acad9i1ff1p34dzdrhs8vc";
+        authors = [
+          "Andrew Gallant <jamslam@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "regex-syntax";
+            packageId = "regex-syntax 0.6.29";
+            optional = true;
+          }
+        ];
+        features = {
+          "default" = [ "std" ];
+          "fst" = [ "dep:fst" ];
+          "regex-syntax" = [ "dep:regex-syntax" ];
+          "std" = [ "regex-syntax" ];
+          "transducer" = [ "std" "fst" ];
+        };
+        resolvedDefaultFeatures = [ "default" "regex-syntax" "std" ];
+      };
+      "regex-automata 0.3.3" = rec {
         crateName = "regex-automata";
         version = "0.3.3";
         edition = "2021";
@@ -3934,7 +4816,7 @@ rec {
           }
           {
             name = "regex-syntax";
-            packageId = "regex-syntax";
+            packageId = "regex-syntax 0.7.4";
             optional = true;
             usesDefaultFeatures = false;
           }
@@ -3970,7 +4852,21 @@ rec {
         };
         resolvedDefaultFeatures = [ "alloc" "dfa-onepass" "hybrid" "meta" "nfa-backtrack" "nfa-pikevm" "nfa-thompson" "perf-inline" "perf-literal" "perf-literal-multisubstring" "perf-literal-substring" "std" "syntax" "unicode" "unicode-age" "unicode-bool" "unicode-case" "unicode-gencat" "unicode-perl" "unicode-script" "unicode-segment" "unicode-word-boundary" ];
       };
-      "regex-syntax" = rec {
+      "regex-syntax 0.6.29" = rec {
+        crateName = "regex-syntax";
+        version = "0.6.29";
+        edition = "2018";
+        sha256 = "1qgj49vm6y3zn1hi09x91jvgkl2b1fiaq402skj83280ggfwcqpi";
+        authors = [
+          "The Rust Project Developers"
+        ];
+        features = {
+          "default" = [ "unicode" ];
+          "unicode" = [ "unicode-age" "unicode-bool" "unicode-case" "unicode-gencat" "unicode-perl" "unicode-script" "unicode-segment" ];
+        };
+        resolvedDefaultFeatures = [ "default" "unicode" "unicode-age" "unicode-bool" "unicode-case" "unicode-gencat" "unicode-perl" "unicode-script" "unicode-segment" ];
+      };
+      "regex-syntax 0.7.4" = rec {
         crateName = "regex-syntax";
         version = "0.7.4";
         edition = "2021";
@@ -4222,6 +5118,333 @@ rec {
           "webpki-roots" = [ "dep:webpki-roots" ];
         };
         resolvedDefaultFeatures = [ "__tls" "blocking" "default" "default-tls" "hyper-tls" "json" "native-tls-crate" "serde_json" "tokio-native-tls" ];
+      };
+      "rocket" = rec {
+        crateName = "rocket";
+        version = "0.5.0-rc.3";
+        edition = "2021";
+        sha256 = "1jcwrkqvmbh1gwvg55kv6mdp8c9331hqzd45jq9gsp5f05s4ywsq";
+        authors = [
+          "Sergio Benitez <sb@sergio.bz>"
+        ];
+        dependencies = [
+          {
+            name = "async-stream";
+            packageId = "async-stream";
+          }
+          {
+            name = "async-trait";
+            packageId = "async-trait";
+          }
+          {
+            name = "atomic";
+            packageId = "atomic";
+          }
+          {
+            name = "binascii";
+            packageId = "binascii";
+          }
+          {
+            name = "bytes";
+            packageId = "bytes";
+          }
+          {
+            name = "either";
+            packageId = "either";
+          }
+          {
+            name = "figment";
+            packageId = "figment";
+            features = [ "toml" "env" ];
+          }
+          {
+            name = "futures";
+            packageId = "futures";
+            usesDefaultFeatures = false;
+            features = [ "std" ];
+          }
+          {
+            name = "indexmap";
+            packageId = "indexmap 1.9.3";
+            features = [ "serde-1" "std" ];
+          }
+          {
+            name = "is-terminal";
+            packageId = "is-terminal";
+          }
+          {
+            name = "log";
+            packageId = "log";
+            features = [ "std" ];
+          }
+          {
+            name = "memchr";
+            packageId = "memchr";
+          }
+          {
+            name = "multer";
+            packageId = "multer";
+            features = [ "tokio-io" ];
+          }
+          {
+            name = "num_cpus";
+            packageId = "num_cpus";
+          }
+          {
+            name = "parking_lot";
+            packageId = "parking_lot";
+          }
+          {
+            name = "pin-project-lite";
+            packageId = "pin-project-lite";
+          }
+          {
+            name = "rand";
+            packageId = "rand 0.8.5";
+          }
+          {
+            name = "ref-cast";
+            packageId = "ref-cast";
+          }
+          {
+            name = "rocket_codegen";
+            packageId = "rocket_codegen";
+          }
+          {
+            name = "rocket_http";
+            packageId = "rocket_http";
+            features = [ "serde" ];
+          }
+          {
+            name = "serde";
+            packageId = "serde";
+            features = [ "derive" ];
+          }
+          {
+            name = "state";
+            packageId = "state";
+          }
+          {
+            name = "tempfile";
+            packageId = "tempfile";
+          }
+          {
+            name = "time";
+            packageId = "time";
+            features = [ "macros" "parsing" ];
+          }
+          {
+            name = "tokio";
+            packageId = "tokio";
+            features = [ "fs" "io-std" "io-util" "rt-multi-thread" "sync" "signal" "macros" ];
+          }
+          {
+            name = "tokio-stream";
+            packageId = "tokio-stream";
+            features = [ "signal" "time" ];
+          }
+          {
+            name = "tokio-util";
+            packageId = "tokio-util";
+            usesDefaultFeatures = false;
+            features = [ "io" ];
+          }
+          {
+            name = "ubyte";
+            packageId = "ubyte";
+            features = [ "serde" ];
+          }
+          {
+            name = "yansi";
+            packageId = "yansi 0.5.1";
+          }
+        ];
+        buildDependencies = [
+          {
+            name = "version_check";
+            packageId = "version_check";
+          }
+        ];
+        devDependencies = [
+          {
+            name = "figment";
+            packageId = "figment";
+            features = [ "test" ];
+          }
+        ];
+        features = {
+          "default" = [ "http2" ];
+          "http2" = [ "rocket_http/http2" ];
+          "json" = [ "serde_json" "tokio/io-util" ];
+          "msgpack" = [ "rmp-serde" "tokio/io-util" ];
+          "mtls" = [ "rocket_http/mtls" "tls" ];
+          "rmp-serde" = [ "dep:rmp-serde" ];
+          "secrets" = [ "rocket_http/private-cookies" ];
+          "serde_json" = [ "dep:serde_json" ];
+          "tls" = [ "rocket_http/tls" ];
+          "uuid" = [ "uuid_" "rocket_http/uuid" ];
+          "uuid_" = [ "dep:uuid_" ];
+        };
+        resolvedDefaultFeatures = [ "default" "http2" ];
+      };
+      "rocket_codegen" = rec {
+        crateName = "rocket_codegen";
+        version = "0.5.0-rc.3";
+        edition = "2021";
+        sha256 = "12shzkr9zmc0v3r190nhcfavly28nngja2g4h94p93122hzkb4vh";
+        procMacro = true;
+        authors = [
+          "Sergio Benitez <sb@sergio.bz>"
+        ];
+        dependencies = [
+          {
+            name = "devise";
+            packageId = "devise";
+          }
+          {
+            name = "glob";
+            packageId = "glob";
+          }
+          {
+            name = "indexmap";
+            packageId = "indexmap 1.9.3";
+          }
+          {
+            name = "proc-macro2";
+            packageId = "proc-macro2";
+          }
+          {
+            name = "quote";
+            packageId = "quote";
+          }
+          {
+            name = "rocket_http";
+            packageId = "rocket_http";
+          }
+          {
+            name = "syn";
+            packageId = "syn";
+            features = [ "full" "visit" "visit-mut" "extra-traits" ];
+          }
+          {
+            name = "unicode-xid";
+            packageId = "unicode-xid";
+          }
+        ];
+
+      };
+      "rocket_http" = rec {
+        crateName = "rocket_http";
+        version = "0.5.0-rc.3";
+        edition = "2021";
+        sha256 = "1x4h411ldb59c6bq05r7dzi65xiqz7akd63zydkkm832j74i4q4k";
+        authors = [
+          "Sergio Benitez <sb@sergio.bz>"
+        ];
+        dependencies = [
+          {
+            name = "cookie";
+            packageId = "cookie";
+            features = [ "percent-encode" ];
+          }
+          {
+            name = "either";
+            packageId = "either";
+          }
+          {
+            name = "futures";
+            packageId = "futures";
+            usesDefaultFeatures = false;
+          }
+          {
+            name = "http";
+            packageId = "http";
+          }
+          {
+            name = "hyper";
+            packageId = "hyper";
+            usesDefaultFeatures = false;
+            features = [ "http1" "runtime" "server" "stream" ];
+          }
+          {
+            name = "indexmap";
+            packageId = "indexmap 1.9.3";
+            features = [ "std" ];
+          }
+          {
+            name = "log";
+            packageId = "log";
+          }
+          {
+            name = "memchr";
+            packageId = "memchr";
+          }
+          {
+            name = "pear";
+            packageId = "pear";
+          }
+          {
+            name = "percent-encoding";
+            packageId = "percent-encoding";
+          }
+          {
+            name = "pin-project-lite";
+            packageId = "pin-project-lite";
+          }
+          {
+            name = "ref-cast";
+            packageId = "ref-cast";
+          }
+          {
+            name = "serde";
+            packageId = "serde";
+            rename = "serde_";
+            optional = true;
+            usesDefaultFeatures = false;
+            features = [ "std" ];
+          }
+          {
+            name = "smallvec";
+            packageId = "smallvec 1.11.0";
+          }
+          {
+            name = "stable-pattern";
+            packageId = "stable-pattern";
+          }
+          {
+            name = "state";
+            packageId = "state";
+          }
+          {
+            name = "time";
+            packageId = "time";
+            features = [ "formatting" "macros" ];
+          }
+          {
+            name = "tokio";
+            packageId = "tokio";
+            features = [ "net" "sync" "time" ];
+          }
+          {
+            name = "uncased";
+            packageId = "uncased";
+          }
+        ];
+        features = {
+          "http2" = [ "hyper/http2" ];
+          "mtls" = [ "tls" "x509-parser" ];
+          "private-cookies" = [ "cookie/private" "cookie/key-expansion" ];
+          "rustls" = [ "dep:rustls" ];
+          "rustls-pemfile" = [ "dep:rustls-pemfile" ];
+          "serde" = [ "uncased/with-serde-alloc" "serde_" ];
+          "serde_" = [ "dep:serde_" ];
+          "tls" = [ "rustls" "tokio-rustls" "rustls-pemfile" ];
+          "tokio-rustls" = [ "dep:tokio-rustls" ];
+          "uuid" = [ "uuid_" ];
+          "uuid_" = [ "dep:uuid_" ];
+          "x509-parser" = [ "dep:x509-parser" ];
+        };
+        resolvedDefaultFeatures = [ "default" "http2" "serde" "serde_" ];
       };
       "rustc-demangle" = rec {
         crateName = "rustc-demangle";
@@ -4484,6 +5707,18 @@ rec {
         };
         resolvedDefaultFeatures = [ "default" "std" "termios" "use-libc-auxv" ];
       };
+      "rustversion" = rec {
+        crateName = "rustversion";
+        version = "1.0.14";
+        edition = "2018";
+        sha256 = "1x1pz1yynk5xzzrazk2svmidj69jhz89dz5vrc28sixl20x1iz3z";
+        procMacro = true;
+        build = "build/build.rs";
+        authors = [
+          "David Tolnay <dtolnay@gmail.com>"
+        ];
+
+      };
       "ryu" = rec {
         crateName = "ryu";
         version = "1.0.14";
@@ -4520,6 +5755,28 @@ rec {
           }
         ];
 
+      };
+      "scoped-tls" = rec {
+        crateName = "scoped-tls";
+        version = "1.0.1";
+        edition = "2015";
+        sha256 = "15524h04mafihcvfpgxd8f4bgc3k95aclz8grjkg9a0rxcvn9kz1";
+        authors = [
+          "Alex Crichton <alex@alexcrichton.com>"
+        ];
+
+      };
+      "scopeguard" = rec {
+        crateName = "scopeguard";
+        version = "1.2.0";
+        edition = "2015";
+        sha256 = "0jcz9sd47zlsgcnm1hdw0664krxwb5gczlif4qngj2aif8vky54l";
+        authors = [
+          "bluss"
+        ];
+        features = {
+          "default" = [ "use_std" ];
+        };
       };
       "security-framework" = rec {
         crateName = "security-framework";
@@ -5004,6 +6261,41 @@ rec {
         };
         resolvedDefaultFeatures = [ "default" "std" ];
       };
+      "sharded-slab" = rec {
+        crateName = "sharded-slab";
+        version = "0.1.4";
+        edition = "2018";
+        sha256 = "0cbb8kgwsyr3zzhsv8jrs3y1j3vsw4jxil42lfq31ikhdy0bl3wh";
+        authors = [
+          "Eliza Weisman <eliza@buoyant.io>"
+        ];
+        dependencies = [
+          {
+            name = "lazy_static";
+            packageId = "lazy_static";
+          }
+        ];
+        features = {
+          "loom" = [ "dep:loom" ];
+        };
+      };
+      "signal-hook-registry" = rec {
+        crateName = "signal-hook-registry";
+        version = "1.4.1";
+        edition = "2015";
+        sha256 = "18crkkw5k82bvcx088xlf5g4n3772m24qhzgfan80nda7d3rn8nq";
+        authors = [
+          "Michal 'vorner' Vaner <vorner@vorner.cz>"
+          "Masaki Hara <ackie.h.gmai@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "libc";
+            packageId = "libc";
+          }
+        ];
+
+      };
       "simple_logger" = rec {
         crateName = "simple_logger";
         version = "4.2.0";
@@ -5065,7 +6357,7 @@ rec {
         };
         resolvedDefaultFeatures = [ "default" "std" ];
       };
-      "smallvec" = rec {
+      "smallvec 0.6.14" = rec {
         crateName = "smallvec";
         version = "0.6.14";
         edition = "2015";
@@ -5085,6 +6377,21 @@ rec {
           "serde" = [ "dep:serde" ];
         };
         resolvedDefaultFeatures = [ "default" "std" ];
+      };
+      "smallvec 1.11.0" = rec {
+        crateName = "smallvec";
+        version = "1.11.0";
+        edition = "2018";
+        sha256 = "1y9g8jcsizjbsiilgplrnavy8pd3cliy40pqgrq9zpczwkp4zfv2";
+        authors = [
+          "The Servo Project Developers"
+        ];
+        features = {
+          "arbitrary" = [ "dep:arbitrary" ];
+          "const_new" = [ "const_generics" ];
+          "drain_keep_rest" = [ "drain_filter" ];
+          "serde" = [ "dep:serde" ];
+        };
       };
       "socket2" = rec {
         crateName = "socket2";
@@ -5111,6 +6418,71 @@ rec {
         features = {
         };
         resolvedDefaultFeatures = [ "all" ];
+      };
+      "spin" = rec {
+        crateName = "spin";
+        version = "0.9.8";
+        edition = "2015";
+        sha256 = "0rvam5r0p3a6qhc18scqpvpgb3ckzyqxpgdfyjnghh8ja7byi039";
+        authors = [
+          "Mathijs van de Nes <git@mathijs.vd-nes.nl>"
+          "John Ericson <git@JohnEricson.me>"
+          "Joshua Barretto <joshua.s.barretto@gmail.com>"
+        ];
+        features = {
+          "barrier" = [ "mutex" ];
+          "default" = [ "lock_api" "mutex" "spin_mutex" "rwlock" "once" "lazy" "barrier" ];
+          "fair_mutex" = [ "mutex" ];
+          "lazy" = [ "once" ];
+          "lock_api" = [ "lock_api_crate" ];
+          "lock_api_crate" = [ "dep:lock_api_crate" ];
+          "portable-atomic" = [ "dep:portable-atomic" ];
+          "portable_atomic" = [ "portable-atomic" ];
+          "spin_mutex" = [ "mutex" ];
+          "ticket_mutex" = [ "mutex" ];
+          "use_ticket_mutex" = [ "mutex" "ticket_mutex" ];
+        };
+        resolvedDefaultFeatures = [ "mutex" "spin_mutex" ];
+      };
+      "stable-pattern" = rec {
+        crateName = "stable-pattern";
+        version = "0.1.0";
+        edition = "2018";
+        sha256 = "0i8hq82vm82mqj02qqcsd7caibrih7x5w3a1xpm8hpv30261cr25";
+        authors = [
+          "Sergio Benitez <sb@sergio.bz>"
+        ];
+        dependencies = [
+          {
+            name = "memchr";
+            packageId = "memchr";
+            usesDefaultFeatures = false;
+          }
+        ];
+        features = {
+          "default" = [ "std" ];
+          "std" = [ "memchr/std" ];
+        };
+        resolvedDefaultFeatures = [ "default" "std" ];
+      };
+      "state" = rec {
+        crateName = "state";
+        version = "0.5.3";
+        edition = "2018";
+        sha256 = "0fzji31ijbkimbzdy4dln9mp5xp7lm1a0dnqxv4n10hywphnds6v";
+        authors = [
+          "Sergio Benitez <sb@sergio.bz>"
+        ];
+        dependencies = [
+          {
+            name = "loom";
+            packageId = "loom";
+            target = { target, features }: (target."loom" or false);
+            features = [ "checkpoint" ];
+          }
+        ];
+        features = {
+        };
       };
       "static_assertions" = rec {
         crateName = "static_assertions";
@@ -5178,7 +6550,7 @@ rec {
           "quote" = [ "dep:quote" ];
           "test" = [ "syn-test-suite/all-features" ];
         };
-        resolvedDefaultFeatures = [ "clone-impls" "default" "derive" "extra-traits" "fold" "full" "parsing" "printing" "proc-macro" "quote" "visit" ];
+        resolvedDefaultFeatures = [ "clone-impls" "default" "derive" "extra-traits" "fold" "full" "parsing" "printing" "proc-macro" "quote" "visit" "visit-mut" ];
       };
       "systemd-journal-logger" = rec {
         crateName = "systemd-journal-logger";
@@ -5295,6 +6667,27 @@ rec {
           }
         ];
 
+      };
+      "thread_local" = rec {
+        crateName = "thread_local";
+        version = "1.1.7";
+        edition = "2021";
+        sha256 = "0lp19jdgvp5m4l60cgxdnl00yw1hlqy8gcywg9bddwng9h36zp9z";
+        authors = [
+          "Amanieu d'Antras <amanieu@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "cfg-if";
+            packageId = "cfg-if 1.0.0";
+          }
+          {
+            name = "once_cell";
+            packageId = "once_cell";
+          }
+        ];
+        features = {
+        };
       };
       "threadpool" = rec {
         crateName = "threadpool";
@@ -5496,11 +6889,22 @@ rec {
             packageId = "pin-project-lite";
           }
           {
+            name = "signal-hook-registry";
+            packageId = "signal-hook-registry";
+            optional = true;
+            target = { target, features }: (target."unix" or false);
+          }
+          {
             name = "socket2";
             packageId = "socket2";
             optional = true;
             target = { target, features }: (!(("wasm32" == target."arch") || ("wasm64" == target."arch")));
             features = [ "all" ];
+          }
+          {
+            name = "tokio-macros";
+            packageId = "tokio-macros";
+            optional = true;
           }
           {
             name = "windows-sys";
@@ -5553,7 +6957,33 @@ rec {
           "tracing" = [ "dep:tracing" ];
           "windows-sys" = [ "dep:windows-sys" ];
         };
-        resolvedDefaultFeatures = [ "bytes" "default" "io-util" "libc" "mio" "net" "num_cpus" "rt" "rt-multi-thread" "socket2" "sync" "time" "windows-sys" ];
+        resolvedDefaultFeatures = [ "bytes" "default" "fs" "io-std" "io-util" "libc" "macros" "mio" "net" "num_cpus" "rt" "rt-multi-thread" "signal" "signal-hook-registry" "socket2" "sync" "time" "tokio-macros" "windows-sys" ];
+      };
+      "tokio-macros" = rec {
+        crateName = "tokio-macros";
+        version = "2.1.0";
+        edition = "2018";
+        sha256 = "0pk7y9dfanab886iaqwcbri39jkw33kgl7y07v0kg1pp8prdq2v3";
+        procMacro = true;
+        authors = [
+          "Tokio Contributors <team@tokio.rs>"
+        ];
+        dependencies = [
+          {
+            name = "proc-macro2";
+            packageId = "proc-macro2";
+          }
+          {
+            name = "quote";
+            packageId = "quote";
+          }
+          {
+            name = "syn";
+            packageId = "syn";
+            features = [ "full" ];
+          }
+        ];
+
       };
       "tokio-native-tls" = rec {
         crateName = "tokio-native-tls";
@@ -5583,6 +7013,49 @@ rec {
         features = {
           "vendored" = [ "native-tls/vendored" ];
         };
+      };
+      "tokio-stream" = rec {
+        crateName = "tokio-stream";
+        version = "0.1.14";
+        edition = "2021";
+        sha256 = "0hi8hcwavh5sdi1ivc9qc4yvyr32f153c212dpd7sb366y6rhz1r";
+        authors = [
+          "Tokio Contributors <team@tokio.rs>"
+        ];
+        dependencies = [
+          {
+            name = "futures-core";
+            packageId = "futures-core";
+          }
+          {
+            name = "pin-project-lite";
+            packageId = "pin-project-lite";
+          }
+          {
+            name = "tokio";
+            packageId = "tokio";
+            features = [ "sync" ];
+          }
+        ];
+        devDependencies = [
+          {
+            name = "tokio";
+            packageId = "tokio";
+            features = [ "full" "test-util" ];
+          }
+        ];
+        features = {
+          "default" = [ "time" ];
+          "fs" = [ "tokio/fs" ];
+          "full" = [ "time" "net" "io-util" "fs" "sync" "signal" ];
+          "io-util" = [ "tokio/io-util" ];
+          "net" = [ "tokio/net" ];
+          "signal" = [ "tokio/signal" ];
+          "sync" = [ "tokio/sync" "tokio-util" ];
+          "time" = [ "tokio/time" ];
+          "tokio-util" = [ "dep:tokio-util" ];
+        };
+        resolvedDefaultFeatures = [ "default" "signal" "time" ];
       };
       "tokio-util" = rec {
         crateName = "tokio-util";
@@ -5644,7 +7117,7 @@ rec {
           "time" = [ "tokio/time" "slab" ];
           "tracing" = [ "dep:tracing" ];
         };
-        resolvedDefaultFeatures = [ "codec" "default" "tracing" ];
+        resolvedDefaultFeatures = [ "codec" "default" "io" "tracing" ];
       };
       "toml" = rec {
         crateName = "toml";
@@ -5782,6 +7255,11 @@ rec {
             packageId = "pin-project-lite";
           }
           {
+            name = "tracing-attributes";
+            packageId = "tracing-attributes";
+            optional = true;
+          }
+          {
             name = "tracing-core";
             packageId = "tracing-core";
             usesDefaultFeatures = false;
@@ -5796,7 +7274,37 @@ rec {
           "tracing-attributes" = [ "dep:tracing-attributes" ];
           "valuable" = [ "tracing-core/valuable" ];
         };
-        resolvedDefaultFeatures = [ "std" ];
+        resolvedDefaultFeatures = [ "attributes" "default" "std" "tracing-attributes" ];
+      };
+      "tracing-attributes" = rec {
+        crateName = "tracing-attributes";
+        version = "0.1.26";
+        edition = "2018";
+        sha256 = "1ax44ldpbcb7dsvpljiv2krnx6xp0hs85zcyv8385sarc7sk2ksz";
+        procMacro = true;
+        authors = [
+          "Tokio Contributors <team@tokio.rs>"
+          "Eliza Weisman <eliza@buoyant.io>"
+          "David Barsky <dbarsky@amazon.com>"
+        ];
+        dependencies = [
+          {
+            name = "proc-macro2";
+            packageId = "proc-macro2";
+          }
+          {
+            name = "quote";
+            packageId = "quote";
+          }
+          {
+            name = "syn";
+            packageId = "syn";
+            usesDefaultFeatures = false;
+            features = [ "full" "parsing" "printing" "visit-mut" "clone-impls" "extra-traits" "proc-macro" ];
+          }
+        ];
+        features = {
+        };
       };
       "tracing-core" = rec {
         crateName = "tracing-core";
@@ -5812,6 +7320,13 @@ rec {
             packageId = "once_cell";
             optional = true;
           }
+          {
+            name = "valuable";
+            packageId = "valuable";
+            optional = true;
+            usesDefaultFeatures = false;
+            target = { target, features }: (target."tracing_unstable" or false);
+          }
         ];
         features = {
           "default" = [ "std" "valuable/std" ];
@@ -5819,7 +7334,151 @@ rec {
           "std" = [ "once_cell" ];
           "valuable" = [ "dep:valuable" ];
         };
-        resolvedDefaultFeatures = [ "once_cell" "std" ];
+        resolvedDefaultFeatures = [ "default" "once_cell" "std" "valuable" ];
+      };
+      "tracing-log" = rec {
+        crateName = "tracing-log";
+        version = "0.1.3";
+        edition = "2018";
+        sha256 = "08prnkxq8yas6jvvjnvyx5v3hwblas5527wxxgbiw2yis8rsvpbq";
+        authors = [
+          "Tokio Contributors <team@tokio.rs>"
+        ];
+        dependencies = [
+          {
+            name = "lazy_static";
+            packageId = "lazy_static";
+          }
+          {
+            name = "log";
+            packageId = "log";
+          }
+          {
+            name = "tracing-core";
+            packageId = "tracing-core";
+          }
+        ];
+        features = {
+          "ahash" = [ "dep:ahash" ];
+          "default" = [ "log-tracer" "trace-logger" "std" ];
+          "env_logger" = [ "dep:env_logger" ];
+          "interest-cache" = [ "lru" "ahash" ];
+          "lru" = [ "dep:lru" ];
+          "std" = [ "log/std" ];
+        };
+        resolvedDefaultFeatures = [ "log-tracer" "std" ];
+      };
+      "tracing-subscriber" = rec {
+        crateName = "tracing-subscriber";
+        version = "0.3.17";
+        edition = "2018";
+        sha256 = "0xvwfpmb943hdy4gzyn7a2azgigf30mfd1kx10gyh5gr6yy539ih";
+        authors = [
+          "Eliza Weisman <eliza@buoyant.io>"
+          "David Barsky <me@davidbarsky.com>"
+          "Tokio Contributors <team@tokio.rs>"
+        ];
+        dependencies = [
+          {
+            name = "matchers";
+            packageId = "matchers";
+            optional = true;
+          }
+          {
+            name = "nu-ansi-term";
+            packageId = "nu-ansi-term";
+            optional = true;
+          }
+          {
+            name = "once_cell";
+            packageId = "once_cell";
+            optional = true;
+          }
+          {
+            name = "regex";
+            packageId = "regex";
+            optional = true;
+            usesDefaultFeatures = false;
+            features = [ "std" "unicode-case" "unicode-perl" ];
+          }
+          {
+            name = "sharded-slab";
+            packageId = "sharded-slab";
+            optional = true;
+          }
+          {
+            name = "smallvec";
+            packageId = "smallvec 1.11.0";
+            optional = true;
+          }
+          {
+            name = "thread_local";
+            packageId = "thread_local";
+            optional = true;
+          }
+          {
+            name = "tracing";
+            packageId = "tracing";
+            optional = true;
+            usesDefaultFeatures = false;
+          }
+          {
+            name = "tracing-core";
+            packageId = "tracing-core";
+            usesDefaultFeatures = false;
+          }
+          {
+            name = "tracing-log";
+            packageId = "tracing-log";
+            optional = true;
+            usesDefaultFeatures = false;
+            features = [ "log-tracer" "std" ];
+          }
+        ];
+        devDependencies = [
+          {
+            name = "regex";
+            packageId = "regex";
+            usesDefaultFeatures = false;
+            features = [ "std" ];
+          }
+          {
+            name = "tracing";
+            packageId = "tracing";
+          }
+          {
+            name = "tracing-log";
+            packageId = "tracing-log";
+          }
+        ];
+        features = {
+          "ansi" = [ "fmt" "nu-ansi-term" ];
+          "default" = [ "smallvec" "fmt" "ansi" "tracing-log" "std" ];
+          "env-filter" = [ "matchers" "regex" "once_cell" "tracing" "std" "thread_local" ];
+          "fmt" = [ "registry" "std" ];
+          "json" = [ "tracing-serde" "serde" "serde_json" ];
+          "local-time" = [ "time/local-offset" ];
+          "matchers" = [ "dep:matchers" ];
+          "nu-ansi-term" = [ "dep:nu-ansi-term" ];
+          "once_cell" = [ "dep:once_cell" ];
+          "parking_lot" = [ "dep:parking_lot" ];
+          "regex" = [ "dep:regex" ];
+          "registry" = [ "sharded-slab" "thread_local" "std" ];
+          "serde" = [ "dep:serde" ];
+          "serde_json" = [ "dep:serde_json" ];
+          "sharded-slab" = [ "dep:sharded-slab" ];
+          "smallvec" = [ "dep:smallvec" ];
+          "std" = [ "alloc" "tracing-core/std" ];
+          "thread_local" = [ "dep:thread_local" ];
+          "time" = [ "dep:time" ];
+          "tracing" = [ "dep:tracing" ];
+          "tracing-log" = [ "dep:tracing-log" ];
+          "tracing-serde" = [ "dep:tracing-serde" ];
+          "valuable" = [ "tracing-core/valuable" "valuable_crate" "valuable-serde" "tracing-serde/valuable" ];
+          "valuable-serde" = [ "dep:valuable-serde" ];
+          "valuable_crate" = [ "dep:valuable_crate" ];
+        };
+        resolvedDefaultFeatures = [ "alloc" "ansi" "default" "env-filter" "fmt" "matchers" "nu-ansi-term" "once_cell" "regex" "registry" "sharded-slab" "smallvec" "std" "thread_local" "tracing" "tracing-log" ];
       };
       "try-lock" = rec {
         crateName = "try-lock";
@@ -5933,6 +7592,57 @@ rec {
           "scale_info" = [ "scale-info/derive" ];
         };
       };
+      "ubyte" = rec {
+        crateName = "ubyte";
+        version = "0.10.3";
+        edition = "2018";
+        sha256 = "1rlg6sr14i3rd4kfhrwd7b7w7krlg6kpjxkd6vcx0si8gnp0s7y8";
+        authors = [
+          "Sergio Benitez <sb@sergio.bz>"
+        ];
+        dependencies = [
+          {
+            name = "serde";
+            packageId = "serde";
+            optional = true;
+            usesDefaultFeatures = false;
+          }
+        ];
+        features = {
+          "serde" = [ "dep:serde" ];
+        };
+        resolvedDefaultFeatures = [ "default" "serde" ];
+      };
+      "uncased" = rec {
+        crateName = "uncased";
+        version = "0.9.9";
+        edition = "2018";
+        sha256 = "0s6ajpdc300jr3fhxgh93lwdfkd88g9amhw6mc179gm4d0qwb6wv";
+        authors = [
+          "Sergio Benitez <sb@sergio.bz>"
+        ];
+        dependencies = [
+          {
+            name = "serde";
+            packageId = "serde";
+            optional = true;
+            usesDefaultFeatures = false;
+          }
+        ];
+        buildDependencies = [
+          {
+            name = "version_check";
+            packageId = "version_check";
+          }
+        ];
+        features = {
+          "default" = [ "alloc" ];
+          "serde" = [ "dep:serde" ];
+          "with-serde" = [ "serde" ];
+          "with-serde-alloc" = [ "serde" "serde/alloc" "alloc" ];
+        };
+        resolvedDefaultFeatures = [ "alloc" "default" "serde" "with-serde-alloc" ];
+      };
       "unicode-bidi" = rec {
         crateName = "unicode-bidi";
         version = "0.3.13";
@@ -5997,6 +7707,20 @@ rec {
           "core" = [ "dep:core" ];
           "rustc-dep-of-std" = [ "std" "core" "compiler_builtins" ];
           "std" = [ "dep:std" ];
+        };
+        resolvedDefaultFeatures = [ "default" ];
+      };
+      "unicode-xid" = rec {
+        crateName = "unicode-xid";
+        version = "0.2.4";
+        edition = "2015";
+        sha256 = "131dfzf7d8fsr1ivch34x42c2d1ik5ig3g78brxncnn0r1sdyqpr";
+        authors = [
+          "erick.tryzelaar <erick.tryzelaar@gmail.com>"
+          "kwantam <kwantam@gmail.com>"
+          "Manish Goregaokar <manishsmail@gmail.com>"
+        ];
+        features = {
         };
         resolvedDefaultFeatures = [ "default" ];
       };
@@ -6096,6 +7820,19 @@ rec {
           "zerocopy" = [ "dep:zerocopy" ];
         };
         resolvedDefaultFeatures = [ "default" "serde" "std" ];
+      };
+      "valuable" = rec {
+        crateName = "valuable";
+        version = "0.1.0";
+        edition = "2018";
+        sha256 = "0v9gp3nkjbl30z0fd56d8mx7w1csk86wwjhfjhr400wh9mfpw2w3";
+        features = {
+          "default" = [ "std" ];
+          "derive" = [ "valuable-derive" ];
+          "std" = [ "alloc" ];
+          "valuable-derive" = [ "dep:valuable-derive" ];
+        };
+        resolvedDefaultFeatures = [ "alloc" "std" ];
       };
       "value-bag" = rec {
         crateName = "value-bag";
@@ -6840,7 +8577,7 @@ rec {
         features = {
           "debug" = [ "impl-debug" ];
         };
-        resolvedDefaultFeatures = [ "errhandlingapi" "handleapi" "impl-debug" "impl-default" "minwinbase" "minwindef" "ntsecapi" "ntstatus" "profileapi" "std" "sysinfoapi" "timezoneapi" "winbase" "winerror" "winnt" "winreg" "ws2ipdef" "ws2tcpip" ];
+        resolvedDefaultFeatures = [ "consoleapi" "errhandlingapi" "fileapi" "handleapi" "impl-debug" "impl-default" "minwinbase" "minwindef" "ntsecapi" "ntstatus" "processenv" "profileapi" "std" "sysinfoapi" "timezoneapi" "winbase" "winerror" "winnt" "winreg" "ws2ipdef" "ws2tcpip" ];
       };
       "winapi-i686-pc-windows-gnu" = rec {
         crateName = "winapi-i686-pc-windows-gnu";
@@ -7523,7 +9260,7 @@ rec {
           "windows-implement" = [ "dep:windows-implement" ];
           "windows-interface" = [ "dep:windows-interface" ];
         };
-        resolvedDefaultFeatures = [ "Globalization" "default" ];
+        resolvedDefaultFeatures = [ "Globalization" "Win32" "Win32_Foundation" "Win32_System" "Win32_System_Diagnostics" "Win32_System_Diagnostics_Debug" "Win32_System_Memory" "Win32_System_SystemInformation" "default" ];
       };
       "windows-sys 0.42.0" = rec {
         crateName = "windows-sys";
@@ -8799,6 +10536,34 @@ rec {
           "serialization-serde" = [ "transactions" "serde" ];
           "transactions" = [ "winapi/ktmw32" ];
         };
+      };
+      "yansi 0.5.1" = rec {
+        crateName = "yansi";
+        version = "0.5.1";
+        edition = "2015";
+        sha256 = "1v4qljgzh73knr7291cgwrf56zrvhmpn837n5n5pypzq1kciq109";
+        authors = [
+          "Sergio Benitez <sb@sergio.bz>"
+        ];
+
+      };
+      "yansi 1.0.0-rc" = rec {
+        crateName = "yansi";
+        version = "1.0.0-rc";
+        edition = "2021";
+        sha256 = "0gp4lxs1h49drdxraj4yja6jg68bn2rql0ja1v23ppai72nldrwy";
+        authors = [
+          "Sergio Benitez <sb@sergio.bz>"
+        ];
+        features = {
+          "default" = [ "std" ];
+          "detect-env" = [ "std" ];
+          "detect-tty" = [ "is-terminal" "std" ];
+          "hyperlink" = [ "std" ];
+          "is-terminal" = [ "dep:is-terminal" ];
+          "std" = [ "alloc" ];
+        };
+        resolvedDefaultFeatures = [ "alloc" "default" "std" ];
       };
     };
 

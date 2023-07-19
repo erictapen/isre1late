@@ -2795,9 +2795,9 @@ rec {
       };
       "itoa" = rec {
         crateName = "itoa";
-        version = "1.0.8";
+        version = "1.0.9";
         edition = "2018";
-        sha256 = "0jig0fmn7bdqpb1jz3ibnlw6gdm31wyn510x0k9mninch59jmc32";
+        sha256 = "0f6cpb4yqzhkrhhg6kqsw3wnmmhdnnffi6r2xzy248gzi2v0l5dg";
         authors = [
           "David Tolnay <dtolnay@gmail.com>"
         ];
@@ -4095,9 +4095,9 @@ rec {
       };
       "portable-atomic" = rec {
         crateName = "portable-atomic";
-        version = "1.4.0";
+        version = "1.4.1";
         edition = "2018";
-        sha256 = "0ymbk984lc5j48h07g3b5gxq0liiwf9z0przp0qjpf2d3153686j";
+        sha256 = "1ijfxhi2dvbxm68s18s4wcjsvfcwsph4sss01rc01mq0lqsm3igd";
         features = {
           "critical-section" = [ "dep:critical-section" ];
           "default" = [ "fallback" ];
@@ -4137,9 +4137,9 @@ rec {
       };
       "proc-macro2" = rec {
         crateName = "proc-macro2";
-        version = "1.0.64";
-        edition = "2018";
-        sha256 = "1nm7qw54jn9n0g1ygkw4f63vj90m241yih6ph3g6zx7irdi3p03q";
+        version = "1.0.66";
+        edition = "2021";
+        sha256 = "1ngawak3lh5p63k5x2wk37qy65q1yylk1phwhbmb5pcv7zdk3yqq";
         authors = [
           "David Tolnay <dtolnay@gmail.com>"
           "Alex Crichton <alex@alexcrichton.com>"
@@ -4197,9 +4197,9 @@ rec {
       };
       "quote" = rec {
         crateName = "quote";
-        version = "1.0.29";
+        version = "1.0.31";
         edition = "2018";
-        sha256 = "019ij5fwp56ydww6zr46dhmzsf078qkdq9vz6mw1cri7mgl1ac2p";
+        sha256 = "1w27xrr106vi73x7wr9wnafjbfr6nmm86pxv9qc0h26xd5fsds2z";
         authors = [
           "David Tolnay <dtolnay@gmail.com>"
         ];
@@ -5721,9 +5721,9 @@ rec {
       };
       "ryu" = rec {
         crateName = "ryu";
-        version = "1.0.14";
+        version = "1.0.15";
         edition = "2018";
-        sha256 = "1s9ag0xnvahv3nv8bb22xa03gmhq27klw612gdwxxj78dggjn8zy";
+        sha256 = "0hfphpn1xnpzxwj8qg916ga1lyc33lc03lnf1gb3wwpglj6wrm0s";
         authors = [
           "David Tolnay <dtolnay@gmail.com>"
         ];
@@ -5944,9 +5944,9 @@ rec {
       };
       "serde_json" = rec {
         crateName = "serde_json";
-        version = "1.0.102";
+        version = "1.0.103";
         edition = "2021";
-        sha256 = "1vfzj76zdn8yh5l08yzr6lf95whic3vrlkh6nq4266s8bncjl1mm";
+        sha256 = "06q3yhhwlr5d2bcb0x5hxjgvgy6pxmla56c4zq2483a5d4j42fyh";
         authors = [
           "Erick Tryzelaar <erick.tryzelaar@gmail.com>"
           "David Tolnay <dtolnay@gmail.com>"
@@ -6067,9 +6067,9 @@ rec {
       };
       "serde_with" = rec {
         crateName = "serde_with";
-        version = "3.0.0";
+        version = "3.1.0";
         edition = "2021";
-        sha256 = "04w5v0siychbb7l3anx57crvv9m3w866ckwjhkq5nf1wdsmdh0lz";
+        sha256 = "1qw0w66arplr1h0dna7z31fnif8smn3l2kzqxjr37vc3pjapvr11";
         authors = [
           "Jonas Bushart"
           "Marcin Kaźmierczak"
@@ -6154,9 +6154,9 @@ rec {
       };
       "serde_with_macros" = rec {
         crateName = "serde_with_macros";
-        version = "3.0.0";
+        version = "3.1.0";
         edition = "2021";
-        sha256 = "0w5hp31ji9vc5x00qzsn6yxfy16573fn8ppf4bkjrc9gjg9xbizd";
+        sha256 = "0rbwqxkl60hwpn1a8avj4zi297walr6m9drqjdmjcbjwf69ywg7a";
         procMacro = true;
         authors = [
           "Jonas Bushart"
@@ -6177,7 +6177,7 @@ rec {
           {
             name = "syn";
             packageId = "syn";
-            features = [ "full" "parsing" ];
+            features = [ "extra-traits" "full" "parsing" ];
           }
         ];
 
@@ -6520,9 +6520,9 @@ rec {
       };
       "syn" = rec {
         crateName = "syn";
-        version = "2.0.25";
+        version = "2.0.26";
         edition = "2021";
-        sha256 = "1qjswb3cifay6x9l0qjpm9c42ikacpxybr9ny4npw9kl1j6grqqm";
+        sha256 = "0w6r10ry1bbi7n06wi6j0i1n0infj70iw0z5blqnag6ymix4bhs5";
         authors = [
           "David Tolnay <dtolnay@gmail.com>"
         ];
@@ -7187,9 +7187,9 @@ rec {
       };
       "toml_edit" = rec {
         crateName = "toml_edit";
-        version = "0.19.13";
+        version = "0.19.14";
         edition = "2021";
-        sha256 = "1ryy3paysvzskx52sb8l5pkzi90mz20nzsc7qc06ag5hq7cm31sz";
+        sha256 = "12hf91s6mrvjpa0d40j3nibryddyc2szs857zcylm5v9x4kky4pq";
         authors = [
           "Andronik Ordian <write@reusable.software>"
           "Ed Page <eopage@gmail.com>"
@@ -7664,9 +7664,9 @@ rec {
       };
       "unicode-ident" = rec {
         crateName = "unicode-ident";
-        version = "1.0.10";
+        version = "1.0.11";
         edition = "2018";
-        sha256 = "0wvfzc0m3a50xikzfzwj8nh6ls0njngl7z60d2hli1x6yhcrl112";
+        sha256 = "0g7wmn39nl9yzhjwn9ihacd22ymli8r4nlc2xf3idaas8ypbl6ih";
         authors = [
           "David Tolnay <dtolnay@gmail.com>"
         ];
@@ -7775,9 +7775,9 @@ rec {
       };
       "uuid" = rec {
         crateName = "uuid";
-        version = "1.4.0";
+        version = "1.4.1";
         edition = "2018";
-        sha256 = "1gkpc8iy5mkrm1axx5wp7ska1b9jjv502ghzzsisirgxs4wxl8yh";
+        sha256 = "17c68cmn8mgn3ll3zlyc7zsnvj5r281ybic9nd05r0j0aznsbnkr";
         authors = [
           "Ashley Mannix<ashleymannix@live.com.au>"
           "Christopher Armstrong"

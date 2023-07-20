@@ -13,9 +13,12 @@
             "elm/svg": "1.0.1",
             "elm/time": "1.0.0",
             "elm/url": "1.0.0",
+            "mpizenberg/elm-pointer-events": "5.0.0",
             "tj/elm-svg-loaders": "1.0.0"
         },
         "indirect": {
+            "elm/bytes": "1.0.8",
+            "elm/file": "1.0.5",
             "elm/virtual-dom": "1.0.3"
         }
     },

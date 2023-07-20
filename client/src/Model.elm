@@ -6,6 +6,7 @@ module Model exposing
     ( Direction(..)
     , DistanceMatrix
     , Mode(..)
+    , ModeTransition
     , Model
     , buildUrl
     , initDistanceMatrix
@@ -25,6 +26,7 @@ import Url.Parser as UP
 type alias Model =
     { navigationKey : Browser.Navigation.Key
     , mode : Mode
+    , modeTransition : ModeTransition
     , delayRecords : Dict TripId (List DelayRecord)
     , errors : List String
     , now : Maybe Posix
@@ -41,6 +43,15 @@ type Mode
     | Day
     | Week
     | Year
+
+
+{-| The information we have to keep about an ongoing transition
+progress encodes how far the transition has gone. 0 means stable, -1.0 is a finished transition to the previous mode, 1.0 is a finished transition to the next mode.
+-}
+type alias ModeTransition =
+    { touchId : Maybe Int
+    , progress : Float
+    }
 
 
 buildUrl : Mode -> String

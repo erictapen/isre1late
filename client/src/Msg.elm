@@ -2,7 +2,7 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
 
-module Msg exposing (Msg(..))
+module Msg exposing (Msg(..), TouchMsgType(..))
 
 import Browser exposing (UrlRequest(..))
 import Time exposing (Posix)
@@ -15,3 +15,11 @@ type Msg
     | CurrentTime Posix
     | CurrentTimeZone Time.Zone
     | ToggleDirection
+    | TouchMsg TouchMsgType ( Float, Float )
+
+
+type TouchMsgType
+    = Start
+    | Move
+    | End
+    | Cancel

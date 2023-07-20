@@ -35,9 +35,24 @@
         version = "1.0.0";
       };
 
+      "mpizenberg/elm-pointer-events" = {
+        sha256 = "0vdqgz9pz0b2ib2vvqkfz08hj7qz5m0zccvm2l4nv3hazdjnkl80";
+        version = "5.0.0";
+      };
+
       "tj/elm-svg-loaders" = {
         sha256 = "1rvp23lb9bjr9z45vgaj29sp42qw04x3qzi882cc1qnwzr1r4xp9";
         version = "1.0.0";
+      };
+
+      "elm/bytes" = {
+        sha256 = "02ywbf52akvxclpxwj9n04jydajcbsbcbsnjs53yjc5lwck3abwj";
+        version = "1.0.8";
+      };
+
+      "elm/file" = {
+        sha256 = "1rljcb41dl97myidyjih2yliyzddkr2m7n74x7gg46rcw4jl0ny8";
+        version = "1.0.5";
       };
 
       "elm/virtual-dom" = {

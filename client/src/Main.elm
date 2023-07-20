@@ -11,6 +11,7 @@ import Dict exposing (Dict)
 import Html as H exposing (Html, button, div, h1, text)
 import Html.Attributes as HA exposing (class, id, style)
 import Html.Events exposing (onClick)
+import Html.Events.Extra.Touch as Touch
 import Json.Decode as JD exposing (decodeString)
 import List exposing (filterMap, head, indexedMap, map)
 import Model
@@ -18,6 +19,7 @@ import Model
         ( Direction(..)
         , DistanceMatrix
         , Mode(..)
+        , ModeTransition
         , Model
         , buildUrl
         , initDistanceMatrix
@@ -25,7 +27,7 @@ import Model
         , stations
         , urlParser
         )
-import Msg exposing (Msg(..))
+import Msg exposing (Msg(..), TouchMsgType(..))
 import String exposing (fromFloat, fromInt)
 import Svg as S exposing (Svg, g, line, path, svg)
 import Svg.Attributes as SA
@@ -53,6 +55,7 @@ import Types exposing (DelayRecord, StationId, TripId, decodeClientMsg)
 import Url
 import Url.Builder
 import Url.Parser as UP
+import Utils exposing (touchCoordinates)
 
 
 port sendMessage : String -> Cmd msg
@@ -96,6 +99,7 @@ init _ url key =
         initModel =
             { navigationKey = key
             , mode = Maybe.withDefault defaultMode modeFromUrl
+            , modeTransition = { touchId = Nothing, progress = 0 }
             , delayRecords = Dict.empty
             , errors = []
             , now = Nothing
@@ -370,7 +374,13 @@ view model =
     , body =
         case ( model.timeZone, model.now ) of
             ( Just timeZone, Just now ) ->
-                [ div [ id "app" ]
+                [ div
+                    [ id "app"
+                    , Touch.onStart (\event -> TouchMsg Start <| touchCoordinates event)
+                    , Touch.onMove (\event -> TouchMsg Move <| touchCoordinates event)
+                    , Touch.onEnd (\event -> TouchMsg End <| touchCoordinates event)
+                    , Touch.onCancel (\event -> TouchMsg Cancel <| touchCoordinates event)
+                    ]
                     [ h1 [] [ text <| modeH1 model.mode ]
                     , button
                         [ id "reverse-direction-button", onClick ToggleDirection ]
@@ -474,6 +484,9 @@ update msg model =
               }
             , Cmd.none
             )
+
+        TouchMsg touchType ( x, y ) ->
+            ( model, Cmd.none )
 
 
 main : Program () Model Msg

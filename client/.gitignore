@@ -4,4 +4,4 @@
 
 elm-stuff/
 *.js
-
+.nginx/

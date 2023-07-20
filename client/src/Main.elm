@@ -57,7 +57,7 @@ import Types exposing (DelayRecord, StationId, TripId, decodeClientMsg)
 import Url
 import Url.Builder
 import Url.Parser as UP
-import Utils exposing (touchCoordinates)
+import Utils exposing (onTouch, touchCoordinates)
 
 
 port sendMessage : String -> Cmd msg
@@ -425,10 +425,10 @@ view model =
             ( Just timeZone, Just now ) ->
                 [ div
                     [ id "app"
-                    , Touch.onStart (\event -> TouchMsg 0 Start <| touchCoordinates event)
-                    , Touch.onMove (\event -> TouchMsg 0 Move <| touchCoordinates event)
-                    , Touch.onEnd (\event -> TouchMsg 0 End <| touchCoordinates event)
-                    , Touch.onCancel (\event -> TouchMsg 0 Cancel <| touchCoordinates event)
+                    , onTouch "touchstart" (\event -> TouchMsg 0 Start <| touchCoordinates event)
+                    , onTouch "touchmove" (\event -> TouchMsg 0 Move <| touchCoordinates event)
+                    , onTouch "touchend" (\event -> TouchMsg 0 End <| touchCoordinates event)
+                    , onTouch "touchcancel" (\event -> TouchMsg 0 Cancel <| touchCoordinates event)
                     ]
                     [ viewTitle model.mode model.modeTransition.progress
                     , button

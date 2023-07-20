@@ -2,8 +2,9 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
 
-module Utils exposing (touchCoordinates)
+module Utils exposing (onTouch, touchCoordinates)
 
+import Html as H
 import Html.Events.Extra.Touch as Touch
 
 
@@ -15,6 +16,14 @@ touchCoordinates touchEvent =
     List.head touchEvent.changedTouches
         |> Maybe.map .clientPos
         |> Maybe.withDefault ( 0, 0 )
+
+
+{-| Helper function to construct a touch handler with Touch.EventOptions
+-}
+onTouch : String -> (Touch.Event -> msg) -> H.Attribute msg
+onTouch on =
+    { stopPropagation = True, preventDefault = False }
+        |> Touch.onWithOptions on
 
 
 removeNothings : List (Maybe a) -> List a

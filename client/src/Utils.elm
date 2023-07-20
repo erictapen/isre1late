@@ -15,3 +15,8 @@ touchCoordinates touchEvent =
     List.head touchEvent.changedTouches
         |> Maybe.map .clientPos
         |> Maybe.withDefault ( 0, 0 )
+
+
+removeNothings : List (Maybe a) -> List a
+removeNothings =
+    List.filterMap identity

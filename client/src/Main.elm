@@ -23,6 +23,8 @@ import Model
         , Model
         , buildUrl
         , initDistanceMatrix
+        , nextMode
+        , previousMode
         , stationNames
         , stations
         , urlParser
@@ -355,8 +357,8 @@ timeTextLegend historicSeconds tz now =
                 List.range 0 (historicSeconds // 3600)
 
 
-modeH1 : Mode -> String
-modeH1 mode =
+modeString : Mode -> String
+modeString mode =
     case mode of
         SingleTrip ->
             "Single trip"
@@ -374,6 +376,47 @@ modeH1 mode =
             "Year"
 
 
+viewTitle : Mode -> Float -> Html Msg
+viewTitle currentMode progress =
+    let
+        -- Unfortunately a top value higher than 100% grows the document, even
+        -- though position is set to absolute. So this is a hack to never
+        -- display elements with a top value higher than this. We make elements
+        -- progressively invisible to cover this up.
+        maxPos =
+            0.8
+
+        top pos =
+            fromFloat (100 * (0.01 + pos)) ++ "%"
+
+        modeH1 ( maybeMode, posOffset ) =
+            let
+                pos =
+                    0 - progress + posOffset
+            in
+            case ( maybeMode, pos < maxPos ) of
+                ( Just mode, True ) ->
+                    Just <|
+                        h1
+                            [ style "top" <| top pos
+                            , style "opacity" <| fromFloat <| 1 - (abs pos * (1 / maxPos))
+                            ]
+                            [ text <| modeString mode
+                            , div [ style "font-weight" "100" ]
+                                [ text <| " " ++ fromFloat progress ]
+                            ]
+
+                _ ->
+                    Nothing
+    in
+    div [] <|
+        filterMap modeH1
+            [ ( previousMode currentMode, -1 )
+            , ( Just currentMode, 0 )
+            , ( nextMode currentMode, 1 )
+            ]
+
+
 view : Model -> Browser.Document Msg
 view model =
     { title = "Is RE1 late?"
@@ -387,11 +430,7 @@ view model =
                     , Touch.onEnd (\event -> TouchMsg 0 End <| touchCoordinates event)
                     , Touch.onCancel (\event -> TouchMsg 0 Cancel <| touchCoordinates event)
                     ]
-                    [ h1 []
-                        [ text <| modeH1 model.mode
-                        , div [ style "font-weight" "100" ]
-                            [ text <| " " ++ fromFloat model.modeTransition.progress ]
-                        ]
+                    [ viewTitle model.mode model.modeTransition.progress
                     , button
                         [ id "reverse-direction-button", onClick ToggleDirection ]
                         [ text "⮀" ]
@@ -497,11 +536,25 @@ update msg model =
 
         TouchMsg touchId touchType ( _, y ) ->
             let
-                threshold =
-                    50
-
                 oldModeTransition =
                     model.modeTransition
+
+                -- The length in pixels that we would require as a touch event for a full transition.
+                -- This doesn't need to be exact, as it just defines how much the finger needs
+                -- to travel.
+                -- Note that the threshold would kick in way sooner.
+                assumedScreenHeight =
+                    800
+
+                -- The absolute progress value above which we trigger a transition.
+                threshold =
+                    0.3
+
+                progressDelta touchState =
+                    (touchState.startingPos - y) / assumedScreenHeight
+
+                newProgress touchState =
+                    touchState.progressBeforeTouch + progressDelta touchState
             in
             case ( touchType, model.modeTransition.touchState ) of
                 ( Start, Nothing ) ->
@@ -521,32 +574,66 @@ update msg model =
                     )
 
                 ( Move, Just touchState ) ->
-                    let
-                        -- The length in pixels that we would require as a touch event for a full transition.
-                        -- Note that the threshold would kick way sooner.
-                        assumedScreenHeight =
-                            800
-                    in
                     ( { model
                         | modeTransition =
                             { oldModeTransition
                                 | touchState = Just { touchState | currentPos = y }
-                                , progress =
-                                    touchState.progressBeforeTouch
-                                        + ((touchState.startingPos - y) / assumedScreenHeight)
+                                , progress = newProgress touchState
                             }
                       }
                     , Cmd.none
                     )
 
                 ( End, Just touchState ) ->
+                    let
+                        nP =
+                            newProgress touchState
+
+                        ( transitionTriggered, newMode ) =
+                            if abs nP > threshold then
+                                case
+                                    if nP > 0 then
+                                        nextMode model.mode
+
+                                    else
+                                        previousMode model.mode
+                                of
+                                    Just nM ->
+                                        ( True, nM )
+
+                                    -- TODO figure out wether we want to move
+                                    -- the element at all in this case. Could
+                                    -- be that the moving h1 is confusing to
+                                    -- the user, when no further transition is
+                                    -- possible anyway.
+                                    Nothing ->
+                                        ( False, model.mode )
+
+                            else
+                                ( False, model.mode )
+                    in
                     ( { model
-                        | modeTransition =
+                        | mode = newMode
+                        , modeTransition =
                             { oldModeTransition
                                 | touchState = Nothing
+                                , progress =
+                                    if transitionTriggered then
+                                        if nP > 0 then
+                                            nP - 1
+
+                                        else
+                                            nP + 1
+
+                                    else
+                                        nP
                             }
                       }
-                    , Cmd.none
+                    , if transitionTriggered then
+                        Browser.Navigation.pushUrl model.navigationKey <| buildUrl newMode
+
+                      else
+                        Cmd.none
                     )
 
                 ( Cancel, Just touchState ) ->

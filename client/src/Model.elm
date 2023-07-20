@@ -11,6 +11,8 @@ module Model exposing
     , TouchState
     , buildUrl
     , initDistanceMatrix
+    , nextMode
+    , previousMode
     , stationNames
     , stations
     , urlParser
@@ -44,6 +46,44 @@ type Mode
     | Day
     | Week
     | Year
+
+
+previousMode : Mode -> Maybe Mode
+previousMode mode =
+    case mode of
+        SingleTrip ->
+            Nothing
+
+        Hour ->
+            Just SingleTrip
+
+        Day ->
+            Just Hour
+
+        Week ->
+            Just Day
+
+        Year ->
+            Just Week
+
+
+nextMode : Mode -> Maybe Mode
+nextMode mode =
+    case mode of
+        SingleTrip ->
+            Just Hour
+
+        Hour ->
+            Just Day
+
+        Day ->
+            Just Week
+
+        Week ->
+            Just Year
+
+        Year ->
+            Nothing
 
 
 {-| The information we have to keep about an ongoing transition

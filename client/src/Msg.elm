@@ -13,9 +13,10 @@ type Msg
     | Send
     | RecvWebsocket String
     | CurrentTime Posix
+    | AnimationFrame Float
     | CurrentTimeZone Time.Zone
     | ToggleDirection
-    | TouchMsg TouchMsgType ( Float, Float )
+    | TouchMsg Int TouchMsgType ( Float, Float )
 
 
 type TouchMsgType

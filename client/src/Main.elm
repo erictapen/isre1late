@@ -5,7 +5,7 @@
 port module Main exposing (main)
 
 import Browser exposing (UrlRequest(..))
-import Browser.Events
+import Browser.Events exposing (onAnimationFrameDelta)
 import Browser.Navigation
 import Dict exposing (Dict)
 import Html as H exposing (Html, button, div, h1, text)
@@ -68,12 +68,18 @@ port rebuildSocket : String -> Cmd msg
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
+subscriptions model =
     Sub.batch
         [ messageReceiver RecvWebsocket
 
         -- TODO synchronise this with RecvWebsocket after the loading state is implemented
         , Time.every 1000 CurrentTime
+        , case ( model.modeTransition.progress /= 0, model.modeTransition.touchState ) of
+            ( True, Nothing ) ->
+                onAnimationFrameDelta AnimationFrame
+
+            _ ->
+                Sub.none
         ]
 
 
@@ -99,7 +105,7 @@ init _ url key =
         initModel =
             { navigationKey = key
             , mode = Maybe.withDefault defaultMode modeFromUrl
-            , modeTransition = { touchId = Nothing, progress = 0 }
+            , modeTransition = { touchState = Nothing, progress = 0 }
             , delayRecords = Dict.empty
             , errors = []
             , now = Nothing
@@ -376,12 +382,16 @@ view model =
             ( Just timeZone, Just now ) ->
                 [ div
                     [ id "app"
-                    , Touch.onStart (\event -> TouchMsg Start <| touchCoordinates event)
-                    , Touch.onMove (\event -> TouchMsg Move <| touchCoordinates event)
-                    , Touch.onEnd (\event -> TouchMsg End <| touchCoordinates event)
-                    , Touch.onCancel (\event -> TouchMsg Cancel <| touchCoordinates event)
+                    , Touch.onStart (\event -> TouchMsg 0 Start <| touchCoordinates event)
+                    , Touch.onMove (\event -> TouchMsg 0 Move <| touchCoordinates event)
+                    , Touch.onEnd (\event -> TouchMsg 0 End <| touchCoordinates event)
+                    , Touch.onCancel (\event -> TouchMsg 0 Cancel <| touchCoordinates event)
                     ]
-                    [ h1 [] [ text <| modeH1 model.mode ]
+                    [ h1 []
+                        [ text <| modeH1 model.mode
+                        , div [ style "font-weight" "100" ]
+                            [ text <| " " ++ fromFloat model.modeTransition.progress ]
+                        ]
                     , button
                         [ id "reverse-direction-button", onClick ToggleDirection ]
                         [ text "⮀" ]
@@ -485,8 +495,101 @@ update msg model =
             , Cmd.none
             )
 
-        TouchMsg touchType ( x, y ) ->
-            ( model, Cmd.none )
+        TouchMsg touchId touchType ( _, y ) ->
+            let
+                threshold =
+                    50
+
+                oldModeTransition =
+                    model.modeTransition
+            in
+            case ( touchType, model.modeTransition.touchState ) of
+                ( Start, Nothing ) ->
+                    ( { model
+                        | modeTransition =
+                            { oldModeTransition
+                                | touchState =
+                                    Just
+                                        { id = touchId
+                                        , startingPos = y
+                                        , currentPos = y
+                                        , progressBeforeTouch = oldModeTransition.progress
+                                        }
+                            }
+                      }
+                    , Cmd.none
+                    )
+
+                ( Move, Just touchState ) ->
+                    let
+                        -- The length in pixels that we would require as a touch event for a full transition.
+                        -- Note that the threshold would kick way sooner.
+                        assumedScreenHeight =
+                            800
+                    in
+                    ( { model
+                        | modeTransition =
+                            { oldModeTransition
+                                | touchState = Just { touchState | currentPos = y }
+                                , progress =
+                                    touchState.progressBeforeTouch
+                                        + ((touchState.startingPos - y) / assumedScreenHeight)
+                            }
+                      }
+                    , Cmd.none
+                    )
+
+                ( End, Just touchState ) ->
+                    ( { model
+                        | modeTransition =
+                            { oldModeTransition
+                                | touchState = Nothing
+                            }
+                      }
+                    , Cmd.none
+                    )
+
+                ( Cancel, Just touchState ) ->
+                    ( { model
+                        | modeTransition =
+                            { oldModeTransition
+                                | touchState = Nothing
+                            }
+                      }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        AnimationFrame delta ->
+            let
+                oldModeTransition =
+                    model.modeTransition
+
+                oldProgress =
+                    oldModeTransition.progress
+
+                -- Time in ms it would take for a full progress to "cool down" to 0
+                transitionDuration =
+                    1000
+
+                progressDelta =
+                    delta / transitionDuration
+            in
+            ( { model
+                | modeTransition =
+                    { oldModeTransition
+                        | progress =
+                            if oldProgress > 0 then
+                                max 0 (oldProgress - progressDelta)
+
+                            else
+                                min 0 (oldProgress + progressDelta)
+                    }
+              }
+            , Cmd.none
+            )
 
 
 main : Program () Model Msg

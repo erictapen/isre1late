@@ -8,6 +8,7 @@ module Model exposing
     , Mode(..)
     , ModeTransition
     , Model
+    , TouchState
     , buildUrl
     , initDistanceMatrix
     , stationNames
@@ -49,8 +50,16 @@ type Mode
 progress encodes how far the transition has gone. 0 means stable, -1.0 is a finished transition to the previous mode, 1.0 is a finished transition to the next mode.
 -}
 type alias ModeTransition =
-    { touchId : Maybe Int
+    { touchState : Maybe TouchState
     , progress : Float
+    }
+
+
+type alias TouchState =
+    { id : Int
+    , progressBeforeTouch : Float
+    , startingPos : Float
+    , currentPos : Float
     }
 
 

@@ -1,8 +1,7 @@
 module Msg exposing (Msg(..))
 
-import Time exposing (Posix)
 import Browser exposing (UrlRequest(..))
-import Time
+import Time exposing (Posix)
 
 
 type Msg
@@ -12,4 +11,3 @@ type Msg
     | CurrentTime Posix
     | CurrentTimeZone Time.Zone
     | ToggleDirection
-

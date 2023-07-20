@@ -85,6 +85,12 @@ body {
   font-style: normal;
 }
 
+h1 {
+  position: absolute;
+  left: 10%;
+  top: 1%;
+}
+
 #app {
   margin-top: 10vh;
   margin-bottom: 5vh;

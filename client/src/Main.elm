@@ -8,11 +8,24 @@ import Browser exposing (UrlRequest(..))
 import Browser.Events
 import Browser.Navigation
 import Dict exposing (Dict)
-import Html as H exposing (Html, button, div, text)
+import Html as H exposing (Html, button, div, h1, text)
 import Html.Attributes as HA exposing (class, id, style)
 import Html.Events exposing (onClick)
 import Json.Decode as JD exposing (decodeString)
 import List exposing (filterMap, head, indexedMap, map)
+import Model
+    exposing
+        ( Direction(..)
+        , DistanceMatrix
+        , Mode(..)
+        , Model
+        , buildUrl
+        , initDistanceMatrix
+        , stationNames
+        , stations
+        , urlParser
+        )
+import Msg exposing (Msg(..))
 import String exposing (fromFloat, fromInt)
 import Svg as S exposing (Svg, g, line, path, svg)
 import Svg.Attributes as SA
@@ -40,8 +53,7 @@ import Types exposing (DelayRecord, StationId, TripId, decodeClientMsg)
 import Url
 import Url.Builder
 import Url.Parser as UP
-import Msg exposing (Msg(..))
-import Model exposing (Model, Mode(..), urlParser, buildUrl, Direction(..), DistanceMatrix, initDistanceMatrix, stationNames, stations)
+
 
 port sendMessage : String -> Cmd msg
 
@@ -50,6 +62,7 @@ port messageReceiver : (String -> msg) -> Sub msg
 
 
 port rebuildSocket : String -> Cmd msg
+
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
@@ -74,17 +87,15 @@ init _ url key =
         defaultHistoricSeconds =
             3600 * 3
 
-        modeFromUrl =
-            case UP.parse urlParser url of
-                Just newMode ->
-                    newMode
+        defaultMode =
+            Hour
 
-                Nothing ->
-                    Hour
+        modeFromUrl =
+            UP.parse urlParser url
 
         initModel =
             { navigationKey = key
-            , mode = modeFromUrl
+            , mode = Maybe.withDefault defaultMode modeFromUrl
             , delayRecords = Dict.empty
             , errors = []
             , now = Nothing
@@ -98,6 +109,12 @@ init _ url key =
     , Cmd.batch
         [ rebuildSocket <| applicationUrl defaultHistoricSeconds
         , Task.perform CurrentTimeZone Time.here
+        , case modeFromUrl of
+            Just _ ->
+                Cmd.none
+
+            Nothing ->
+                Browser.Navigation.pushUrl key <| buildUrl defaultMode
         ]
     )
 
@@ -328,6 +345,25 @@ timeTextLegend historicSeconds tz now =
                 List.range 0 (historicSeconds // 3600)
 
 
+modeH1 : Mode -> String
+modeH1 mode =
+    case mode of
+        SingleTrip ->
+            "Single trip"
+
+        Hour ->
+            "Hour"
+
+        Day ->
+            "Day"
+
+        Week ->
+            "Week"
+
+        Year ->
+            "Year"
+
+
 view : Model -> Browser.Document Msg
 view model =
     { title = "Is RE1 late?"
@@ -335,7 +371,8 @@ view model =
         case ( model.timeZone, model.now ) of
             ( Just timeZone, Just now ) ->
                 [ div [ id "app" ]
-                    [ button
+                    [ h1 [] [ text <| modeH1 model.mode ]
+                    , button
                         [ id "reverse-direction-button", onClick ToggleDirection ]
                         [ text "⮀" ]
                     , div [ id "row1" ]
@@ -391,7 +428,7 @@ update msg model =
                     case UP.parse urlParser url of
                         Just newMode ->
                             ( { model | mode = newMode }
-                            , Browser.Navigation.pushUrl model.navigationKey <| buildUrl model.mode
+                            , Cmd.none
                             )
 
                         Nothing ->

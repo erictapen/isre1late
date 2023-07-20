@@ -1,10 +1,20 @@
-module Model exposing (Model, Mode(..), buildUrl, urlParser, Direction(..), stations, DistanceMatrix, initDistanceMatrix, stationNames)
+module Model exposing
+    ( Direction(..)
+    , DistanceMatrix
+    , Mode(..)
+    , Model
+    , buildUrl
+    , initDistanceMatrix
+    , stationNames
+    , stations
+    , urlParser
+    )
 
 import Browser.Navigation
-import Time exposing (Posix)
 import Dict exposing (Dict)
-import Types exposing (StationId, TripId, DelayRecord)
-import List exposing (indexedMap, filterMap)
+import List exposing (filterMap, indexedMap)
+import Time exposing (Posix)
+import Types exposing (DelayRecord, StationId, TripId)
 import Url.Parser as UP
 
 
@@ -19,6 +29,7 @@ type alias Model =
     , direction : Direction
     , distanceMatrix : DistanceMatrix
     }
+
 
 type Mode
     = SingleTrip
@@ -48,6 +59,7 @@ buildUrl mode =
                     "year"
            )
 
+
 urlParser : UP.Parser (Mode -> a) a
 urlParser =
     UP.oneOf
@@ -57,9 +69,6 @@ urlParser =
         , UP.map Week (UP.s "week")
         , UP.map Year (UP.s "year")
         ]
-
-
-
 
 
 type Direction
@@ -128,6 +137,7 @@ initDistanceMatrix =
             List.concat <|
                 indexedMap (oneToNDistances Westwards) stations
                     ++ (indexedMap (oneToNDistances Eastwards) <| List.reverse stations)
+
 
 stations : List ( StationId, StationInfo )
 stations =
@@ -308,15 +318,12 @@ stations =
       )
     ]
 
+
 type alias StationInfo =
     { name : String
     , shortName : String
     }
 
 
-
-
 stationNames =
     Dict.fromList stations
-
-

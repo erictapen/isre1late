@@ -38,7 +38,6 @@ let
         ${lib.concatStrings (map (module: ''
           echo "compiling ${elmfile module}"
           cp ${./index.html} $out/index.html
-          cp ${./style.css} $out/style.css
           cp -r ${./assets} $out/assets
           chmod -R a+w $out/assets
           ln -s ${icons}/assets/icons $out/assets/

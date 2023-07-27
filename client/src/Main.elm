@@ -425,10 +425,6 @@ view model =
             ( Just timeZone, Just now ) ->
                 [ div
                     [ id "app"
-                    , onTouch "touchstart" (\event -> TouchMsg 0 Start <| touchCoordinates event)
-                    , onTouch "touchmove" (\event -> TouchMsg 0 Move <| touchCoordinates event)
-                    , onTouch "touchend" (\event -> TouchMsg 0 End <| touchCoordinates event)
-                    , onTouch "touchcancel" (\event -> TouchMsg 0 Cancel <| touchCoordinates event)
                     ]
                     [ viewTitle model.mode model.modeTransition.progress
                     , button
@@ -452,7 +448,12 @@ view model =
                                 now
                             ]
                         , div
-                            [ class "station-legend" ]
+                            [ class "station-legend"
+                            , onTouch "touchstart" (\event -> TouchMsg 0 Start <| touchCoordinates event)
+                            , onTouch "touchmove" (\event -> TouchMsg 0 Move <| touchCoordinates event)
+                            , onTouch "touchend" (\event -> TouchMsg 0 End <| touchCoordinates event)
+                            , onTouch "touchcancel" (\event -> TouchMsg 0 Cancel <| touchCoordinates event)
+                            ]
                           <|
                             stationLegend model.distanceMatrix model.direction <|
                                 map Tuple.first stations

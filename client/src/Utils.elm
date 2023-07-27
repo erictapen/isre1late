@@ -22,7 +22,7 @@ touchCoordinates touchEvent =
 -}
 onTouch : String -> (Touch.Event -> msg) -> H.Attribute msg
 onTouch on =
-    { stopPropagation = True, preventDefault = False }
+    { stopPropagation = False, preventDefault = False }
         |> Touch.onWithOptions on
 
 

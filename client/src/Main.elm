@@ -401,10 +401,7 @@ viewTitle currentMode progress =
                             [ style "top" <| top pos
                             , style "opacity" <| fromFloat <| 1 - (abs pos * (1 / maxPos))
                             ]
-                            [ text <| modeString mode
-                            , div [ style "font-weight" "100" ]
-                                [ text <| " " ++ fromFloat progress ]
-                            ]
+                            [ text <| modeString mode ]
 
                 _ ->
                     Nothing

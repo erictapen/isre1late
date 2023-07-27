@@ -382,7 +382,7 @@ viewTitle currentMode progress =
         -- Unfortunately a top value higher than 100% grows the document, even
         -- though position is set to absolute. So this is a hack to never
         -- display elements with a top value higher than this. We make elements
-        -- progressively invisible to cover this up.
+        -- progressively invisible to cover up this hack.
         maxPos =
             0.8
 

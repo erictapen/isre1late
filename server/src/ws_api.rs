@@ -1,4 +1,4 @@
-use crate::{DelayRecord, SelectFetchedJson};
+use crate::DelayRecord;
 use bus::BusReadHandle;
 use diesel::PgConnection;
 use log::{debug, error, info, warn};
@@ -12,8 +12,6 @@ pub fn websocket_server(
     listen: std::net::IpAddr,
     port: u16,
 ) -> Result<(), Box<dyn Error>> {
-    use crate::models::delay_record_from_trip_overview;
-    use crate::schema::fetched_json;
     use diesel::ExpressionMethods;
     use diesel::QueryDsl;
     use diesel::RunQueryDsl;
@@ -78,8 +76,8 @@ pub fn websocket_server(
                     }
                 };
 
-                use crate::schema::fetched_json::fetched_at;
-                use fetched_json::dsl::fetched_json;
+                use crate::models::DelayRecordWithID;
+                use crate::schema::delay_records;
 
                 let mut rx = bus_read_handle.add_rx();
 
@@ -116,27 +114,21 @@ pub fn websocket_server(
                     use std::time::Duration;
                     use time::OffsetDateTime;
 
-                    let old_delays = fetched_json
+                    let old_delay_records = delay_records::dsl::delay_records
                         .filter(
-                            fetched_at
+                            delay_records::time
                                 .gt(OffsetDateTime::now_utc()
                                     - Duration::from_secs(historic_seconds)),
                         )
-                        .then_order_by(fetched_at.asc())
-                        .load_iter::<SelectFetchedJson, diesel::pg::PgRowByRowLoadingMode>(db)
+                        .then_order_by(delay_records::time.asc())
+                        .load_iter::<DelayRecordWithID, diesel::pg::PgRowByRowLoadingMode>(db)
                         .unwrap_or_else(|e| {
-                            panic!("Unable to load data from fetched_json: {}", e);
+                            panic!("Unable to load data from delay_records: {}", e);
                         });
 
-                    for fj_result in old_delays {
-                        let fj = fj_result?;
-                        if let Ok(trip_overview) = serde_json::from_str(&fj.body) {
-                            if let Some(delay_record) =
-                                delay_record_from_trip_overview(trip_overview, fj.id, fj.fetched_at)
-                            {
-                                let _ = send_message(&mut websocket, delay_record);
-                            }
-                        }
+                    for delay_record_with_id in old_delay_records {
+                        let _ =
+                            send_message(&mut websocket, DelayRecord::from(delay_record_with_id?));
                     }
                 }
 

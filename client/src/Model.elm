@@ -121,6 +121,8 @@ historicSeconds model =
         progress =
             model.modeTransition.progress
 
+        absProgress = abs progress
+
         transitionToSec =
             if progress > 0 then
                 Maybe.withDefault 0 <| Maybe.map modeSecs <| nextMode model.mode
@@ -131,8 +133,8 @@ historicSeconds model =
             else
                 0
     in
-    -- TODO: Implement some non-linear growth here?
-    round <| modeSecs model.mode + (model.modeTransition.progress * transitionToSec)
+    -- TODO: Implement some non-linear transition here?
+    round <| ((1 - absProgress) * modeSecs model.mode) + (absProgress * transitionToSec)
 
 
 type alias TouchState =

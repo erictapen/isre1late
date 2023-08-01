@@ -89,7 +89,7 @@ applicationUrl historicSeconds =
     Url.Builder.crossOrigin
         "wss://isre1late.erictapen.name"
         [ "api", "ws", "delays" ]
-        [ Url.Builder.int "historic" historicSeconds ]
+        [ Url.Builder.int "historic" <| 3600 * 24 ]
 
 
 init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )

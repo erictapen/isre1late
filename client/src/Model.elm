@@ -48,6 +48,8 @@ type Mode
     | Year
 
 
+{-| SingleTrip isn't reachable through this
+-}
 previousMode : Mode -> Maybe Mode
 previousMode mode =
     case mode of
@@ -55,7 +57,7 @@ previousMode mode =
             Nothing
 
         Hour ->
-            Just SingleTrip
+            Nothing
 
         Day ->
             Just Hour
@@ -71,7 +73,7 @@ nextMode : Mode -> Maybe Mode
 nextMode mode =
     case mode of
         SingleTrip ->
-            Just Hour
+            Nothing
 
         Hour ->
             Just Day
@@ -121,7 +123,8 @@ historicSeconds model =
         progress =
             model.modeTransition.progress
 
-        absProgress = abs progress
+        absProgress =
+            abs progress
 
         transitionToSec =
             if progress > 0 then

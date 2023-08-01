@@ -30,7 +30,7 @@ import Model
         , stations
         , urlParser
         )
-import Msg exposing (Msg(..), TouchMsgType(..))
+import Msg exposing (Msg(..), SwitchDirection(..), TouchMsgType(..))
 import String exposing (fromFloat, fromInt)
 import Svg as S exposing (Svg, g, line, path, svg)
 import Svg.Attributes as SA
@@ -399,6 +399,26 @@ viewTitle currentMode progress =
         top pos =
             fromFloat (100 * (0.01 + pos)) ++ "%"
 
+        modeButton direction =
+            button
+                [ onClick <|
+                    ModeSwitch direction
+                , style "visibility" <|
+                    if progress == 0 then
+                        "visible"
+
+                    else
+                        "hidden"
+                ]
+                [ text <|
+                    case direction of
+                        NextMode ->
+                            "🞂"
+
+                        PreviousMode ->
+                            "🞀"
+                ]
+
         modeH1 ( maybeMode, posOffset ) =
             let
                 pos =
@@ -411,7 +431,10 @@ viewTitle currentMode progress =
                             [ style "top" <| top pos
                             , style "opacity" <| fromFloat <| 1 - (abs pos * (1 / maxPos))
                             ]
-                            [ text <| modeString mode ]
+                            [ modeButton PreviousMode
+                            , text <| modeString mode
+                            , modeButton NextMode
+                            ]
 
                 _ ->
                     Nothing
@@ -626,6 +649,7 @@ update msg model =
                     , Cmd.none
                     )
 
+                -- The gesture finished and we evaluate wether a transition is going to happen.
                 ( End, Just touchState ) ->
                     let
                         nP =
@@ -689,6 +713,28 @@ update msg model =
                     )
 
                 _ ->
+                    ( model, Cmd.none )
+
+        ModeSwitch direction ->
+            let
+                ( maybeNewMode, newProgress ) =
+                    case direction of
+                        NextMode ->
+                            ( nextMode model.mode, -1 )
+
+                        PreviousMode ->
+                            ( previousMode model.mode, 1 )
+            in
+            case maybeNewMode of
+                Just newMode ->
+                    ( { model
+                        | mode = newMode
+                        , modeTransition = { touchState = Nothing, progress = newProgress }
+                      }
+                    , Browser.Navigation.pushUrl model.navigationKey <| buildUrl newMode
+                    )
+
+                Nothing ->
                     ( model, Cmd.none )
 
         AnimationFrame delta ->

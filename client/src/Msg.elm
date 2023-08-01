@@ -2,7 +2,7 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
 
-module Msg exposing (Msg(..), TouchMsgType(..))
+module Msg exposing (Msg(..), SwitchDirection(..), TouchMsgType(..))
 
 import Browser exposing (UrlRequest(..))
 import Time exposing (Posix)
@@ -17,6 +17,7 @@ type Msg
     | CurrentTimeZone Time.Zone
     | ToggleDirection
     | TouchMsg Int TouchMsgType ( Float, Float )
+    | ModeSwitch SwitchDirection
 
 
 type TouchMsgType
@@ -24,3 +25,8 @@ type TouchMsgType
     | Move
     | End
     | Cancel
+
+
+type SwitchDirection
+    = NextMode
+    | PreviousMode

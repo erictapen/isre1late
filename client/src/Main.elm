@@ -8,7 +8,7 @@ import Browser exposing (UrlRequest(..))
 import Browser.Events exposing (onAnimationFrameDelta)
 import Browser.Navigation
 import Dict exposing (Dict)
-import Html as H exposing (Html, button, div, h1, text)
+import Html as H exposing (Html, button, div, h1, p, text)
 import Html.Attributes as HA exposing (class, id, style)
 import Html.Events exposing (onClick)
 import Html.Events.Extra.Touch as Touch
@@ -400,24 +400,29 @@ viewTitle currentMode progress =
             fromFloat (100 * (0.01 + pos)) ++ "%"
 
         modeButton direction =
+            let
+                ( newMode, directionString ) =
+                    case direction of
+                        NextMode ->
+                            ( nextMode currentMode, "🞂" )
+
+                        PreviousMode ->
+                            ( previousMode currentMode, "🞀" )
+
+                visibility =
+                    case ( newMode, progress == 0 ) of
+                        ( Just _, True ) ->
+                            "visible"
+
+                        _ ->
+                            "hidden"
+            in
             button
                 [ onClick <|
                     ModeSwitch direction
-                , style "visibility" <|
-                    if progress == 0 then
-                        "visible"
-
-                    else
-                        "hidden"
+                , style "visibility" visibility
                 ]
-                [ text <|
-                    case direction of
-                        NextMode ->
-                            "🞂"
-
-                        PreviousMode ->
-                            "🞀"
-                ]
+                [ text <| directionString ]
 
         modeH1 ( maybeMode, posOffset ) =
             let
@@ -450,8 +455,8 @@ viewTitle currentMode progress =
 debugOverlay : Model -> Html msg
 debugOverlay model =
     div
-        [ style "position" "absolute" ]
-        [ text <| fromFloat model.modeTransition.progress ]
+        [ style "position" "absolute", style "top" "0", style "opacity" "0.5" ]
+        [ p [] [ text <| "progress: " ++ fromFloat model.modeTransition.progress ] ]
 
 
 {-| Some point in the past as Posix time. Apparently, SVG viewBox can't handle full posix numbers.
@@ -483,42 +488,57 @@ view model =
                 let
                     hisSeconds =
                         historicSeconds model
+
+                    renderDiagram =
+                        case model.mode of
+                            Hour ->
+                                True
+
+                            Day ->
+                                True
+
+                            _ ->
+                                False
                 in
-                [ div
+                [ debugOverlay model
+                , div
                     [ id "app"
                     ]
-                    [ debugOverlay model
-                    , viewTitle model.mode model.modeTransition.progress
+                    [ viewTitle model.mode model.modeTransition.progress
                     , button
                         [ id "reverse-direction-button", onClick ToggleDirection ]
                         [ text "⮀" ]
                     , div [ id "row1" ]
-                        [ svg
-                            [ id "diagram"
-                            , preserveAspectRatio "none"
-                            , viewBox <|
-                                fromFloat
-                                    (posixSecToSvg
-                                        (posixToSec now - hisSeconds)
-                                    )
-                                    ++ " 0 "
-                                    ++ (fromFloat <| (toFloat <| hisSeconds) / posixToSvgQuotient)
-                                    ++ " 100"
-                            ]
-                            [ timeLegend hisSeconds timeZone now
-                            , g [ SA.id "station-lines" ] <|
-                                stationLines
-                                    (posixSecToSvg (posixToSec now - hisSeconds))
-                                    (posixSecToSvg (posixToSec now))
+                        [ if renderDiagram then
+                            svg
+                                [ id "diagram"
+                                , preserveAspectRatio "none"
+                                , viewBox <|
+                                    fromFloat
+                                        (posixSecToSvg
+                                            (posixToSec now - hisSeconds)
+                                        )
+                                        ++ " 0 "
+                                        ++ (fromFloat <| (toFloat <| hisSeconds) / posixToSvgQuotient)
+                                        ++ " 100"
+                                ]
+                                [ timeLegend hisSeconds timeZone now
+                                , g [ SA.id "station-lines" ] <|
+                                    stationLines
+                                        (posixSecToSvg (posixToSec now - hisSeconds))
+                                        (posixSecToSvg (posixToSec now))
+                                        model.distanceMatrix
+                                    <|
+                                        map Tuple.first stations
+                                , tripLines
                                     model.distanceMatrix
-                                <|
-                                    map Tuple.first stations
-                            , tripLines
-                                model.distanceMatrix
-                                model.direction
-                                hisSeconds
-                                model.delayRecords
-                            ]
+                                    model.direction
+                                    hisSeconds
+                                    model.delayRecords
+                                ]
+
+                          else
+                            div [ id "diagram" ] [ text "Not implemented" ]
                         , div
                             [ class "station-legend"
                             , onTouch "touchstart" (\event -> TouchMsg 0 Start <| touchCoordinates event)

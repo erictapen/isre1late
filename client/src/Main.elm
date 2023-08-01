@@ -96,7 +96,7 @@ init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
 init _ url key =
     let
         defaultHistoricSeconds =
-            3600 * 3
+            3600
 
         defaultMode =
             Hour
@@ -330,8 +330,11 @@ timeLegend historicSeconds tz now =
 timeTextLegend : Int -> Time.Zone -> Posix -> Html Msg
 timeTextLegend historicSeconds tz now =
     let
-        currentHourBegins =
-            Time.toSecond tz now + Time.toMinute tz now * 60
+        stepSize =
+            10 * 60
+
+        currentStepBegins =
+            remainderBy stepSize (Time.toSecond tz now + Time.toMinute tz now * 60)
 
         hourText sec =
             div
@@ -342,6 +345,8 @@ timeTextLegend historicSeconds tz now =
                 , style "position" "absolute"
                 , style "transform" "translateX(-50%)"
                 ]
+                -- TODO replace this with
+                -- https://package.elm-lang.org/packages/CoderDennis/elm-time-format/latest/
                 [ text <|
                     (fromInt <|
                         Time.toHour tz <|
@@ -349,13 +354,20 @@ timeTextLegend historicSeconds tz now =
                                 1000
                                     * (posixToSec now - sec)
                     )
-                        ++ ":00"
+                        ++ ":"
+                        ++ (String.padLeft 2 '0' <|
+                                fromInt <|
+                                    Time.toMinute tz <|
+                                        Time.millisToPosix <|
+                                            1000
+                                                * (posixToSec now - sec)
+                           )
                 ]
     in
     div [ id "time-text-legend" ] <|
         map hourText <|
-            map (\i -> currentHourBegins + i * 3600) <|
-                List.range 0 (historicSeconds // 3600)
+            map (\i -> currentStepBegins + i * stepSize) <|
+                List.range 0 (historicSeconds // stepSize)
 
 
 modeString : Mode -> String

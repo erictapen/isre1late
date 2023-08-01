@@ -455,7 +455,7 @@ viewTitle currentMode progress =
 debugOverlay : Model -> Html msg
 debugOverlay model =
     div
-        [ style "position" "absolute", style "top" "0", style "opacity" "0.5" ]
+        [ style "position" "absolute", style "top" "0", style "opacity" "0.2" ]
         [ p [] [ text <| "progress: " ++ fromFloat model.modeTransition.progress ] ]
 
 

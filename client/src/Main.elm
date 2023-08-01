@@ -52,7 +52,7 @@ import Svg.Attributes as SA
         )
 import Svg.Loaders
 import Task
-import Time exposing (Posix, posixToMillis)
+import Time exposing (Posix, millisToPosix, posixToMillis)
 import Types exposing (DelayRecord, StationId, TripId, decodeClientMsg)
 import Url
 import Url.Builder
@@ -205,13 +205,13 @@ stationLegend distanceMatrix selectedDirection =
         )
 
 
-stationLines : DistanceMatrix -> List StationId -> List (Svg Msg)
-stationLines distanceMatrix =
+stationLines : Float -> Float -> DistanceMatrix -> List StationId -> List (Svg Msg)
+stationLines x1Pos x2Pos distanceMatrix =
     map
         (\sid ->
             line
-                [ x1 "100%"
-                , x2 "0%"
+                [ x1 <| fromFloat x1Pos
+                , x2 <| fromFloat x2Pos
                 , y1 <| yPosition <| stationPos distanceMatrix sid
                 , y2 <| yPosition <| stationPos distanceMatrix sid
                 , stroke "#dddddd"
@@ -226,27 +226,25 @@ posixToSec p =
     posixToMillis p // 1000
 
 
-tripLines : DistanceMatrix -> Direction -> Int -> Dict TripId (List DelayRecord) -> Posix -> Svg Msg
-tripLines distanceMatrix selectedDirection historicSeconds delayDict now =
+tripLines : DistanceMatrix -> Direction -> Int -> Dict TripId (List DelayRecord) -> Svg Msg
+tripLines distanceMatrix selectedDirection historicSeconds delayDict =
     let
+        -- An svg d segment for a given directon and delay record
         tripD : Bool -> DelayRecord -> Maybe ( Float, Float )
         tripD secondPass { time, previousStation, nextStation, percentageSegment, delay } =
             case trainPos distanceMatrix previousStation nextStation percentageSegment of
                 Just ( yPos, direction, skipsLines ) ->
                     if direction == selectedDirection then
                         Just
-                            ( toFloat historicSeconds
-                                - (toFloat <|
-                                    posixToSec now
-                                        - posixToSec time
-                                        - (if secondPass then
-                                            -- Apparently this is never < 0 anyway?
-                                            max 0 delay
+                            ( posixSecToSvg <|
+                                posixToSec time
+                                    + (if secondPass then
+                                        -- Apparently this is never < 0 anyway?
+                                        max 0 delay
 
-                                           else
-                                            0
-                                          )
-                                  )
+                                       else
+                                        0
+                                      )
                             , 100 * yPos
                             )
 
@@ -299,7 +297,7 @@ tripLines distanceMatrix selectedDirection historicSeconds delayDict now =
                     []
                 ]
     in
-    g [] <| map tripLine <| Dict.toList delayDict
+    g [ id "trip-paths" ] <| map tripLine <| Dict.toList delayDict
 
 
 timeLegend : Int -> Time.Zone -> Posix -> Svg Msg
@@ -308,12 +306,15 @@ timeLegend historicSeconds tz now =
         currentHourBegins =
             Time.toSecond tz now + Time.toMinute tz now * 60
 
+        nowSec =
+            posixToSec now
+
         hourLine sec =
             line
-                [ x1 <| fromInt sec
-                , x2 <| fromInt sec
-                , y1 "0%"
-                , y2 "100%"
+                [ x1 <| fromFloat <| posixSecToSvg sec
+                , x2 <| fromFloat <| posixSecToSvg sec
+                , y1 "0"
+                , y2 "100"
                 , stroke "#dddddd"
                 , strokeWidth "1px"
                 , HA.attribute "vector-effect" "non-scaling-stroke"
@@ -322,7 +323,7 @@ timeLegend historicSeconds tz now =
     in
     g [ SA.id "time-legend" ] <|
         map hourLine <|
-            map (\i -> historicSeconds - currentHourBegins - i * 3600) <|
+            map (\i -> nowSec - currentHourBegins - i * 3600) <|
                 List.range 0 (historicSeconds // 3600)
 
 
@@ -414,6 +415,26 @@ viewTitle currentMode progress =
             ]
 
 
+{-| Some point in the past as Posix time. Apparently, SVG viewBox can't handle full posix numbers.
+-}
+somePointInThePast : Int
+somePointInThePast =
+    1688162400
+
+
+posixToSvgQuotient =
+    100000
+
+
+{-| Turn a Posix sec into a position on the SVG canvas.
+SVG viewBox can't handle even a year in seconds, so we move the comma.
+Also we normalise by some point in the past.
+-}
+posixSecToSvg : Int -> Float
+posixSecToSvg secs =
+    toFloat (secs - somePointInThePast) / posixToSvgQuotient
+
+
 view : Model -> Browser.Document Msg
 view model =
     { title = "Is RE1 late?"
@@ -431,18 +452,28 @@ view model =
                         [ svg
                             [ id "diagram"
                             , preserveAspectRatio "none"
-                            , viewBox <| "0 0 " ++ fromInt model.historicSeconds ++ " 100"
+                            , viewBox <|
+                                fromFloat
+                                    (posixSecToSvg
+                                        (posixToSec now - model.historicSeconds)
+                                    )
+                                    ++ " 0 "
+                                    ++ (fromFloat <| toFloat model.historicSeconds / posixToSvgQuotient)
+                                    ++ " 100"
                             ]
                             [ timeLegend model.historicSeconds timeZone now
                             , g [ SA.id "station-lines" ] <|
-                                stationLines model.distanceMatrix <|
+                                stationLines
+                                    (posixSecToSvg (posixToSec now - model.historicSeconds))
+                                    (posixSecToSvg (posixToSec now))
+                                    model.distanceMatrix
+                                <|
                                     map Tuple.first stations
                             , tripLines
                                 model.distanceMatrix
                                 model.direction
                                 model.historicSeconds
                                 model.delayRecords
-                                now
                             ]
                         , div
                             [ class "station-legend"

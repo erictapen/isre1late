@@ -447,6 +447,13 @@ viewTitle currentMode progress =
             ]
 
 
+debugOverlay : Model -> Html msg
+debugOverlay model =
+    div
+        [ style "position" "absolute" ]
+        [ text <| fromFloat model.modeTransition.progress ]
+
+
 {-| Some point in the past as Posix time. Apparently, SVG viewBox can't handle full posix numbers.
 -}
 somePointInThePast : Int
@@ -480,7 +487,8 @@ view model =
                 [ div
                     [ id "app"
                     ]
-                    [ viewTitle model.mode model.modeTransition.progress
+                    [ debugOverlay model
+                    , viewTitle model.mode model.modeTransition.progress
                     , button
                         [ id "reverse-direction-button", onClick ToggleDirection ]
                         [ text "⮀" ]

@@ -10,6 +10,7 @@ module Model exposing
     , Model
     , TouchState
     , buildUrl
+    , historicSeconds
     , initDistanceMatrix
     , nextMode
     , previousMode
@@ -34,7 +35,6 @@ type alias Model =
     , errors : List String
     , now : Maybe Posix
     , timeZone : Maybe Time.Zone
-    , historicSeconds : Int
     , direction : Direction
     , distanceMatrix : DistanceMatrix
     }
@@ -93,6 +93,46 @@ type alias ModeTransition =
     { touchState : Maybe TouchState
     , progress : Float
     }
+
+
+{-| The amount of historic seconds going back from now into the past that are currently displayed.
+This depends on the current mode and the progress of the current transition
+-}
+historicSeconds : Model -> Int
+historicSeconds model =
+    let
+        modeSecs mode =
+            case mode of
+                Hour ->
+                    3600
+
+                Day ->
+                    3600 * 24
+
+                Week ->
+                    3600 * 24 * 7
+
+                Year ->
+                    3600 * 24 * 7 * 366
+
+                _ ->
+                    0
+
+        progress =
+            model.modeTransition.progress
+
+        transitionToSec =
+            if progress > 0 then
+                Maybe.withDefault 0 <| Maybe.map modeSecs <| nextMode model.mode
+
+            else if progress < 0 then
+                Maybe.withDefault 0 <| Maybe.map modeSecs <| previousMode model.mode
+
+            else
+                0
+    in
+    -- TODO: Implement some non-linear growth here?
+    round <| modeSecs model.mode + (model.modeTransition.progress * transitionToSec)
 
 
 type alias TouchState =

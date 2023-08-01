@@ -22,6 +22,7 @@ import Model
         , ModeTransition
         , Model
         , buildUrl
+        , historicSeconds
         , initDistanceMatrix
         , nextMode
         , previousMode
@@ -85,7 +86,7 @@ subscriptions model =
         ]
 
 
-applicationUrl historicSeconds =
+applicationUrl =
     Url.Builder.crossOrigin
         "wss://isre1late.erictapen.name"
         [ "api", "ws", "delays" ]
@@ -95,9 +96,6 @@ applicationUrl historicSeconds =
 init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
 init _ url key =
     let
-        defaultHistoricSeconds =
-            3600
-
         defaultMode =
             Hour
 
@@ -112,14 +110,13 @@ init _ url key =
             , errors = []
             , now = Nothing
             , timeZone = Nothing
-            , historicSeconds = defaultHistoricSeconds
             , direction = Eastwards
             , distanceMatrix = initDistanceMatrix
             }
     in
     ( initModel
     , Cmd.batch
-        [ rebuildSocket <| applicationUrl defaultHistoricSeconds
+        [ rebuildSocket <| applicationUrl
         , Task.perform CurrentTimeZone Time.here
         , case modeFromUrl of
             Just _ ->
@@ -453,6 +450,10 @@ view model =
     , body =
         case ( model.timeZone, model.now ) of
             ( Just timeZone, Just now ) ->
+                let
+                    hisSeconds =
+                        historicSeconds model
+                in
                 [ div
                     [ id "app"
                     ]
@@ -467,16 +468,16 @@ view model =
                             , viewBox <|
                                 fromFloat
                                     (posixSecToSvg
-                                        (posixToSec now - model.historicSeconds)
+                                        (posixToSec now - hisSeconds)
                                     )
                                     ++ " 0 "
-                                    ++ (fromFloat <| toFloat model.historicSeconds / posixToSvgQuotient)
+                                    ++ (fromFloat <| (toFloat <| hisSeconds) / posixToSvgQuotient)
                                     ++ " 100"
                             ]
-                            [ timeLegend model.historicSeconds timeZone now
+                            [ timeLegend hisSeconds timeZone now
                             , g [ SA.id "station-lines" ] <|
                                 stationLines
-                                    (posixSecToSvg (posixToSec now - model.historicSeconds))
+                                    (posixSecToSvg (posixToSec now - hisSeconds))
                                     (posixSecToSvg (posixToSec now))
                                     model.distanceMatrix
                                 <|
@@ -484,7 +485,7 @@ view model =
                             , tripLines
                                 model.distanceMatrix
                                 model.direction
-                                model.historicSeconds
+                                hisSeconds
                                 model.delayRecords
                             ]
                         , div
@@ -499,7 +500,7 @@ view model =
                                 map Tuple.first stations
                         ]
                     , div [ id "row2" ]
-                        [ timeTextLegend model.historicSeconds timeZone now
+                        [ timeTextLegend hisSeconds timeZone now
                         , div [ class "station-legend" ] []
                         ]
                     ]

@@ -2,7 +2,7 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
 
-module Types exposing (DelayRecord, StationId, TripId, decodeClientMsg)
+module Types exposing (DelayEvent, DelayRecord, StationId, TripId, decodeDelayEvents, decodeDelayRecord)
 
 import Json.Decode as J
     exposing
@@ -18,6 +18,7 @@ import Json.Decode as J
         , maybe
         , string
         )
+import Json.Decode.Pipeline exposing (required)
 import Time exposing (Posix, millisToPosix)
 
 
@@ -29,8 +30,6 @@ type alias StationId =
     Int
 
 
-{-| TODO find a better name for this
--}
 type alias DelayRecord =
     { time : Posix
     , previousStation : StationId
@@ -40,8 +39,8 @@ type alias DelayRecord =
     }
 
 
-decodeClientMsg : Decoder ( TripId, DelayRecord )
-decodeClientMsg =
+decodeDelayRecord : Decoder ( TripId, DelayRecord )
+decodeDelayRecord =
     map2 Tuple.pair
         (field "trip_id" string)
     <|
@@ -51,3 +50,35 @@ decodeClientMsg =
             (field "next_station" int)
             (field "percentage_segment" float)
             (field "delay" int)
+
+
+type alias DelayEvent =
+    { from_id : Int
+    , to_id : Int
+    , trip_id : String
+    , time : Int
+    , duration : Int
+    , previous_station : Int
+    , next_station : Int
+    , percentage_segment : Float
+    , delay : Int
+    }
+
+
+decodeDelayEvents : Decoder (List DelayEvent)
+decodeDelayEvents =
+    list decodeDelayEvent
+
+
+decodeDelayEvent : Decoder DelayEvent
+decodeDelayEvent =
+    J.succeed DelayEvent
+        |> required "from_id" int
+        |> required "to_id" int
+        |> required "trip_id" string
+        |> required "time" int
+        |> required "duration" int
+        |> required "previous_station" int
+        |> required "next_station" int
+        |> required "percentage_segment" float
+        |> required "delay" int

@@ -5,7 +5,9 @@
 module Msg exposing (Msg(..), SwitchDirection(..), TouchMsgType(..))
 
 import Browser exposing (UrlRequest(..))
+import Http
 import Time exposing (Posix)
+import Types exposing (DelayEvent)
 
 
 type Msg
@@ -18,6 +20,7 @@ type Msg
     | ToggleDirection
     | TouchMsg Int TouchMsgType ( Float, Float )
     | ModeSwitch SwitchDirection
+    | GotDelayEvents (Result Http.Error (List DelayEvent))
 
 
 type TouchMsgType

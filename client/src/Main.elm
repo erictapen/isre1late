@@ -12,6 +12,7 @@ import Html as H exposing (Html, button, div, h1, p, text)
 import Html.Attributes as HA exposing (class, id, style)
 import Html.Events exposing (onClick)
 import Html.Events.Extra.Touch as Touch
+import Http
 import Json.Decode as JD exposing (decodeString)
 import List exposing (filterMap, head, indexedMap, map)
 import Model
@@ -21,6 +22,7 @@ import Model
         , Mode(..)
         , ModeTransition
         , Model
+        , buildDelayEventsMatrices
         , buildUrl
         , historicSeconds
         , initDistanceMatrix
@@ -28,6 +30,7 @@ import Model
         , previousMode
         , stationNames
         , stations
+        , trainPos
         , urlParser
         )
 import Msg exposing (Msg(..), SwitchDirection(..), TouchMsgType(..))
@@ -54,11 +57,11 @@ import Svg.Attributes as SA
 import Svg.Loaders
 import Task
 import Time exposing (Posix, millisToPosix, posixToMillis)
-import Types exposing (DelayRecord, StationId, TripId, decodeClientMsg)
+import Types exposing (DelayRecord, StationId, TripId, decodeDelayEvents, decodeDelayRecord)
 import Url
 import Url.Builder
 import Url.Parser as UP
-import Utils exposing (onTouch, touchCoordinates)
+import Utils exposing (onTouch, posixToSec, touchCoordinates)
 
 
 port sendMessage : String -> Cmd msg
@@ -86,11 +89,15 @@ subscriptions model =
         ]
 
 
-applicationUrl =
+wsApiUrl =
     Url.Builder.crossOrigin
         "wss://isre1late.erictapen.name"
         [ "api", "ws", "delays" ]
         [ Url.Builder.int "historic" <| 3600 * 24 ]
+
+
+httpApiBaseUrl =
+    "https://isre1late.erictapen.name/api/"
 
 
 init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
@@ -107,6 +114,7 @@ init _ url key =
             , mode = Maybe.withDefault defaultMode modeFromUrl
             , modeTransition = { touchState = Nothing, progress = 0 }
             , delayRecords = Dict.empty
+            , delayEvents = Nothing
             , errors = []
             , now = Nothing
             , timeZone = Nothing
@@ -116,7 +124,7 @@ init _ url key =
     in
     ( initModel
     , Cmd.batch
-        [ rebuildSocket <| applicationUrl
+        [ rebuildSocket <| wsApiUrl
         , Task.perform CurrentTimeZone Time.here
         , case modeFromUrl of
             Just _ ->
@@ -124,31 +132,17 @@ init _ url key =
 
             Nothing ->
                 Browser.Navigation.pushUrl key <| buildUrl defaultMode
+        , fetchDelayEvents
         ]
     )
 
 
-{-| Place a train going inbetween two stations in the y axis of the entire diagram.
-Result contains the y axis value (between 0 and 1), the direction the train
-must be going in and wether it skips any stations on its path.
--}
-trainPos : DistanceMatrix -> StationId -> StationId -> Float -> Maybe ( Float, Direction, Bool )
-trainPos distanceMatrix from to percentageSegment =
-    case Dict.get ( from, to ) distanceMatrix of
-        Just { start, end, direction, skipsStations } ->
-            Just
-                ( case direction of
-                    Eastwards ->
-                        start + (end - start) * percentageSegment
-
-                    Westwards ->
-                        start - (start - end) * percentageSegment
-                , direction
-                , skipsStations
-                )
-
-        Nothing ->
-            Nothing
+fetchDelayEvents : Cmd Msg
+fetchDelayEvents =
+    Http.get
+        { url = httpApiBaseUrl ++ "delay_events/week"
+        , expect = Http.expectJson GotDelayEvents decodeDelayEvents
+        }
 
 
 {-| Get the y position of a station, e.g. for legends.
@@ -216,11 +210,6 @@ stationLines x1Pos x2Pos distanceMatrix =
                 ]
                 []
         )
-
-
-posixToSec : Posix -> Int
-posixToSec p =
-    posixToMillis p // 1000
 
 
 tripLines : DistanceMatrix -> Direction -> Int -> Dict TripId (List DelayRecord) -> Svg Msg
@@ -497,6 +486,9 @@ view model =
                             Day ->
                                 True
 
+                            Week ->
+                                True
+
                             _ ->
                                 False
                 in
@@ -592,7 +584,7 @@ update msg model =
                             ( model, Cmd.none )
 
         RecvWebsocket jsonStr ->
-            case decodeString decodeClientMsg jsonStr of
+            case decodeString decodeDelayRecord jsonStr of
                 Ok ( tripId, delay ) ->
                     ( { model
                         | delayRecords =
@@ -796,6 +788,20 @@ update msg model =
                                 min 0 (oldProgress + progressDelta)
                     }
               }
+            , Cmd.none
+            )
+
+        GotDelayEvents httpResult ->
+            ( case httpResult of
+                Ok delayEvents ->
+                    { model
+                        | delayEvents =
+                            Just <|
+                                buildDelayEventsMatrices delayEvents model.now model.distanceMatrix
+                    }
+
+                Err _ ->
+                    { model | delayEvents = Nothing }
             , Cmd.none
             )
 

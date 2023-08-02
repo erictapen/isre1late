@@ -3,12 +3,14 @@
 
 
 module Model exposing
-    ( Direction(..)
+    ( DelayEventsMatrix
+    , Direction(..)
     , DistanceMatrix
     , Mode(..)
     , ModeTransition
     , Model
     , TouchState
+    , buildDelayEventsMatrices
     , buildUrl
     , historicSeconds
     , initDistanceMatrix
@@ -16,15 +18,21 @@ module Model exposing
     , previousMode
     , stationNames
     , stations
+    , trainPos
     , urlParser
     )
 
 import Browser.Navigation
 import Dict exposing (Dict)
-import List exposing (filterMap, indexedMap)
+import List exposing (filterMap, foldr, indexedMap)
 import Time exposing (Posix)
-import Types exposing (DelayRecord, StationId, TripId)
+import Types exposing (DelayEvent, DelayRecord, StationId, TripId)
 import Url.Parser as UP
+import Utils exposing (posixToSec)
+
+
+type alias DelayPerSecond =
+    Int
 
 
 type alias Model =
@@ -32,6 +40,7 @@ type alias Model =
     , mode : Mode
     , modeTransition : ModeTransition
     , delayRecords : Dict TripId (List DelayRecord)
+    , delayEvents : Maybe ( DelayEventsMatrix, DelayEventsMatrix )
     , errors : List String
     , now : Maybe Posix
     , timeZone : Maybe Time.Zone
@@ -436,3 +445,78 @@ type alias StationInfo =
 
 stationNames =
     Dict.fromList stations
+
+
+{-| Place a train going inbetween two stations in the y axis of the entire diagram.
+Result contains the y axis value (between 0 and 1), the direction the train
+must be going in and wether it skips any stations on its path.
+-}
+trainPos : DistanceMatrix -> StationId -> StationId -> Float -> Maybe ( Float, Direction, Bool )
+trainPos distanceMatrix from to percentageSegment =
+    case Dict.get ( from, to ) distanceMatrix of
+        Just { start, end, direction, skipsStations } ->
+            Just
+                ( case direction of
+                    Eastwards ->
+                        start + (end - start) * percentageSegment
+
+                    Westwards ->
+                        start - (start - end) * percentageSegment
+                , direction
+                , skipsStations
+                )
+
+        Nothing ->
+            Nothing
+
+
+type alias DelayEventsMatrix =
+    Dict ( Int, Int ) DelayPerSecond
+
+
+{-| For now these matrices are intended to be used for the week mode
+-}
+buildDelayEventsMatrices :
+    List DelayEvent
+    -> Maybe Posix
+    -> DistanceMatrix
+    -> ( DelayEventsMatrix, DelayEventsMatrix )
+buildDelayEventsMatrices delayEvents maybeNow distanceMatrix =
+    let
+        -- TODO Make sure this is always something different than 0!
+        nowSec =
+            Maybe.withDefault 0 <| Maybe.map posixToSec maybeNow
+
+        rows =
+            20
+
+        secondsPerColumn =
+            3600
+
+        -- the row the event is placed in
+        maybeTrainPos de =
+            Maybe.map (\( yPos, direction, _ ) -> ( round <| yPos * rows, direction ))
+                (trainPos distanceMatrix de.previous_station de.next_station de.percentage_segment)
+
+        updateMatrix dict row de =
+            Dict.update
+                ( (nowSec - de.time) // secondsPerColumn, row )
+                (\i -> Just (Maybe.withDefault 0 i + de.delay * de.duration))
+                dict
+
+        updateMatrices :
+            DelayEvent
+            -> ( DelayEventsMatrix, DelayEventsMatrix )
+            -> ( DelayEventsMatrix, DelayEventsMatrix )
+        updateMatrices de ( dictEastwards, dictWestwards ) =
+            case maybeTrainPos de of
+                Nothing ->
+                    ( dictEastwards, dictWestwards )
+
+                Just ( row, Eastwards ) ->
+                    ( updateMatrix dictEastwards row de, dictWestwards )
+
+                Just ( row, Westwards ) ->
+                    ( dictEastwards, updateMatrix dictWestwards row de )
+    in
+    foldr updateMatrices ( Dict.empty, Dict.empty ) delayEvents

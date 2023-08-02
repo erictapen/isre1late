@@ -1,5 +1,10 @@
 {
 
+      "NoRedInk/elm-json-decode-pipeline" = {
+        sha256 = "1k241pjz1wj5rqv95f1j86msa0s0p6w4v8n0jn26aw6cbadw363b";
+        version = "1.0.1";
+      };
+
       "elm/browser" = {
         sha256 = "0nagb9ajacxbbg985r4k9h0jadqpp0gp84nm94kcgbr5sf8i9x13";
         version = "1.0.2";
@@ -13,6 +18,11 @@
       "elm/html" = {
         sha256 = "1n3gpzmpqqdsldys4ipgyl1zacn0kbpc3g4v3hdpiyfjlgh8bf3k";
         version = "1.0.0";
+      };
+
+      "elm/http" = {
+        sha256 = "008bs76mnp48b4dw8qwjj4fyvzbxvlrl4xpa2qh1gg2kfwyw56v1";
+        version = "2.0.0";
       };
 
       "elm/json" = {

@@ -2,10 +2,11 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
 
-module Utils exposing (onTouch, touchCoordinates)
+module Utils exposing (onTouch, posixToSec, touchCoordinates)
 
 import Html as H
 import Html.Events.Extra.Touch as Touch
+import Time exposing (Posix, posixToMillis)
 
 
 {-| An utility function copied from here:
@@ -29,3 +30,8 @@ onTouch on =
 removeNothings : List (Maybe a) -> List a
 removeNothings =
     List.filterMap identity
+
+
+posixToSec : Posix -> Int
+posixToSec p =
+    posixToMillis p // 1000

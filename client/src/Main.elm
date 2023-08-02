@@ -551,7 +551,12 @@ view model =
                                 map Tuple.first stations
                         ]
                     , div [ id "row2" ]
-                        [ timeTextLegend hisSeconds timeZone now
+                        -- TODO Render timeTextLegend for every Mode with different steps
+                        [ if model.mode == Hour && model.modeTransition.progress == 0 then
+                            timeTextLegend hisSeconds timeZone now
+
+                          else
+                            div [] []
                         , div [ class "station-legend" ] []
                         ]
                     ]

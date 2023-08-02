@@ -160,7 +160,9 @@ stationPos distanceMatrix sid =
         1
 
     else
-        Maybe.withDefault -1 <| Maybe.map (\r -> r.start) <| Dict.get ( sid, magdeburgHbf ) distanceMatrix
+        Maybe.withDefault -1 <|
+            Maybe.map (\r -> r.start) <|
+                Dict.get ( sid, magdeburgHbf ) distanceMatrix
 
 
 yPosition : Float -> String
@@ -275,7 +277,11 @@ tripLines distanceMatrix selectedDirection historicSeconds delayDict =
                         "M "
                             ++ (String.join " L " <|
                                     map
-                                        (Tuple.mapBoth fromFloat fromFloat >> (\( x, y ) -> x ++ " " ++ y))
+                                        (Tuple.mapBoth
+                                            fromFloat
+                                            fromFloat
+                                            >> (\( x, y ) -> x ++ " " ++ y)
+                                        )
                                     <|
                                         filterMap identity <|
                                             map (tripD False) delayRecords

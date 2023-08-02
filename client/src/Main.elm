@@ -35,7 +35,7 @@ import Model
         )
 import Msg exposing (Msg(..), SwitchDirection(..), TouchMsgType(..))
 import String exposing (fromFloat, fromInt)
-import Svg as S exposing (Svg, g, line, path, svg)
+import Svg as S exposing (Svg, g, line, path, svg, text_)
 import Svg.Attributes as SA
     exposing
         ( d
@@ -61,7 +61,8 @@ import Types exposing (DelayRecord, StationId, TripId, decodeDelayEvents, decode
 import Url
 import Url.Builder
 import Url.Parser as UP
-import Utils exposing (onTouch, posixToSec, touchCoordinates)
+import Utils exposing (onTouch, posixSecToSvg, posixToSec, posixToSvgQuotient, touchCoordinates)
+import Week.View
 
 
 port sendMessage : String -> Cmd msg
@@ -448,26 +449,6 @@ debugOverlay model =
         [ p [] [ text <| "progress: " ++ fromFloat model.modeTransition.progress ] ]
 
 
-{-| Some point in the past as Posix time. Apparently, SVG viewBox can't handle full posix numbers.
--}
-somePointInThePast : Int
-somePointInThePast =
-    1688162400
-
-
-posixToSvgQuotient =
-    100000
-
-
-{-| Turn a Posix sec into a position on the SVG canvas.
-SVG viewBox can't handle even a full year in seconds, so we move the comma.
-Also we normalise by some point in the past.
--}
-posixSecToSvg : Int -> Float
-posixSecToSvg secs =
-    toFloat (secs - somePointInThePast) / posixToSvgQuotient
-
-
 view : Model -> Browser.Document Msg
 view model =
     { title = "Is RE1 late?"
@@ -478,19 +459,21 @@ view model =
                     hisSeconds =
                         historicSeconds model
 
-                    renderDiagram =
-                        case model.mode of
-                            Hour ->
-                                True
-
-                            Day ->
-                                True
-
-                            Week ->
-                                True
-
-                            _ ->
-                                False
+                    simpleDiagram =
+                        [ timeLegend hisSeconds timeZone now
+                        , g [ SA.id "station-lines" ] <|
+                            stationLines
+                                (posixSecToSvg (posixToSec now - hisSeconds))
+                                (posixSecToSvg (posixToSec now))
+                                model.distanceMatrix
+                            <|
+                                map Tuple.first stations
+                        , tripLines
+                            model.distanceMatrix
+                            model.direction
+                            hisSeconds
+                            model.delayRecords
+                        ]
                 in
                 [ debugOverlay model
                 , div
@@ -501,36 +484,42 @@ view model =
                         [ id "reverse-direction-button", onClick ToggleDirection ]
                         [ text "⮀" ]
                     , div [ id "row1" ]
-                        [ if renderDiagram then
-                            svg
-                                [ id "diagram"
-                                , preserveAspectRatio "none"
-                                , viewBox <|
-                                    fromFloat
-                                        (posixSecToSvg
-                                            (posixToSec now - hisSeconds)
-                                        )
-                                        ++ " 0 "
-                                        ++ (fromFloat <| (toFloat <| hisSeconds) / posixToSvgQuotient)
-                                        ++ " 100"
-                                ]
-                                [ timeLegend hisSeconds timeZone now
-                                , g [ SA.id "station-lines" ] <|
-                                    stationLines
-                                        (posixSecToSvg (posixToSec now - hisSeconds))
-                                        (posixSecToSvg (posixToSec now))
-                                        model.distanceMatrix
-                                    <|
-                                        map Tuple.first stations
-                                , tripLines
-                                    model.distanceMatrix
-                                    model.direction
-                                    hisSeconds
-                                    model.delayRecords
-                                ]
+                        [ svg
+                            [ id "diagram"
+                            , preserveAspectRatio "none"
+                            , viewBox <|
+                                fromFloat
+                                    (posixSecToSvg
+                                        (posixToSec now - hisSeconds)
+                                    )
+                                    ++ " 0 "
+                                    ++ (fromFloat <| (toFloat <| hisSeconds) / posixToSvgQuotient)
+                                    ++ " 100"
+                            ]
+                            (case model.mode of
+                                Hour ->
+                                    simpleDiagram
 
-                          else
-                            div [ id "diagram" ] [ text "Not implemented" ]
+                                Day ->
+                                    simpleDiagram
+
+                                Week ->
+                                    Week.View.view model.now <|
+                                        Maybe.map
+                                            (case model.direction of
+                                                Eastwards ->
+                                                    Tuple.first
+
+                                                Westwards ->
+                                                    Tuple.second
+                                            )
+                                        <|
+                                            model.delayEvents
+
+                                _ ->
+                                    -- TODO make this visible
+                                    [ text_ [ x "50%", y "50%" ] [ text "Not implemented" ] ]
+                            )
                         , div
                             [ class "station-legend"
                             , onTouch "touchstart" (\event -> TouchMsg 0 Start <| touchCoordinates event)

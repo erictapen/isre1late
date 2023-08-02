@@ -2,7 +2,7 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
 
-module Utils exposing (onTouch, posixToSec, touchCoordinates)
+module Utils exposing (onTouch, posixSecToSvg, posixToSec, posixToSvgQuotient, touchCoordinates)
 
 import Html as H
 import Html.Events.Extra.Touch as Touch
@@ -35,3 +35,23 @@ removeNothings =
 posixToSec : Posix -> Int
 posixToSec p =
     posixToMillis p // 1000
+
+
+{-| Some point in the past as Posix time. Apparently, SVG viewBox can't handle full posix numbers.
+-}
+somePointInThePast : Int
+somePointInThePast =
+    1688162400
+
+
+posixToSvgQuotient =
+    100000
+
+
+{-| Turn a Posix sec into a position on the SVG canvas.
+SVG viewBox can't handle even a full year in seconds, so we move the comma.
+Also we normalise by some point in the past.
+-}
+posixSecToSvg : Int -> Float
+posixSecToSvg secs =
+    toFloat (secs - somePointInThePast) / posixToSvgQuotient

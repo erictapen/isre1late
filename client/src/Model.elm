@@ -4,6 +4,7 @@
 
 module Model exposing
     ( DelayEventsMatrix
+    , DelayPerSecond
     , Direction(..)
     , DistanceMatrix
     , Mode(..)
@@ -29,6 +30,7 @@ import Time exposing (Posix)
 import Types exposing (DelayEvent, DelayRecord, StationId, TripId)
 import Url.Parser as UP
 import Utils exposing (posixToSec)
+import Week.Constants
 
 
 type alias DelayPerSecond =
@@ -487,20 +489,14 @@ buildDelayEventsMatrices delayEvents maybeNow distanceMatrix =
         nowSec =
             Maybe.withDefault 0 <| Maybe.map posixToSec maybeNow
 
-        rows =
-            20
-
-        secondsPerColumn =
-            3600
-
         -- the row the event is placed in
         maybeTrainPos de =
-            Maybe.map (\( yPos, direction, _ ) -> ( round <| yPos * rows, direction ))
+            Maybe.map (\( yPos, direction, _ ) -> ( round <| yPos * Week.Constants.rows, direction ))
                 (trainPos distanceMatrix de.previous_station de.next_station de.percentage_segment)
 
         updateMatrix dict row de =
             Dict.update
-                ( (nowSec - de.time) // secondsPerColumn, row )
+                ( (nowSec - de.time) // Week.Constants.secondsPerColumn, row )
                 (\i -> Just (Maybe.withDefault 0 i + de.delay * de.duration))
                 dict
 

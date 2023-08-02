@@ -9,19 +9,19 @@ use log::info;
 use rocket::tokio;
 use rocket::{get, routes};
 use rocket_sync_db_pools::{database, diesel};
-use time::OffsetDateTime;
+use time::{Duration, OffsetDateTime};
 
 #[database("isre1late")]
 struct DbConn(diesel::PgConnection);
 
-#[get("/api/delay_events/day")]
-async fn delay_events(conn: DbConn) -> Result<Json<Vec<DelayEvent>>, Status> {
-    conn.run(|db| {
+async fn load_delay_events(
+    conn: DbConn,
+    from: OffsetDateTime,
+) -> Result<Json<Vec<DelayEvent>>, Status> {
+    conn.run(move |db| {
         use crate::schema::delay_events;
-        let now = OffsetDateTime::now_utc();
-        let start_of_day = now.date().midnight();
 
-        info!("Sending DelayEvents coming from {}", start_of_day);
+        info!("Sending DelayEvents coming from {}", from);
 
         delay_events::dsl::delay_events
             .select((
@@ -35,12 +35,26 @@ async fn delay_events(conn: DbConn) -> Result<Json<Vec<DelayEvent>>, Status> {
                 delay_events::percentage_segment,
                 delay_events::delay,
             ))
-            .filter(delay_events::time.gt(start_of_day))
+            .filter(delay_events::time.gt(from))
             .load::<DelayEvent>(db)
     })
     .await
     .map(Json)
     .map_err(|_| rocket::http::Status::InternalServerError)
+}
+
+/// Load delay_events for the last 24 hours
+#[get("/api/delay_events/day")]
+async fn delay_events_day(conn: DbConn) -> Result<Json<Vec<DelayEvent>>, Status> {
+    let from = OffsetDateTime::now_utc() - Duration::DAY;
+    load_delay_events(conn, from).await
+}
+
+/// Load delay_events for the last 7 days
+#[get("/api/delay_events/week")]
+async fn delay_events_week(conn: DbConn) -> Result<Json<Vec<DelayEvent>>, Status> {
+    let from = OffsetDateTime::now_utc() - Duration::WEEK;
+    load_delay_events(conn, from).await
 }
 
 pub fn webserver(
@@ -66,7 +80,7 @@ pub fn webserver(
     };
     let figment = Figment::from(config).merge(("databases", map!["isre1late" => db_map]));
     let builder = rocket::custom(&figment)
-        .mount("/", routes![delay_events])
+        .mount("/", routes![delay_events_day, delay_events_week])
         .attach(DbConn::fairing());
     rt.block_on(async move {
         let _ = builder.launch().await;

@@ -471,7 +471,7 @@ posixToSvgQuotient =
 
 
 {-| Turn a Posix sec into a position on the SVG canvas.
-SVG viewBox can't handle even a year in seconds, so we move the comma.
+SVG viewBox can't handle even a full year in seconds, so we move the comma.
 Also we normalise by some point in the past.
 -}
 posixSecToSvg : Int -> Float

@@ -263,7 +263,7 @@ tripLines distanceMatrix selectedDirection historicSeconds delayDict =
                     [ stroke "none"
 
                     -- red for delay
-                    , fill "#e86f6f"
+                    , fill "hsl(0, 72%, 67%)"
                     , d <|
                         "M "
                             ++ (String.join " L " <|

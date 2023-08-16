@@ -63,6 +63,8 @@ let
 
             location /api/ {
                 proxy_pass https://isre1late.erictapen.name;
+                gzip on;
+                gzip_types application/json;
             }
 
         }

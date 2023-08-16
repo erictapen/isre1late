@@ -170,7 +170,13 @@
                   alias = client + "/assets/";
                 };
                 "/api".return = "301 /api/";
-                "/api/".proxyPass = "http://[::1]:${toString cfg.port}";
+                "/api/" = {
+                  proxyPass = "http://[::1]:${toString cfg.port}";
+                  extraConfig = ''
+                    gzip on;
+                    gzip_types application/json;
+                  '';
+                };
                 "/api/ws".return = "301 /api/ws/";
                 "/api/ws/" = {
                   proxyPass = "http://[::1]:${toString cfg.websocketPort}";

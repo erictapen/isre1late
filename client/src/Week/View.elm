@@ -13,12 +13,17 @@ import Utils exposing (posixSecToSvg, posixToSec, posixToSvgQuotient)
 import Week.Constants
 
 
+maxDelayPerSecondPerTile =
+    -- TODO make this dependent on tile size
+    1500000
+
+
 colorValue i =
     let
-        c =
-            max 0 <| min 255 <| round <| 255 * (1 - (toFloat i / 100000))
+        lightness =
+            max 0 <| min 100 <| round <| 50 + 50 * (1 - (toFloat i / maxDelayPerSecondPerTile))
     in
-    "rgb(" ++ fromInt c ++ "," ++ fromInt c ++ "," ++ fromInt c ++ ")"
+    "hsl(0, 100%, " ++ fromInt lightness ++ "%)"
 
 
 heatMapTile : Posix -> ( ( Int, Int ), DelayPerSecond ) -> Svg Msg

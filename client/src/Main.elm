@@ -98,7 +98,7 @@ wsApiUrl =
 
 
 httpApiBaseUrl =
-    "https://isre1late.erictapen.name/api/"
+    "/api/"
 
 
 init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )

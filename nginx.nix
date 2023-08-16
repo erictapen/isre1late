@@ -61,6 +61,10 @@ let
                 alias ./assets/;
             }
 
+            location /api/ {
+                proxy_pass https://isre1late.erictapen.name;
+            }
+
         }
 
     }

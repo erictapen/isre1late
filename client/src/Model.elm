@@ -264,176 +264,211 @@ stations =
     [ ( 900470000
       , { name = "Cottbus, Hauptbahnhof"
         , shortName = "Cottbus"
+        , important = True
         }
       )
     , ( 900445593
       , { name = "Guben, Bahnhof"
         , shortName = "Guben"
+        , important = False
         }
       )
     , ( 900311307
       , { name = "Eisenhüttenstadt, Bahnhof"
         , shortName = "Eisenhüttenstadt"
+        , important = False
         }
       )
     , ( 900360000
       , { name = "Frankfurt (Oder), Bahnhof"
         , shortName = "Frankfurt (Oder)"
+        , important = True
         }
       )
     , ( 900360004
       , { name = "Frankfurt (Oder), Rosengarten Bhf"
         , shortName = "Rosengarten"
+        , important = False
         }
       )
     , ( 900310008
       , { name = "Pillgram, Bahnhof"
         , shortName = "Pillgram"
+        , important = False
         }
       )
     , ( 900310007
       , { name = "Jacobsdorf (Mark), Bahnhof"
         , shortName = "Jacobsdorf"
+        , important = False
         }
       )
     , ( 900310006
       , { name = "Briesen (Mark), Bahnhof"
         , shortName = "Briesen"
+        , important = False
         }
       )
     , ( 900310005
       , { name = "Berkenbrück (LOS), Bahnhof"
         , shortName = "Berkenbrück"
+        , important = False
         }
       )
     , ( 900310001
       , { name = "Fürstenwalde, Bahnhof"
         , shortName = "Fürstenwalde"
+        , important = False
         }
       )
     , ( 900310002
       , { name = "Hangelsberg, Bahnhof"
         , shortName = "Hangelsberg"
+        , important = False
         }
       )
     , ( 900310003
       , { name = "Grünheide, Fangschleuse Bhf"
         , shortName = "Fangschleuse"
+        , important = False
         }
       )
     , ( 900310004
       , { name = "S Erkner Bhf"
         , shortName = "Erkner "
+        , important = False
         }
       )
     , ( 900120003
       , { name = "S Ostkreuz Bhf (Berlin)"
         , shortName = "Ostkreuz"
+        , important = False
         }
       )
     , ( 900120005
       , { name = "S Ostbahnhof (Berlin)"
         , shortName = "Ostbahnhof"
+        , important = False
         }
       )
     , ( 900100003
       , { name = "S+U Alexanderplatz Bhf (Berlin)"
         , shortName = "Alexanderplatz"
+        , important = False
         }
       )
     , ( 900100001
       , { name = "S+U Friedrichstr. Bhf (Berlin)"
         , shortName = "Friedrichstr."
+        , important = False
         }
       )
     , ( 900003201
       , { name = "S+U Berlin Hauptbahnhof"
         , shortName = "Berlin Hbf"
+        , important = True
         }
       )
     , ( 900023201
       , { name = "S+U Zoologischer Garten Bhf (Berlin)"
         , shortName = "Zoologischer Garten"
+        , important = False
         }
       )
     , ( 900024101
       , { name = "S Charlottenburg Bhf (Berlin)"
         , shortName = "Charlottenburg"
+        , important = False
         }
       )
     , ( 900053301
       , { name = "S Wannsee Bhf (Berlin)"
         , shortName = "Wannsee"
+        , important = False
         }
       )
     , ( 900230999
       , { name = "S Potsdam Hauptbahnhof"
         , shortName = "Potsdam"
+        , important = True
         }
       )
     , ( 900230006
       , { name = "Potsdam, Charlottenhof Bhf"
         , shortName = "Charlottenhof"
+        , important = False
         }
       )
     , ( 900230007
       , { name = "Potsdam, Park Sanssouci Bhf"
         , shortName = "Park Sanssouci"
+        , important = False
         }
       )
     , ( 900220009
       , { name = "Werder (Havel), Bahnhof"
         , shortName = "Werder (Havel)"
+        , important = False
         }
       )
     , ( 900220699
       , { name = "Groß Kreutz, Bahnhof"
         , shortName = "Groß Kreutz"
+        , important = False
         }
       )
     , ( 900220182
       , { name = "Götz, Bahnhof"
         , shortName = "Götz"
+        , important = False
         }
       )
     , ( 900275110
       , { name = "Brandenburg, Hauptbahnhof"
         , shortName = "Brandenburg"
+        , important = True
         }
       )
     , ( 900275719
       , { name = "Brandenburg, Kirchmöser Bhf"
         , shortName = "Kirchmöser"
+        , important = False
         }
       )
     , ( 900220249
       , { name = "Wusterwitz, Bahnhof"
         , shortName = "Wusterwitz"
+        , important = False
         }
       )
     , ( 900550073
       , { name = "Genthin, Bahnhof"
         , shortName = "Genthin"
+        , important = False
         }
       )
     , ( 900550078
       , { name = "Güsen, Bahnhof"
         , shortName = "Güsen"
+        , important = False
         }
       )
     , ( 900550062
       , { name = "Burg (bei Magdeburg), Bahnhof"
         , shortName = "Burg (bei Magdeburg)"
+        , important = False
         }
       )
     , ( 900550255
       , { name = "Magdeburg-Neustadt, Bahnhof"
         , shortName = "Magdeburg-Neustadt"
+        , important = False
         }
       )
     , ( 900550094
       , { name = "Magdeburg, Hauptbahnhof"
         , shortName = "Magdeburg"
+        , important = True
         }
       )
     ]
@@ -442,6 +477,7 @@ stations =
 type alias StationInfo =
     { name : String
     , shortName : String
+    , important : Bool
     }
 
 

@@ -190,6 +190,16 @@ stationLegend distanceMatrix selectedDirection =
                 , style "position" "absolute"
                 , style "text-anchor" "right"
                 , style "margin-top" "-0.5em"
+                , style "font-weight" <|
+                    if
+                        Maybe.withDefault False <|
+                            Maybe.map .important <|
+                                Dict.get sid stationNames
+                    then
+                        "500"
+
+                    else
+                        "300"
                 ]
                 [ text <|
                     Maybe.withDefault "Unkown Station" <|

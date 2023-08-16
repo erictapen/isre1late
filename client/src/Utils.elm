@@ -58,6 +58,9 @@ posixSecToSvg secs =
     toFloat (secs - somePointInThePast) / posixToSvgQuotient
 
 
+{-| From here:
+<https://stackoverflow.com/questions/56442885/error-when-convert-http-error-to-string-with-tostring-in-elm-0-19>
+-}
 httpErrorToString : Http.Error -> String
 httpErrorToString error =
     case error of

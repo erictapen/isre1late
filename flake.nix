@@ -73,7 +73,7 @@
               elm-json
               elm2nix
               (python3.withPackages (ps: with ps; [ requests ]))
-              (import ./nginx.nix pkgs)
+              (import ./client/nginx.nix pkgs)
             ]);
             RUST_LOG = "info";
             DATABASE_URL = "postgres://localhost/isre1late?host=/run/postgresql";

@@ -61,7 +61,15 @@ import Types exposing (DelayRecord, StationId, TripId, decodeDelayEvents, decode
 import Url
 import Url.Builder
 import Url.Parser as UP
-import Utils exposing (onTouch, posixSecToSvg, posixToSec, posixToSvgQuotient, touchCoordinates)
+import Utils
+    exposing
+        ( httpErrorToString
+        , onTouch
+        , posixSecToSvg
+        , posixToSec
+        , posixToSvgQuotient
+        , touchCoordinates
+        )
 import Week.View
 
 
@@ -121,6 +129,7 @@ init _ url key =
             , timeZone = Nothing
             , direction = Eastwards
             , distanceMatrix = initDistanceMatrix
+            , debugText = ""
             }
     in
     ( initModel
@@ -462,7 +471,9 @@ debugOverlay : Model -> Html msg
 debugOverlay model =
     div
         [ style "position" "absolute", style "top" "0", style "opacity" "0.2" ]
-        [ p [] [ text <| "progress: " ++ fromFloat model.modeTransition.progress ] ]
+        [ p [] [ text <| "progress: " ++ fromFloat model.modeTransition.progress ]
+        , p [] [ text <| "debug: " ++ model.debugText ]
+        ]
 
 
 view : Model -> Browser.Document Msg
@@ -803,10 +814,11 @@ update msg model =
                         | delayEvents =
                             Just <|
                                 buildDelayEventsMatrices delayEvents model.now model.distanceMatrix
+                        , debugText = "DelayEvents received"
                     }
 
-                Err _ ->
-                    { model | delayEvents = Nothing }
+                Err e ->
+                    { model | delayEvents = Nothing, debugText = httpErrorToString e }
             , Cmd.none
             )
 

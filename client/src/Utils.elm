@@ -2,10 +2,11 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
 
-module Utils exposing (onTouch, posixSecToSvg, posixToSec, posixToSvgQuotient, touchCoordinates)
+module Utils exposing (httpErrorToString, onTouch, posixSecToSvg, posixToSec, posixToSvgQuotient, touchCoordinates)
 
 import Html as H
 import Html.Events.Extra.Touch as Touch
+import Http exposing (Error(..))
 import Time exposing (Posix, posixToMillis)
 
 
@@ -55,3 +56,28 @@ Also we normalise by some point in the past.
 posixSecToSvg : Int -> Float
 posixSecToSvg secs =
     toFloat (secs - somePointInThePast) / posixToSvgQuotient
+
+
+httpErrorToString : Http.Error -> String
+httpErrorToString error =
+    case error of
+        BadUrl url ->
+            "The URL " ++ url ++ " was invalid"
+
+        Timeout ->
+            "Unable to reach the server, try again"
+
+        NetworkError ->
+            "Unable to reach the server, check your network connection"
+
+        BadStatus 500 ->
+            "The server had a problem, try again later"
+
+        BadStatus 400 ->
+            "Verify your information and try again"
+
+        BadStatus _ ->
+            "Unknown error"
+
+        BadBody errorMessage ->
+            errorMessage

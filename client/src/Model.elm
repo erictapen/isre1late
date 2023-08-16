@@ -48,6 +48,7 @@ type alias Model =
     , timeZone : Maybe Time.Zone
     , direction : Direction
     , distanceMatrix : DistanceMatrix
+    , debugText : String
     }
 
 

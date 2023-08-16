@@ -2,8 +2,8 @@ module Week.Constants exposing (rows, secondsPerColumn)
 
 
 rows =
-    20
+    80
 
 
 secondsPerColumn =
-    3600
+    3600 * 6

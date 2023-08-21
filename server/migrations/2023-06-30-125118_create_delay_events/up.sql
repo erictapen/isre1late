@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2023 2023 Kerstin Humm <mail@erictapen.name>
+--
+-- SPDX-License-Identifier: GPL-3.0-or-later
+
 CREATE TABLE IF NOT EXISTS delay_events
           ( id BIGSERIAL NOT NULL PRIMARY KEY
           , trip_id TEXT NOT NULL

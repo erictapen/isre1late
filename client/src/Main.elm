@@ -414,31 +414,6 @@ viewTitle currentMode progress =
         top pos =
             fromFloat (100 * (0.01 + pos)) ++ "%"
 
-        modeButton direction =
-            let
-                ( newMode, directionString ) =
-                    case direction of
-                        NextMode ->
-                            ( nextMode currentMode, "🞂" )
-
-                        PreviousMode ->
-                            ( previousMode currentMode, "🞀" )
-
-                visibility =
-                    case ( newMode, progress == 0 ) of
-                        ( Just _, True ) ->
-                            "visible"
-
-                        _ ->
-                            "hidden"
-            in
-            button
-                [ onClick <|
-                    ModeSwitch direction
-                , style "visibility" visibility
-                ]
-                [ text <| directionString ]
-
         modeH1 ( maybeMode, posOffset ) =
             let
                 pos =
@@ -449,11 +424,10 @@ viewTitle currentMode progress =
                     Just <|
                         h1
                             [ style "top" <| top pos
+                            , style "left" "3%"
                             , style "opacity" <| fromFloat <| 1 - (abs pos * (1 / maxPos))
                             ]
-                            [ modeButton PreviousMode
-                            , text <| modeString mode
-                            , modeButton NextMode
+                            [ text <| "Is RE1 late this " ++ modeString mode ++ "?"
                             ]
 
                 _ ->

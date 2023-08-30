@@ -86,7 +86,6 @@
         let
           server = self.packages.${config.nixpkgs.localSystem.system}.server;
           client = self.packages.${config.nixpkgs.localSystem.system}.client;
-          stateDir = "/var/lib/isre1late";
           inherit (lib) mkEnableOption mkOption mkIf types;
           cfg = config.services.isre1late;
         in
@@ -142,7 +141,6 @@
                 '';
                 Restart = "always";
                 RestartSec = "30s";
-                StateDirectory = "isre1late";
                 User = "isre1late";
                 Group = "isre1late";
               };
@@ -151,7 +149,6 @@
 
             users.users.isre1late = {
               isSystemUser = true;
-              home = stateDir;
               group = "isre1late";
               packages = [ server ];
             };

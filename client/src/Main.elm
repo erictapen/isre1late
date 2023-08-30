@@ -507,9 +507,6 @@ view model =
                     [ id "app"
                     ]
                     [ viewTitle model.mode model.modeTransition.progress
-                    , button
-                        [ id "reverse-direction-button", onClick ToggleDirection ]
-                        [ text "⮀" ]
                     , div [ id "row1" ]
                         [ svg
                             [ id "diagram"
@@ -567,6 +564,9 @@ view model =
                             div [] []
                         , div [ class "station-legend" ] []
                         ]
+                    , button
+                        [ id "reverse-direction-button", onClick ToggleDirection ]
+                        [ text "⮀" ]
                     ]
                 ]
 

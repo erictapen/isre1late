@@ -98,8 +98,12 @@ h1 {
 
 #reverse-direction-button {
   position: absolute;
-  left: 85%;
-  top: 3%;
+  left: 69%;
+  top: 92%;
+  border-radius: 50%;
+  width: 1.5em;
+  height: 1.5em;
+  font-size: 200%;
 }
 
 #row1 {

@@ -144,7 +144,6 @@
                 User = "isre1late";
                 Group = "isre1late";
               };
-
             };
 
             users.users.isre1late = {

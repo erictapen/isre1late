@@ -54,19 +54,19 @@ type alias Model =
 
 
 type Mode
-    = SingleTrip TripId
+    = Trip TripId
     | Hour
     | Day
     | Week
     | Year
 
 
-{-| SingleTrip isn't reachable through this
+{-| Trip isn't reachable through this
 -}
 previousMode : Mode -> Maybe Mode
 previousMode mode =
     case mode of
-        SingleTrip _ ->
+        Trip _ ->
             Nothing
 
         Hour ->
@@ -85,7 +85,7 @@ previousMode mode =
 nextMode : Mode -> Maybe Mode
 nextMode mode =
     case mode of
-        SingleTrip _ ->
+        Trip _ ->
             Nothing
 
         Hour ->
@@ -164,7 +164,7 @@ type alias TouchState =
 buildUrl : Mode -> String
 buildUrl mode =
     case mode of
-                SingleTrip tid ->
+                Trip tid ->
                     UB.absolute [ "trip", tid ] [ ]
 
                 Hour ->
@@ -183,7 +183,7 @@ buildUrl mode =
 urlParser : UP.Parser (Mode -> a) a
 urlParser =
     UP.oneOf
-        [ UP.map SingleTrip (UP.s "trip" </> UP.string)
+        [ UP.map Trip (UP.s "trip" </> UP.string)
         , UP.map Hour (UP.s "hour")
         , UP.map Day (UP.s "day")
         , UP.map Week (UP.s "week")

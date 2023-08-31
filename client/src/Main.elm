@@ -385,7 +385,7 @@ timeTextLegend historicSeconds tz now =
 modeString : Mode -> String
 modeString mode =
     case mode of
-        SingleTrip _ ->
+        Trip _ ->
             "Single trip"
 
         Hour ->

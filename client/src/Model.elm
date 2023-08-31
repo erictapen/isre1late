@@ -28,7 +28,8 @@ import Dict exposing (Dict)
 import List exposing (filterMap, foldr, indexedMap)
 import Time exposing (Posix)
 import Types exposing (DelayEvent, DelayRecord, StationId, TripId)
-import Url.Parser as UP
+import Url.Parser as UP exposing ((</>))
+import Url.Builder as UB
 import Utils exposing (posixToSec)
 import Week.Constants
 
@@ -53,7 +54,7 @@ type alias Model =
 
 
 type Mode
-    = SingleTrip
+    = SingleTrip TripId
     | Hour
     | Day
     | Week
@@ -65,7 +66,7 @@ type Mode
 previousMode : Mode -> Maybe Mode
 previousMode mode =
     case mode of
-        SingleTrip ->
+        SingleTrip _ ->
             Nothing
 
         Hour ->
@@ -84,7 +85,7 @@ previousMode mode =
 nextMode : Mode -> Maybe Mode
 nextMode mode =
     case mode of
-        SingleTrip ->
+        SingleTrip _ ->
             Nothing
 
         Hour ->
@@ -162,29 +163,27 @@ type alias TouchState =
 
 buildUrl : Mode -> String
 buildUrl mode =
-    "/"
-        ++ (case mode of
-                SingleTrip ->
-                    "trip"
+    case mode of
+                SingleTrip tid ->
+                    UB.absolute [ "trip", tid ] [ ]
 
                 Hour ->
-                    "hour"
+                    UB.absolute [ "hour" ] [ ]
 
                 Day ->
-                    "day"
+                    UB.absolute [ "day" ] [ ]
 
                 Week ->
-                    "week"
+                    UB.absolute [ "week" ] [ ]
 
                 Year ->
-                    "year"
-           )
+                    UB.absolute [ "year" ] [ ]
 
 
 urlParser : UP.Parser (Mode -> a) a
 urlParser =
     UP.oneOf
-        [ UP.map SingleTrip (UP.s "trip")
+        [ UP.map SingleTrip (UP.s "trip" </> UP.string)
         , UP.map Hour (UP.s "hour")
         , UP.map Day (UP.s "day")
         , UP.map Week (UP.s "week")

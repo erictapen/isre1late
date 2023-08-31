@@ -385,7 +385,7 @@ timeTextLegend historicSeconds tz now =
 modeString : Mode -> String
 modeString mode =
     case mode of
-        SingleTrip ->
+        SingleTrip _ ->
             "Single trip"
 
         Hour ->
@@ -571,6 +571,7 @@ update msg model =
                             )
 
                         Nothing ->
+                            -- TODO Show a 404 site?
                             ( model, Cmd.none )
 
         RecvWebsocket jsonStr ->

@@ -312,8 +312,10 @@ tripLines distanceMatrix selectedDirection historicSeconds delayDict =
     g [ id "trip-paths" ] <| map tripLine <| Dict.toList delayDict
 
 
-timeLegend : Int -> Time.Zone -> Posix -> Svg Msg
-timeLegend historicSeconds tz now =
+{-| The vertical lines in the diagram.
+-}
+timeLines : Int -> Time.Zone -> Posix -> Svg Msg
+timeLines historicSeconds tz now =
     let
         currentHourBegins =
             Time.toSecond tz now + Time.toMinute tz now * 60
@@ -339,8 +341,8 @@ timeLegend historicSeconds tz now =
                 List.range 0 (historicSeconds // 3600)
 
 
-timeTextLegend : Int -> Time.Zone -> Posix -> Html Msg
-timeTextLegend historicSeconds tz now =
+timeLegend : Int -> Time.Zone -> Posix -> Html Msg
+timeLegend historicSeconds tz now =
     let
         stepSize =
             10 * 60
@@ -461,7 +463,7 @@ view model =
                         historicSeconds model
 
                     simpleDiagram =
-                        [ timeLegend hisSeconds timeZone now
+                        [ timeLines hisSeconds timeZone now
                         , g [ SA.id "station-lines" ] <|
                             stationLines
                                 (posixSecToSvg (posixToSec now - hisSeconds))
@@ -530,9 +532,9 @@ view model =
                                 map Tuple.first stations
                         ]
                     , div [ id "row2" ]
-                        -- TODO Render timeTextLegend for every Mode with different steps
+                        -- TODO Render timeLegend for every Mode with different steps
                         [ if model.mode == Hour && model.modeTransition.progress == 0 then
-                            timeTextLegend hisSeconds timeZone now
+                            timeLegend hisSeconds timeZone now
 
                           else
                             div [] []

@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2023 Kerstin Humm <mail@erictapen.name>
+-- SPDX-License-Identifier: GPL-3.0-or-later
+
+
 module Components.TimeLegend exposing (view)
 
 import Html as H exposing (Html, button, div, h1, p, text)

@@ -62,6 +62,7 @@ import Svg.Attributes as SA
 import Svg.Loaders
 import Task
 import Time exposing (Posix, millisToPosix, posixToMillis)
+import Trip.View
 import Types exposing (DelayRecord, StationId, TripId, decodeDelayEvents, decodeDelayRecord)
 import Url
 import Url.Builder
@@ -183,24 +184,30 @@ view model =
                 , div
                     [ id "app"
                     ]
-                    [ Components.Title.view model.mode model.modeTransition.progress
-                    , div [ id "row1" ]
-                        [ Components.Diagram.view model now hisSeconds timeZone
-                        , Components.StationLegend.view model.distanceMatrix model.direction
-                        ]
-                    , div [ id "row2" ]
-                        -- TODO Render timeLegend for every Mode with different steps
-                        [ if model.mode == Hour && model.modeTransition.progress == 0 then
-                            Components.TimeLegend.view hisSeconds timeZone now
+                    (case model.mode of
+                        Trip tripId ->
+                            Trip.View.view tripId model.delayRecords
 
-                          else
-                            div [] []
-                        , div [ class "station-legend" ] []
-                        ]
-                    , button
-                        [ id "reverse-direction-button", onClick ToggleDirection ]
-                        [ text "⮀" ]
-                    ]
+                        _ ->
+                            [ Components.Title.view model.mode model.modeTransition.progress
+                            , div [ id "row1" ]
+                                [ Components.Diagram.view model now hisSeconds timeZone
+                                , Components.StationLegend.view model.distanceMatrix model.direction
+                                ]
+                            , div [ id "row2" ]
+                                -- TODO Render timeLegend for every Mode with different steps
+                                [ if model.mode == Hour && model.modeTransition.progress == 0 then
+                                    Components.TimeLegend.view hisSeconds timeZone now
+
+                                  else
+                                    div [] []
+                                , div [ class "station-legend" ] []
+                                ]
+                            , button
+                                [ id "reverse-direction-button", onClick ToggleDirection ]
+                                [ text "⮀" ]
+                            ]
+                    )
                 ]
 
             _ ->
@@ -454,6 +461,15 @@ update msg model =
                 Err e ->
                     { model | delayEvents = Nothing, debugText = httpErrorToString e }
             , Cmd.none
+            )
+
+        OpenTrip tripId ->
+            let
+                newMode =
+                    Trip tripId
+            in
+            ( { model | mode = newMode }
+            , Browser.Navigation.pushUrl model.navigationKey <| buildUrl newMode
             )
 
 

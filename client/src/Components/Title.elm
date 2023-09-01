@@ -16,7 +16,7 @@ modeString : Mode -> String
 modeString mode =
     case mode of
         Trip _ ->
-            "Single trip"
+            "Trip"
 
         Hour ->
             "Hour"

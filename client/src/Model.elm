@@ -29,6 +29,7 @@ import Dict exposing (Dict)
 import List exposing (filterMap, foldr, indexedMap)
 import Time exposing (Posix)
 import Types exposing (DelayEvent, DelayRecord, StationId, TripId)
+import Url
 import Url.Builder as UB
 import Url.Parser as UP exposing ((</>))
 import Utils exposing (posixToSec)
@@ -184,7 +185,10 @@ buildUrl mode =
 urlParser : UP.Parser (Mode -> a) a
 urlParser =
     UP.oneOf
-        [ UP.map Trip (UP.s "trip" </> UP.string)
+        [ UP.map Trip
+            (UP.s "trip"
+                </> UP.map (Maybe.withDefault "" << Url.percentDecode) UP.string
+            )
         , UP.map Hour (UP.s "hour")
         , UP.map Day (UP.s "day")
         , UP.map Week (UP.s "week")

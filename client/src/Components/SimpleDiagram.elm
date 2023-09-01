@@ -29,6 +29,7 @@ import Svg.Attributes as SA
         , y1
         , y2
         )
+import Svg.Events
 import Time exposing (Posix, millisToPosix, posixToMillis)
 import Types exposing (DelayRecord, StationId, TripId, decodeDelayEvents, decodeDelayRecord)
 import Utils
@@ -121,6 +122,7 @@ tripLines distanceMatrix selectedDirection historicSeconds delayDict =
             g
                 [ SA.title tripId
                 , SA.id tripId
+                , Svg.Events.onClick <| Msg.OpenTrip tripId
                 ]
                 [ path
                     [ stroke "none"

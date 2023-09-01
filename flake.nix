@@ -52,6 +52,7 @@
               nodejs
               cargo
               rustc
+              rustfmt
               diesel-cli
               pkg-config
               openssl

@@ -7,6 +7,9 @@ port module Main exposing (main)
 import Browser exposing (UrlRequest(..))
 import Browser.Events exposing (onAnimationFrameDelta)
 import Browser.Navigation
+import Components.Diagram
+import Components.StationLegend
+import Components.TimeLegend
 import Dict exposing (Dict)
 import Html as H exposing (Html, button, div, h1, p, text)
 import Html.Attributes as HA exposing (class, id, style)
@@ -29,6 +32,7 @@ import Model
         , nextMode
         , previousMode
         , stationNames
+        , stationPos
         , stations
         , trainPos
         , urlParser
@@ -155,233 +159,9 @@ fetchDelayEvents =
         }
 
 
-{-| Get the y position of a station, e.g. for legends.
--}
-stationPos : DistanceMatrix -> StationId -> Float
-stationPos distanceMatrix sid =
-    let
-        magdeburgHbf =
-            900550094
-    in
-    -- Magdeburg Hbf is the last one in the track, but distanceMatrix wouldn't
-    -- contain a value for it, so we just hardcode it to 1
-    if sid == magdeburgHbf then
-        1
-
-    else
-        Maybe.withDefault -1 <|
-            Maybe.map (\r -> r.start) <|
-                Dict.get ( sid, magdeburgHbf ) distanceMatrix
-
-
 yPosition : Float -> String
 yPosition p =
     fromFloat (p * 100) ++ "%"
-
-
-stationLegend : DistanceMatrix -> Direction -> List StationId -> List (Html Msg)
-stationLegend distanceMatrix selectedDirection =
-    map
-        (\sid ->
-            let
-                sPos =
-                    stationPos distanceMatrix sid
-            in
-            div
-                [ style "top" <|
-                    yPosition <|
-                        case selectedDirection of
-                            Westwards ->
-                                sPos
-
-                            Eastwards ->
-                                1 - sPos
-                , style "position" "absolute"
-                , style "text-anchor" "right"
-                , style "margin-top" "-0.5em"
-                , style "font-weight" <|
-                    if
-                        Maybe.withDefault False <|
-                            Maybe.map .important <|
-                                Dict.get sid stationNames
-                    then
-                        "500"
-
-                    else
-                        "300"
-                ]
-                [ text <|
-                    Maybe.withDefault "Unkown Station" <|
-                        Maybe.map .shortName <|
-                            Dict.get sid stationNames
-                ]
-        )
-
-
-stationLines : Float -> Float -> DistanceMatrix -> List StationId -> List (Svg Msg)
-stationLines x1Pos x2Pos distanceMatrix =
-    map
-        (\sid ->
-            line
-                [ x1 <| fromFloat x1Pos
-                , x2 <| fromFloat x2Pos
-                , y1 <| yPosition <| stationPos distanceMatrix sid
-                , y2 <| yPosition <| stationPos distanceMatrix sid
-                , stroke "#dddddd"
-                , strokeWidth "0.2px"
-                ]
-                []
-        )
-
-
-tripLines : DistanceMatrix -> Direction -> Int -> Dict TripId (List DelayRecord) -> Svg Msg
-tripLines distanceMatrix selectedDirection historicSeconds delayDict =
-    let
-        -- An svg d segment for a given directon and delay record
-        tripD : Bool -> DelayRecord -> Maybe ( Float, Float )
-        tripD secondPass { time, previousStation, nextStation, percentageSegment, delay } =
-            case trainPos distanceMatrix previousStation nextStation percentageSegment of
-                Just ( yPos, direction, skipsLines ) ->
-                    if direction == selectedDirection then
-                        Just
-                            ( posixSecToSvg <|
-                                posixToSec time
-                                    + (if secondPass then
-                                        -- Apparently this is never < 0 anyway?
-                                        max 0 delay
-
-                                       else
-                                        0
-                                      )
-                            , 100 * yPos
-                            )
-
-                    else
-                        Nothing
-
-                _ ->
-                    Nothing
-
-        tripLine : ( TripId, List DelayRecord ) -> Svg Msg
-        tripLine ( tripId, delayRecords ) =
-            g
-                [ SA.title tripId
-                , SA.id tripId
-                ]
-                [ path
-                    [ stroke "none"
-
-                    -- red for delay
-                    , fill "hsl(0, 72%, 67%)"
-                    , d <|
-                        "M "
-                            ++ (String.join " L " <|
-                                    map
-                                        (\( x, y ) -> fromFloat x ++ " " ++ fromFloat y)
-                                    <|
-                                        filterMap identity <|
-                                            List.concat
-                                                [ map (tripD False) delayRecords
-                                                , map (tripD True) <| List.reverse delayRecords
-                                                ]
-                               )
-                    ]
-                    []
-                , path
-                    [ stroke "black"
-                    , fill "none"
-                    , strokeWidth "1px"
-                    , HA.attribute "vector-effect" "non-scaling-stroke"
-                    , d <|
-                        "M "
-                            ++ (String.join " L " <|
-                                    map
-                                        (Tuple.mapBoth
-                                            fromFloat
-                                            fromFloat
-                                            >> (\( x, y ) -> x ++ " " ++ y)
-                                        )
-                                    <|
-                                        filterMap identity <|
-                                            map (tripD False) delayRecords
-                               )
-                    ]
-                    []
-                ]
-    in
-    g [ id "trip-paths" ] <| map tripLine <| Dict.toList delayDict
-
-
-{-| The vertical lines in the diagram.
--}
-timeLines : Int -> Time.Zone -> Posix -> Svg Msg
-timeLines historicSeconds tz now =
-    let
-        currentHourBegins =
-            Time.toSecond tz now + Time.toMinute tz now * 60
-
-        nowSec =
-            posixToSec now
-
-        hourLine sec =
-            line
-                [ x1 <| fromFloat <| posixSecToSvg sec
-                , x2 <| fromFloat <| posixSecToSvg sec
-                , y1 "0"
-                , y2 "100"
-                , stroke "#dddddd"
-                , strokeWidth "1px"
-                , HA.attribute "vector-effect" "non-scaling-stroke"
-                ]
-                []
-    in
-    g [ SA.id "time-legend" ] <|
-        map hourLine <|
-            map (\i -> nowSec - currentHourBegins - i * 3600) <|
-                List.range 0 (historicSeconds // 3600)
-
-
-timeLegend : Int -> Time.Zone -> Posix -> Html Msg
-timeLegend historicSeconds tz now =
-    let
-        stepSize =
-            10 * 60
-
-        currentStepBegins =
-            remainderBy stepSize (Time.toSecond tz now + Time.toMinute tz now * 60)
-
-        hourText sec =
-            div
-                [ style "top" "0"
-                , style "left" <|
-                    (fromFloat <| 100 * (toFloat (historicSeconds - sec) / toFloat historicSeconds))
-                        ++ "%"
-                , style "position" "absolute"
-                , style "transform" "translateX(-50%)"
-                ]
-                -- TODO replace this with
-                -- https://package.elm-lang.org/packages/CoderDennis/elm-time-format/latest/
-                [ text <|
-                    (fromInt <|
-                        Time.toHour tz <|
-                            Time.millisToPosix <|
-                                1000
-                                    * (posixToSec now - sec)
-                    )
-                        ++ ":"
-                        ++ (String.padLeft 2 '0' <|
-                                fromInt <|
-                                    Time.toMinute tz <|
-                                        Time.millisToPosix <|
-                                            1000
-                                                * (posixToSec now - sec)
-                           )
-                ]
-    in
-    div [ id "time-text-legend" ] <|
-        map hourText <|
-            map (\i -> currentStepBegins + i * stepSize) <|
-                List.range 0 (historicSeconds // stepSize)
 
 
 modeString : Mode -> String
@@ -461,22 +241,6 @@ view model =
                 let
                     hisSeconds =
                         historicSeconds model
-
-                    simpleDiagram =
-                        [ timeLines hisSeconds timeZone now
-                        , g [ SA.id "station-lines" ] <|
-                            stationLines
-                                (posixSecToSvg (posixToSec now - hisSeconds))
-                                (posixSecToSvg (posixToSec now))
-                                model.distanceMatrix
-                            <|
-                                map Tuple.first stations
-                        , tripLines
-                            model.distanceMatrix
-                            model.direction
-                            hisSeconds
-                            model.delayRecords
-                        ]
                 in
                 [ debugOverlay model
                 , div
@@ -484,57 +248,13 @@ view model =
                     ]
                     [ viewTitle model.mode model.modeTransition.progress
                     , div [ id "row1" ]
-                        [ svg
-                            [ id "diagram"
-                            , preserveAspectRatio "none"
-                            , viewBox <|
-                                fromFloat
-                                    (posixSecToSvg
-                                        (posixToSec now - hisSeconds)
-                                    )
-                                    ++ " 0 "
-                                    ++ (fromFloat <| (toFloat <| hisSeconds) / posixToSvgQuotient)
-                                    ++ " 100"
-                            ]
-                            (case model.mode of
-                                Hour ->
-                                    simpleDiagram
-
-                                Day ->
-                                    simpleDiagram
-
-                                Week ->
-                                    Week.View.view model.now <|
-                                        Maybe.map
-                                            (case model.direction of
-                                                Eastwards ->
-                                                    Tuple.first
-
-                                                Westwards ->
-                                                    Tuple.second
-                                            )
-                                        <|
-                                            model.delayEvents
-
-                                _ ->
-                                    -- TODO make this visible
-                                    [ text_ [ x "50%", y "50%" ] [ text "Not implemented" ] ]
-                            )
-                        , div
-                            [ class "station-legend"
-                            , onTouch "touchstart" (\event -> TouchMsg 0 Start <| touchCoordinates event)
-                            , onTouch "touchmove" (\event -> TouchMsg 0 Move <| touchCoordinates event)
-                            , onTouch "touchend" (\event -> TouchMsg 0 End <| touchCoordinates event)
-                            , onTouch "touchcancel" (\event -> TouchMsg 0 Cancel <| touchCoordinates event)
-                            ]
-                          <|
-                            stationLegend model.distanceMatrix model.direction <|
-                                map Tuple.first stations
+                        [ Components.Diagram.view model now hisSeconds timeZone
+                        , Components.StationLegend.view model.distanceMatrix model.direction
                         ]
                     , div [ id "row2" ]
                         -- TODO Render timeLegend for every Mode with different steps
                         [ if model.mode == Hour && model.modeTransition.progress == 0 then
-                            timeLegend hisSeconds timeZone now
+                            Components.TimeLegend.view hisSeconds timeZone now
 
                           else
                             div [] []

@@ -18,6 +18,7 @@ module Model exposing
     , nextMode
     , previousMode
     , stationNames
+    , stationPos
     , stations
     , trainPos
     , urlParser
@@ -28,8 +29,8 @@ import Dict exposing (Dict)
 import List exposing (filterMap, foldr, indexedMap)
 import Time exposing (Posix)
 import Types exposing (DelayEvent, DelayRecord, StationId, TripId)
-import Url.Parser as UP exposing ((</>))
 import Url.Builder as UB
+import Url.Parser as UP exposing ((</>))
 import Utils exposing (posixToSec)
 import Week.Constants
 
@@ -164,20 +165,20 @@ type alias TouchState =
 buildUrl : Mode -> String
 buildUrl mode =
     case mode of
-                Trip tid ->
-                    UB.absolute [ "trip", tid ] [ ]
+        Trip tid ->
+            UB.absolute [ "trip", tid ] []
 
-                Hour ->
-                    UB.absolute [ "hour" ] [ ]
+        Hour ->
+            UB.absolute [ "hour" ] []
 
-                Day ->
-                    UB.absolute [ "day" ] [ ]
+        Day ->
+            UB.absolute [ "day" ] []
 
-                Week ->
-                    UB.absolute [ "week" ] [ ]
+        Week ->
+            UB.absolute [ "week" ] []
 
-                Year ->
-                    UB.absolute [ "year" ] [ ]
+        Year ->
+            UB.absolute [ "year" ] []
 
 
 urlParser : UP.Parser (Mode -> a) a
@@ -257,6 +258,25 @@ initDistanceMatrix =
             List.concat <|
                 indexedMap (oneToNDistances Westwards) stations
                     ++ (indexedMap (oneToNDistances Eastwards) <| List.reverse stations)
+
+
+{-| Get the y position of a station, e.g. for legends.
+-}
+stationPos : DistanceMatrix -> StationId -> Float
+stationPos distanceMatrix sid =
+    let
+        magdeburgHbf =
+            900550094
+    in
+    -- Magdeburg Hbf is the last one in the track, but distanceMatrix wouldn't
+    -- contain a value for it, so we just hardcode it to 1
+    if sid == magdeburgHbf then
+        1
+
+    else
+        Maybe.withDefault -1 <|
+            Maybe.map (\r -> r.start) <|
+                Dict.get ( sid, magdeburgHbf ) distanceMatrix
 
 
 stations : List ( StationId, StationInfo )

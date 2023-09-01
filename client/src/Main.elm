@@ -10,6 +10,7 @@ import Browser.Navigation
 import Components.Diagram
 import Components.StationLegend
 import Components.TimeLegend
+import Components.Title
 import Dict exposing (Dict)
 import Html as H exposing (Html, button, div, h1, p, text)
 import Html.Attributes as HA exposing (class, id, style)
@@ -159,65 +160,6 @@ fetchDelayEvents =
         }
 
 
-modeString : Mode -> String
-modeString mode =
-    case mode of
-        Trip _ ->
-            "Single trip"
-
-        Hour ->
-            "Hour"
-
-        Day ->
-            "Day"
-
-        Week ->
-            "Week"
-
-        Year ->
-            "Year"
-
-
-viewTitle : Mode -> Float -> Html Msg
-viewTitle currentMode progress =
-    let
-        -- Unfortunately a top value higher than 100% grows the document, even
-        -- though position is set to absolute. So this is a hack to never
-        -- display elements with a top value higher than this. We make elements
-        -- progressively invisible to cover up this hack.
-        maxPos =
-            0.8
-
-        top pos =
-            fromFloat (100 * (0.01 + pos)) ++ "%"
-
-        modeH1 ( maybeMode, posOffset ) =
-            let
-                pos =
-                    0 - progress + posOffset
-            in
-            case ( maybeMode, pos < maxPos ) of
-                ( Just mode, True ) ->
-                    Just <|
-                        h1
-                            [ style "top" <| top pos
-                            , style "left" "3%"
-                            , style "opacity" <| fromFloat <| 1 - (abs pos * (1 / maxPos))
-                            ]
-                            [ text <| "Is RE1 late this " ++ modeString mode ++ "?"
-                            ]
-
-                _ ->
-                    Nothing
-    in
-    div [] <|
-        filterMap modeH1
-            [ ( previousMode currentMode, -1 )
-            , ( Just currentMode, 0 )
-            , ( nextMode currentMode, 1 )
-            ]
-
-
 debugOverlay : Model -> Html msg
 debugOverlay model =
     div
@@ -241,7 +183,7 @@ view model =
                 , div
                     [ id "app"
                     ]
-                    [ viewTitle model.mode model.modeTransition.progress
+                    [ Components.Title.view model.mode model.modeTransition.progress
                     , div [ id "row1" ]
                         [ Components.Diagram.view model now hisSeconds timeZone
                         , Components.StationLegend.view model.distanceMatrix model.direction

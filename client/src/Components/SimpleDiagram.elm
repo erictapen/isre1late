@@ -119,12 +119,30 @@ tripLines distanceMatrix selectedDirection historicSeconds delayDict =
 
         tripLine : ( TripId, List DelayRecord ) -> Svg Msg
         tripLine ( tripId, delayRecords ) =
+            let
+                intendedPath =
+                    "M "
+                        ++ (String.join " L " <|
+                                map
+                                    (Tuple.mapBoth
+                                        fromFloat
+                                        fromFloat
+                                        >> (\( x, y ) -> x ++ " " ++ y)
+                                    )
+                                <|
+                                    filterMap identity <|
+                                        map (tripD False) delayRecords
+                           )
+            in
             g
                 [ SA.title tripId
                 , SA.id tripId
+
+                -- TODO do this only in Hour mode
                 , Svg.Events.onClick <| Msg.OpenTrip tripId
                 ]
-                [ path
+                [ -- The red area for delay
+                  path
                     [ stroke "none"
 
                     -- red for delay
@@ -143,24 +161,25 @@ tripLines distanceMatrix selectedDirection historicSeconds delayDict =
                                )
                     ]
                     []
+
+                -- black stroke for the intended time
                 , path
                     [ stroke "black"
                     , fill "none"
                     , strokeWidth "1px"
                     , HA.attribute "vector-effect" "non-scaling-stroke"
-                    , d <|
-                        "M "
-                            ++ (String.join " L " <|
-                                    map
-                                        (Tuple.mapBoth
-                                            fromFloat
-                                            fromFloat
-                                            >> (\( x, y ) -> x ++ " " ++ y)
-                                        )
-                                    <|
-                                        filterMap identity <|
-                                            map (tripD False) delayRecords
-                               )
+                    , d intendedPath
+                    ]
+                    []
+
+                -- invisible stroke for clickable area
+                -- TODO show this only in Hour mode
+                , path
+                    [ stroke "#00000000"
+                    , fill "none"
+                    , strokeWidth "30px"
+                    , HA.attribute "vector-effect" "non-scaling-stroke"
+                    , d intendedPath
                     ]
                     []
                 ]

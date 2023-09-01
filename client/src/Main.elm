@@ -159,11 +159,6 @@ fetchDelayEvents =
         }
 
 
-yPosition : Float -> String
-yPosition p =
-    fromFloat (p * 100) ++ "%"
-
-
 modeString : Mode -> String
 modeString mode =
     case mode of

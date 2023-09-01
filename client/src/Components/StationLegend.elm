@@ -8,14 +8,7 @@ import Model exposing (Direction(..), DistanceMatrix, stationNames, stationPos, 
 import Msg exposing (Msg(..), TouchMsgType(..))
 import String exposing (fromFloat, fromInt)
 import Types exposing (StationId)
-import Utils exposing (onTouch, touchCoordinates)
-
-
-{-| TODO move into Utils as percentStr
--}
-yPosition : Float -> String
-yPosition p =
-    fromFloat (p * 100) ++ "%"
+import Utils exposing (onTouch, percentageStr, touchCoordinates)
 
 
 stationLegend : DistanceMatrix -> Direction -> List StationId -> List (Html Msg)
@@ -28,7 +21,7 @@ stationLegend distanceMatrix selectedDirection =
             in
             div
                 [ style "top" <|
-                    yPosition <|
+                    percentageStr <|
                         case selectedDirection of
                             Westwards ->
                                 sPos

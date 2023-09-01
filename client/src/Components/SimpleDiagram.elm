@@ -31,18 +31,12 @@ import Utils
     exposing
         ( httpErrorToString
         , onTouch
+        , percentageStr
         , posixSecToSvg
         , posixToSec
         , posixToSvgQuotient
         , touchCoordinates
         )
-
-
-{-| TODO move into Utils as percentStr
--}
-yPosition : Float -> String
-yPosition p =
-    fromFloat (p * 100) ++ "%"
 
 
 {-| The vertical lines in the diagram.
@@ -81,8 +75,8 @@ stationLines x1Pos x2Pos distanceMatrix =
             line
                 [ x1 <| fromFloat x1Pos
                 , x2 <| fromFloat x2Pos
-                , y1 <| yPosition <| stationPos distanceMatrix sid
-                , y2 <| yPosition <| stationPos distanceMatrix sid
+                , y1 <| percentageStr <| stationPos distanceMatrix sid
+                , y2 <| percentageStr <| stationPos distanceMatrix sid
                 , stroke "#dddddd"
                 , strokeWidth "0.2px"
                 ]

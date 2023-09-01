@@ -2,12 +2,28 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
 
-module Utils exposing (httpErrorToString, onTouch, posixSecToSvg, posixToSec, posixToSvgQuotient, touchCoordinates)
+module Utils exposing
+    ( httpErrorToString
+    , onTouch
+    , percentageStr
+    , posixSecToSvg
+    , posixToSec
+    , posixToSvgQuotient
+    , touchCoordinates
+    )
 
 import Html as H
 import Html.Events.Extra.Touch as Touch
 import Http exposing (Error(..))
+import String exposing (fromFloat)
 import Time exposing (Posix, posixToMillis)
+
+
+{-| Encode values between 0.0 and 1.0
+-}
+percentageStr : Float -> String
+percentageStr p =
+    fromFloat (p * 100) ++ "%"
 
 
 {-| An utility function copied from here:

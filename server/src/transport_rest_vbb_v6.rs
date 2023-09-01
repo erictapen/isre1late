@@ -6,7 +6,7 @@
 #![allow(non_snake_case)]
 
 use monostate::MustBe;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_with::DisplayFromStr;
 use time::OffsetDateTime;
 
@@ -74,7 +74,7 @@ pub struct TripOverview {
     pub realtimeDataUpdatedAt: Option<OffsetDateTime>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Trip {
     pub id: String,
     pub origin: TripOrigin,
@@ -89,23 +89,23 @@ pub struct Trip {
     pub arrivalDelay: Option<i64>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct TripOrigin {
     pub name: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct TripDestination {
     pub name: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct TripLocation {
     pub latitude: f64,
     pub longitude: f64,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct TripStopover {
     pub stop: TripStop,
     #[serde(with = "time::serde::rfc3339::option")]
@@ -117,7 +117,7 @@ pub struct TripStopover {
 }
 
 #[serde_as]
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct TripStop {
     pub name: String,
     #[serde_as(as = "DisplayFromStr")]

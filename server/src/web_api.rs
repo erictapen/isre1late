@@ -9,6 +9,7 @@ use diesel::RunQueryDsl;
 use rocket::http::Status;
 use rocket::serde::json::Json;
 //use rocket::*;
+use crate::transport_rest_vbb_v6::{HafasMsg, Trip, TripOverview};
 use log::info;
 use rocket::tokio;
 use rocket::{get, routes};
@@ -61,6 +62,31 @@ async fn delay_events_week(conn: DbConn) -> Result<Json<Vec<DelayEvent>>, Status
     load_delay_events(conn, from).await
 }
 
+/// Detailed information about one Trip, identified by its trip_id.
+#[get("/api/trip/<trip_id>")]
+async fn trip(conn: DbConn, trip_id: String) -> Result<Json<Trip>, Status> {
+    conn.run(move |db| {
+        use crate::schema::fetched_json;
+
+        fetched_json::dsl::fetched_json
+            .select(fetched_json::body)
+            .filter(fetched_json::url.eq(crate::crawler::trips_url(&trip_id)))
+            .then_order_by(fetched_json::fetched_at.asc())
+            .limit(1)
+            .load::<String>(db)
+    })
+    .await
+    .map_err(|_| rocket::http::Status::InternalServerError)
+    .and_then(|json_strs| {
+        let json_str = json_strs.get(0).ok_or(rocket::http::Status::NotFound)?;
+        match crate::transport_rest_vbb_v6::deserialize(json_str) {
+            Ok(HafasMsg::TripOverview(TripOverview { trip, .. })) => Ok(trip),
+            _ => Err(rocket::http::Status::InternalServerError),
+        }
+    })
+    .map(Json)
+}
+
 pub fn webserver(
     db_url: &str,
     listen: std::net::IpAddr,
@@ -84,7 +110,7 @@ pub fn webserver(
     };
     let figment = Figment::from(config).merge(("databases", map!["isre1late" => db_map]));
     let builder = rocket::custom(&figment)
-        .mount("/", routes![delay_events_day, delay_events_week])
+        .mount("/", routes![delay_events_day, delay_events_week, trip])
         .attach(DbConn::fairing());
     rt.block_on(async move {
         let _ = builder.launch().await;

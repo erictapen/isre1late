@@ -14,15 +14,9 @@ import String exposing (fromInt)
 import Types exposing (DelayRecord, Stopover, TripId)
 
 
-view : TripId -> Dict TripId (List DelayRecord) -> Result Http.Error (List Stopover) -> List (Html Msg)
-view tripId delayRecords selectedTripResult =
+view : TripId -> Result Http.Error (List Stopover) -> List (Html Msg)
+view tripId selectedTripResult =
     [ Components.Title.view (Trip tripId) 0.0
-    , text <|
-        if Dict.member tripId delayRecords then
-            tripId
-
-        else
-            "Trip ID " ++ tripId ++ " not found."
     , p []
         [ case selectedTripResult of
             Ok [] ->

@@ -206,7 +206,7 @@ view model =
                     ]
                     (case model.mode of
                         Trip tripId ->
-                            Trip.View.view tripId model.delayRecords model.selectedTrip
+                            Trip.View.view tripId model.selectedTrip
 
                         _ ->
                             [ Components.Title.view model.mode model.modeTransition.progress

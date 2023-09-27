@@ -26,9 +26,10 @@ module Model exposing
 
 import Browser.Navigation
 import Dict exposing (Dict)
+import Http
 import List exposing (filterMap, foldr, indexedMap)
 import Time exposing (Posix)
-import Types exposing (DelayEvent, DelayRecord, StationId, TripId)
+import Types exposing (DelayEvent, DelayRecord, StationId, Stopover, TripId)
 import Url
 import Url.Builder as UB
 import Url.Parser as UP exposing ((</>))
@@ -46,6 +47,7 @@ type alias Model =
     , modeTransition : ModeTransition
     , delayRecords : Dict TripId (List DelayRecord)
     , delayEvents : Maybe ( DelayEventsMatrix, DelayEventsMatrix )
+    , selectedTrip : Result Http.Error (List Stopover)
     , errors : List String
     , now : Maybe Posix
     , timeZone : Maybe Time.Zone

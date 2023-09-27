@@ -7,7 +7,7 @@ module Msg exposing (Msg(..), SwitchDirection(..), TouchMsgType(..))
 import Browser exposing (UrlRequest(..))
 import Http
 import Time exposing (Posix)
-import Types exposing (DelayEvent, TripId)
+import Types exposing (DelayEvent, Stopover, TripId)
 
 
 type Msg
@@ -22,6 +22,7 @@ type Msg
     | ModeSwitch SwitchDirection
     | GotDelayEvents (Result Http.Error (List DelayEvent))
     | OpenTrip TripId
+    | GotTrip (Result Http.Error (List Stopover))
 
 
 type TouchMsgType

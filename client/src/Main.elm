@@ -63,7 +63,15 @@ import Svg.Loaders
 import Task
 import Time exposing (Posix, millisToPosix, posixToMillis)
 import Trip.View
-import Types exposing (DelayRecord, StationId, TripId, decodeDelayEvents, decodeDelayRecord)
+import Types
+    exposing
+        ( DelayRecord
+        , StationId
+        , TripId
+        , decodeDelayEvents
+        , decodeDelayRecord
+        , decodeTrip
+        )
 import Url
 import Url.Builder
 import Url.Parser as UP
@@ -112,7 +120,7 @@ wsApiUrl =
 
 
 httpApiBaseUrl =
-    "/api/"
+    "api"
 
 
 init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
@@ -130,6 +138,7 @@ init _ url key =
             , modeTransition = { touchState = Nothing, progress = 0 }
             , delayRecords = Dict.empty
             , delayEvents = Nothing
+            , selectedTrip = Ok []
             , errors = []
             , now = Nothing
             , timeZone = Nothing
@@ -143,6 +152,9 @@ init _ url key =
         [ rebuildSocket <| wsApiUrl
         , Task.perform CurrentTimeZone Time.here
         , case modeFromUrl of
+            Just (Trip tripId) ->
+                fetchTrip tripId
+
             Just _ ->
                 Cmd.none
 
@@ -156,8 +168,16 @@ init _ url key =
 fetchDelayEvents : Cmd Msg
 fetchDelayEvents =
     Http.get
-        { url = httpApiBaseUrl ++ "delay_events/week"
+        { url = Url.Builder.absolute [ httpApiBaseUrl, "delay_events", "week" ] []
         , expect = Http.expectJson GotDelayEvents decodeDelayEvents
+        }
+
+
+fetchTrip : String -> Cmd Msg
+fetchTrip tripId =
+    Http.get
+        { url = Url.Builder.absolute [ httpApiBaseUrl, "trip", tripId ] []
+        , expect = Http.expectJson GotTrip decodeTrip
         }
 
 
@@ -186,7 +206,7 @@ view model =
                     ]
                     (case model.mode of
                         Trip tripId ->
-                            Trip.View.view tripId model.delayRecords
+                            Trip.View.view tripId model.delayRecords model.selectedTrip
 
                         _ ->
                             [ Components.Title.view model.mode model.modeTransition.progress
@@ -468,9 +488,15 @@ update msg model =
                 newMode =
                     Trip tripId
             in
-            ( { model | mode = newMode }
-            , Browser.Navigation.pushUrl model.navigationKey <| buildUrl newMode
+            ( { model | mode = newMode, selectedTrip = Ok [] }
+            , Cmd.batch
+                [ Browser.Navigation.pushUrl model.navigationKey <| buildUrl newMode
+                , fetchTrip tripId
+                ]
             )
+
+        GotTrip stopoverResult ->
+            ( { model | selectedTrip = stopoverResult }, Cmd.none )
 
 
 main : Program () Model Msg

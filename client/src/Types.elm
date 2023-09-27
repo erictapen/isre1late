@@ -2,7 +2,16 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
 
-module Types exposing (DelayEvent, DelayRecord, StationId, TripId, decodeDelayEvents, decodeDelayRecord)
+module Types exposing
+    ( DelayEvent
+    , DelayRecord
+    , StationId
+    , Stopover
+    , TripId
+    , decodeDelayEvents
+    , decodeDelayRecord
+    , decodeTrip
+    )
 
 import Json.Decode as J
     exposing
@@ -16,6 +25,7 @@ import Json.Decode as J
         , map3
         , map5
         , maybe
+        , nullable
         , string
         )
 import Json.Decode.Pipeline exposing (optional, required)
@@ -95,14 +105,14 @@ type alias Stopover =
 
 decodeTrip : Decoder (List Stopover)
 decodeTrip =
-    J.field "stopovers" <| J.list decodeStopover
+    J.list decodeStopover
 
 
 decodeStopover : Decoder Stopover
 decodeStopover =
     J.map5 Stopover
-        (J.at [ "stop", "id" ] int)
-        (maybe (field "plannedArrival" int))
-        (J.map (Maybe.withDefault 0) (maybe (field "arrivalDelay" int)))
-        (maybe (field "plannedDeparture" int))
-        (J.map (Maybe.withDefault 0) (maybe (field "departureDelay" int)))
+        (field "stop" int)
+        (field "planned_arrival" (nullable int))
+        (J.map (Maybe.withDefault 0) (maybe (field "arrival_delay" int)))
+        (field "planned_departure" (nullable int))
+        (J.map (Maybe.withDefault 0) (maybe (field "departure_delay" int)))

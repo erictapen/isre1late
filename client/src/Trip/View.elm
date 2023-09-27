@@ -28,7 +28,7 @@ view tripId selectedTripResult =
             Err (BadBody errMsg) ->
                 text errMsg
 
-            Err (BadStatus 400) ->
+            Err (BadStatus 404) ->
                 p []
                     [ text "Trip ID not found"
                     ]

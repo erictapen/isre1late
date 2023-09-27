@@ -25,15 +25,15 @@ view tripId selectedTripResult =
             Ok selectedTrip ->
                 text <| (fromInt <| List.length selectedTrip) ++ " loaded stopovers."
 
-            Err err ->
-                text <|
-                    "Something went wrong"
-                        ++ (case err of
-                                BadBody errMsg ->
-                                    errMsg
+            Err (BadBody errMsg) ->
+                text errMsg
 
-                                _ ->
-                                    ""
-                           )
+            Err (BadStatus 400) ->
+                p []
+                    [ text "Trip ID not found"
+                    ]
+
+            Err _ ->
+                text "Something went wrong."
         ]
     ]

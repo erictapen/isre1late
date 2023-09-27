@@ -38,7 +38,7 @@ import Model
         , trainPos
         , urlParser
         )
-import Msg exposing (Msg(..), SwitchDirection(..), TouchMsgType(..))
+import Msg exposing (Msg(..), TouchMsgType(..))
 import String exposing (fromFloat, fromInt)
 import Svg as S exposing (Svg, g, line, path, svg, text_)
 import Svg.Attributes as SA
@@ -417,27 +417,19 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
-        ModeSwitch direction ->
-            let
-                ( maybeNewMode, newProgress ) =
-                    case direction of
-                        NextMode ->
-                            ( nextMode model.mode, -1 )
+        ModeSwitch newMode ->
+            ( { model
+                | mode = newMode
 
-                        PreviousMode ->
-                            ( previousMode model.mode, 1 )
-            in
-            case maybeNewMode of
-                Just newMode ->
-                    ( { model
-                        | mode = newMode
-                        , modeTransition = { touchState = Nothing, progress = newProgress }
-                      }
-                    , Browser.Navigation.pushUrl model.navigationKey <| buildUrl newMode
-                    )
+                -- TODO set progress appropriately
+                , modeTransition = { touchState = Nothing, progress = 0 }
+              }
+            , if model.mode /= newMode then
+                Browser.Navigation.pushUrl model.navigationKey <| buildUrl newMode
 
-                Nothing ->
-                    ( model, Cmd.none )
+              else
+                Cmd.none
+            )
 
         AnimationFrame delta ->
             let

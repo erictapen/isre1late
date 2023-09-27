@@ -2,10 +2,11 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
 
-module Msg exposing (Msg(..), SwitchDirection(..), TouchMsgType(..))
+module Msg exposing (Msg(..), TouchMsgType(..))
 
 import Browser exposing (UrlRequest(..))
 import Http
+import Model exposing (Mode)
 import Time exposing (Posix)
 import Types exposing (DelayEvent, Stopover, TripId)
 
@@ -19,7 +20,7 @@ type Msg
     | CurrentTimeZone Time.Zone
     | ToggleDirection
     | TouchMsg Int TouchMsgType ( Float, Float )
-    | ModeSwitch SwitchDirection
+    | ModeSwitch Mode
     | GotDelayEvents (Result Http.Error (List DelayEvent))
     | OpenTrip TripId
     | GotTrip (Result Http.Error (List Stopover))
@@ -30,8 +31,3 @@ type TouchMsgType
     | Move
     | End
     | Cancel
-
-
-type SwitchDirection
-    = NextMode
-    | PreviousMode

@@ -8,7 +8,7 @@ import Dict exposing (Dict)
 import Html.Attributes as HA exposing (class, id, style)
 import List exposing (filterMap, head, indexedMap, map)
 import Model exposing (Direction(..), DistanceMatrix, stationPos, stations, trainPos)
-import Msg exposing (Msg(..), SwitchDirection(..), TouchMsgType(..))
+import Msg exposing (Msg(..), TouchMsgType(..))
 import String exposing (fromFloat, fromInt)
 import Svg as S exposing (Svg, g, line, path, svg, text_)
 import Svg.Attributes as SA

@@ -18,7 +18,7 @@ import Json.Decode as J
         , maybe
         , string
         )
-import Json.Decode.Pipeline exposing (required)
+import Json.Decode.Pipeline exposing (optional, required)
 import Time exposing (Posix, millisToPosix)
 
 
@@ -82,3 +82,27 @@ decodeDelayEvent =
         |> required "next_station" int
         |> required "percentage_segment" float
         |> required "delay" int
+
+
+type alias Stopover =
+    { stationId : StationId
+    , plannedArrival : Maybe Int
+    , arrivalDelay : Int
+    , plannedDeparture : Maybe Int
+    , departureDelay : Int
+    }
+
+
+decodeTrip : Decoder (List Stopover)
+decodeTrip =
+    J.field "stopovers" <| J.list decodeStopover
+
+
+decodeStopover : Decoder Stopover
+decodeStopover =
+    J.map5 Stopover
+        (J.at [ "stop", "id" ] int)
+        (maybe (field "plannedArrival" int))
+        (J.map (Maybe.withDefault 0) (maybe (field "arrivalDelay" int)))
+        (maybe (field "plannedDeparture" int))
+        (J.map (Maybe.withDefault 0) (maybe (field "departureDelay" int)))

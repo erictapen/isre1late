@@ -2,15 +2,14 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-use crate::models::DelayEvent;
+use crate::models::{DelayEvent, Stopover};
+use crate::transport_rest_vbb_v6::{HafasMsg, TripOverview};
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use diesel::RunQueryDsl;
+use log::info;
 use rocket::http::Status;
 use rocket::serde::json::Json;
-//use rocket::*;
-use crate::transport_rest_vbb_v6::{HafasMsg, Trip, TripOverview};
-use log::info;
 use rocket::tokio;
 use rocket::{get, routes};
 use rocket_sync_db_pools::{database, diesel};
@@ -64,7 +63,7 @@ async fn delay_events_week(conn: DbConn) -> Result<Json<Vec<DelayEvent>>, Status
 
 /// Detailed information about one Trip, identified by its trip_id.
 #[get("/api/trip/<trip_id>")]
-async fn trip(conn: DbConn, trip_id: String) -> Result<Json<Trip>, Status> {
+async fn trip(conn: DbConn, trip_id: String) -> Result<Json<Vec<Stopover>>, Status> {
     conn.run(move |db| {
         use crate::schema::fetched_json;
 
@@ -80,7 +79,20 @@ async fn trip(conn: DbConn, trip_id: String) -> Result<Json<Trip>, Status> {
     .and_then(|json_strs| {
         let json_str = json_strs.get(0).ok_or(rocket::http::Status::NotFound)?;
         match crate::transport_rest_vbb_v6::deserialize(json_str) {
-            Ok(HafasMsg::TripOverview(TripOverview { trip, .. })) => Ok(trip),
+            Ok(HafasMsg::TripOverview(TripOverview { trip, .. })) => {
+                let mut stopovers = Vec::new();
+                for so in trip.stopovers {
+                    stopovers.push(Stopover {
+                        stop: so.stop.id,
+                        planned_arrival: so.plannedArrival,
+                        arrival_delay: so.arrivalDelay,
+                        planned_departure: so.plannedDeparture,
+                        departure_delay: so.departureDelay,
+                    })
+                }
+
+                Ok(stopovers)
+            }
             _ => Err(rocket::http::Status::InternalServerError),
         }
     })

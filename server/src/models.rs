@@ -189,3 +189,15 @@ pub struct DelayEvent {
     pub percentage_segment: f64,
     pub delay: i64,
 }
+
+/// Serialization of a trip intended for the webclient
+#[derive(Serialize, Debug, Clone, PartialEq)]
+pub struct Stopover {
+    pub stop: i64,
+    #[serde(with = "time::serde::timestamp::option")]
+    pub planned_arrival: Option<OffsetDateTime>,
+    pub arrival_delay: Option<i64>,
+    #[serde(with = "time::serde::timestamp::option")]
+    pub planned_departure: Option<OffsetDateTime>,
+    pub departure_delay: Option<i64>,
+}

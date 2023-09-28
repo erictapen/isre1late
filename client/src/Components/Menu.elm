@@ -36,10 +36,10 @@ view mode =
             wrapButton <|
                 button
                     [ class "menu-button", onClick (ModeSwitch m 1) ]
-                    [ text "-" ]
+                    [ text "−" ]
 
         Nothing ->
-            greyedOutButton "-"
+            greyedOutButton "−"
     , wrapButton <|
         button
             [ class "menu-button", onClick ToggleDirection ]

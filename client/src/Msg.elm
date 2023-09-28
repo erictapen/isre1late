@@ -20,7 +20,7 @@ type Msg
     | CurrentTimeZone Time.Zone
     | ToggleDirection
     | TouchMsg Int TouchMsgType ( Float, Float )
-    | ModeSwitch Mode
+    | ModeSwitch Mode Float
     | GotDelayEvents (Result Http.Error (List DelayEvent))
     | OpenTrip TripId
     | GotTrip (Result Http.Error (List Stopover))

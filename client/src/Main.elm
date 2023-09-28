@@ -369,12 +369,12 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
-        ModeSwitch newMode ->
+        ModeSwitch newMode progress ->
             ( { model
                 | mode = newMode
 
                 -- TODO set progress appropriately
-                , modeTransition = { touchState = Nothing, progress = 0 }
+                , modeTransition = { touchState = Nothing, progress = progress }
               }
             , if model.mode /= newMode then
                 Browser.Navigation.pushUrl model.navigationKey <| buildUrl newMode

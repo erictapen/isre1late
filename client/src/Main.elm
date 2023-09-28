@@ -8,6 +8,7 @@ import Browser exposing (UrlRequest(..))
 import Browser.Events exposing (onAnimationFrameDelta)
 import Browser.Navigation
 import Components.Diagram
+import Components.Menu
 import Components.StationLegend
 import Components.TimeLegend
 import Components.Title
@@ -475,9 +476,7 @@ view model =
                                     div [] []
                                 , div [ class "station-legend" ] []
                                 ]
-                            , button
-                                [ id "reverse-direction-button", onClick ToggleDirection ]
-                                [ text "⮀" ]
+                            , div [ id "row3" ] <| Components.Menu.view model.mode
                             ]
                     )
                 ]

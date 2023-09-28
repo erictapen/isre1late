@@ -96,10 +96,13 @@ h1 {
   margin-bottom: 5vh;
 }
 
-#reverse-direction-button {
-  position: absolute;
-  left: 69%;
-  top: 92%;
+.menu-container {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+}
+
+.menu-button {
   border-radius: 50%;
   width: 1.5em;
   height: 1.5em;
@@ -107,7 +110,7 @@ h1 {
 }
 
 #row1 {
-  height: 80vh;
+  height: 70vh;
   display: flex;
   flex-flow: row;
   position: relative;
@@ -115,6 +118,12 @@ h1 {
 
 #row2 {
   height: 5vh;
+  display: flex;
+  flex-flow: row;
+}
+
+#row3 {
+  height: 10vh;
   display: flex;
   flex-flow: row;
 }

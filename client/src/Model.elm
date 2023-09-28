@@ -62,7 +62,6 @@ type Mode
     | Hour
     | Day
     | Week
-    | Year
 
 
 {-| Trip isn't reachable through this
@@ -82,9 +81,6 @@ previousMode mode =
         Week ->
             Just Day
 
-        Year ->
-            Just Week
-
 
 nextMode : Mode -> Maybe Mode
 nextMode mode =
@@ -99,9 +95,6 @@ nextMode mode =
             Just Week
 
         Week ->
-            Just Year
-
-        Year ->
             Nothing
 
 
@@ -130,9 +123,6 @@ historicSeconds model =
 
                 Week ->
                     3600 * 24 * 7
-
-                Year ->
-                    3600 * 24 * 7 * 366
 
                 _ ->
                     0
@@ -180,9 +170,6 @@ buildUrl mode =
         Week ->
             UB.absolute [ "week" ] []
 
-        Year ->
-            UB.absolute [ "year" ] []
-
 
 urlParser : UP.Parser (Mode -> a) a
 urlParser =
@@ -194,7 +181,6 @@ urlParser =
         , UP.map Hour (UP.s "hour")
         , UP.map Day (UP.s "day")
         , UP.map Week (UP.s "week")
-        , UP.map Year (UP.s "year")
         ]
 
 

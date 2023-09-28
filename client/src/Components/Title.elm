@@ -27,9 +27,6 @@ modeString mode =
         Week ->
             "Week"
 
-        Year ->
-            "Year"
-
 
 view : Mode -> Float -> Html Msg
 view currentMode progress =

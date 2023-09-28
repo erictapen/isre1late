@@ -190,55 +190,6 @@ debugOverlay model =
         ]
 
 
-view : Model -> Browser.Document Msg
-view model =
-    { title = "Is RE1 late?"
-    , body =
-        case ( model.timeZone, model.now ) of
-            ( Just timeZone, Just now ) ->
-                let
-                    hisSeconds =
-                        historicSeconds model
-                in
-                [ debugOverlay model
-                , div
-                    [ id "app"
-                    ]
-                    (case model.mode of
-                        Trip tripId ->
-                            Trip.View.view tripId model.selectedTrip
-
-                        _ ->
-                            [ Components.Title.view model.mode model.modeTransition.progress
-                            , div [ id "row1" ]
-                                [ Components.Diagram.view model now hisSeconds timeZone
-                                , Components.StationLegend.view model.distanceMatrix model.direction
-                                ]
-                            , div [ id "row2" ]
-                                -- TODO Render timeLegend for every Mode with different steps
-                                [ if model.mode == Hour && model.modeTransition.progress == 0 then
-                                    Components.TimeLegend.view hisSeconds timeZone now
-
-                                  else
-                                    div [] []
-                                , div [ class "station-legend" ] []
-                                ]
-                            , button
-                                [ id "reverse-direction-button", onClick ToggleDirection ]
-                                [ text "⮀" ]
-                            ]
-                    )
-                ]
-
-            _ ->
-                [ div [ id "loading-screen" ]
-                    [ Svg.Loaders.grid
-                        [ Svg.Loaders.size 300, Svg.Loaders.color "#dddddd" ]
-                    ]
-                ]
-    }
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -489,6 +440,55 @@ update msg model =
 
         GotTrip stopoverResult ->
             ( { model | selectedTrip = stopoverResult }, Cmd.none )
+
+
+view : Model -> Browser.Document Msg
+view model =
+    { title = "Is RE1 late?"
+    , body =
+        case ( model.timeZone, model.now ) of
+            ( Just timeZone, Just now ) ->
+                let
+                    hisSeconds =
+                        historicSeconds model
+                in
+                [ debugOverlay model
+                , div
+                    [ id "app"
+                    ]
+                    (case model.mode of
+                        Trip tripId ->
+                            Trip.View.view tripId model.selectedTrip
+
+                        _ ->
+                            [ Components.Title.view model.mode model.modeTransition.progress
+                            , div [ id "row1" ]
+                                [ Components.Diagram.view model now hisSeconds timeZone
+                                , Components.StationLegend.view model.distanceMatrix model.direction
+                                ]
+                            , div [ id "row2" ]
+                                -- TODO Render timeLegend for every Mode with different steps
+                                [ if model.mode == Hour && model.modeTransition.progress == 0 then
+                                    Components.TimeLegend.view hisSeconds timeZone now
+
+                                  else
+                                    div [] []
+                                , div [ class "station-legend" ] []
+                                ]
+                            , button
+                                [ id "reverse-direction-button", onClick ToggleDirection ]
+                                [ text "⮀" ]
+                            ]
+                    )
+                ]
+
+            _ ->
+                [ div [ id "loading-screen" ]
+                    [ Svg.Loaders.grid
+                        [ Svg.Loaders.size 300, Svg.Loaders.color "#dddddd" ]
+                    ]
+                ]
+    }
 
 
 main : Program () Model Msg

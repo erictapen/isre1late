@@ -147,3 +147,14 @@ h1 {
 .station-legend {
   margin-left: 1em;
 }
+
+#trip-close-button {
+  position: absolute;
+  top: 1em;
+  right: 1em;
+  width: 1.5em;
+  height: 1.5em;
+  font-size: 200%;
+  border: none;
+  background: none;
+}

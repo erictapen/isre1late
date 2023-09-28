@@ -6,7 +6,9 @@ module Trip.View exposing (view)
 
 import Components.Title
 import Dict exposing (Dict)
-import Html exposing (Html, p, text)
+import Html exposing (Html, button, p, text)
+import Html.Attributes exposing (id)
+import Html.Events exposing (onClick)
 import Http exposing (Error(..))
 import Model exposing (Mode(..))
 import Msg exposing (Msg(..))
@@ -16,7 +18,8 @@ import Types exposing (DelayRecord, Stopover, TripId)
 
 view : TripId -> Result Http.Error (List Stopover) -> List (Html Msg)
 view tripId selectedTripResult =
-    [ Components.Title.view (Trip tripId) 0.0
+    [ button [ id "trip-close-button", onClick (ModeSwitch Hour 0) ] [ text "⨯" ]
+    , Components.Title.view (Trip tripId) 0.0
     , p []
         [ case selectedTripResult of
             Ok [] ->

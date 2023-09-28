@@ -444,7 +444,7 @@ update msg model =
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = "Is RE1 late?"
+    { title = "How late is RE1?"
     , body =
         case ( model.timeZone, model.now ) of
             ( Just timeZone, Just now ) ->

@@ -108,6 +108,8 @@ h1 {
   height: 1.5em;
   margin-top: 1em;
   font-size: 200%;
+  border: none;
+  background: none;
 }
 
 #row1 {

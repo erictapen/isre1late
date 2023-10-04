@@ -182,15 +182,6 @@ fetchTrip tripId =
         }
 
 
-debugOverlay : Model -> Html msg
-debugOverlay model =
-    div
-        [ style "position" "absolute", style "top" "0", style "opacity" "0.2" ]
-        [ p [] [ text <| "progress: " ++ fromFloat model.modeTransition.progress ]
-        , p [] [ text <| "debug: " ++ model.debugText ]
-        ]
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -453,8 +444,7 @@ view model =
                     hisSeconds =
                         historicSeconds model
                 in
-                [ debugOverlay model
-                , div
+                [ div
                     [ id "app"
                     ]
                     (case model.mode of

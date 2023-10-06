@@ -7,7 +7,7 @@ module Components.SimpleDiagram exposing (view)
 import Dict exposing (Dict)
 import Html.Attributes as HA exposing (class, id, style)
 import List exposing (filterMap, head, indexedMap, map)
-import Model exposing (Direction(..), DistanceMatrix, stationPos, stations, trainPos)
+import Model exposing (Direction(..), DistanceMatrix, Mode(..), stationPos, stations, trainPos)
 import Msg exposing (Msg(..), TouchMsgType(..))
 import String exposing (fromFloat, fromInt)
 import Svg as S exposing (Svg, g, line, path, svg, text_)
@@ -89,8 +89,8 @@ stationLines x1Pos x2Pos distanceMatrix =
         )
 
 
-tripLines : DistanceMatrix -> Direction -> Int -> Dict TripId (List DelayRecord) -> Svg Msg
-tripLines distanceMatrix selectedDirection historicSeconds delayDict =
+tripLines : Mode -> DistanceMatrix -> Direction -> Int -> Dict TripId (List DelayRecord) -> Svg Msg
+tripLines mode distanceMatrix selectedDirection historicSeconds delayDict =
     let
         -- An svg d segment for a given directon and delay record
         tripD : Bool -> DelayRecord -> Maybe ( Float, Float )
@@ -135,14 +135,19 @@ tripLines distanceMatrix selectedDirection historicSeconds delayDict =
                            )
             in
             g
-                [ SA.title tripId
-                , SA.id tripId
+                ([ SA.title tripId
+                 , SA.id tripId
+                 ]
+                    ++ (if mode == Hour then
+                            [ Svg.Events.onClick <| Msg.OpenTrip tripId
+                            ]
 
-                -- TODO do this only in Hour mode
-                , Svg.Events.onClick <| Msg.OpenTrip tripId
-                ]
-                [ -- The red area for delay
-                  path
+                        else
+                            []
+                       )
+                )
+                ([ -- The red area for delay
+                   path
                     [ stroke "none"
 
                     -- red for delay
@@ -162,8 +167,8 @@ tripLines distanceMatrix selectedDirection historicSeconds delayDict =
                     ]
                     []
 
-                -- black stroke for the intended time
-                , path
+                 -- black stroke for the intended time
+                 , path
                     [ stroke "black"
                     , fill "none"
                     , strokeWidth "1px"
@@ -172,17 +177,23 @@ tripLines distanceMatrix selectedDirection historicSeconds delayDict =
                     ]
                     []
 
-                -- invisible stroke for clickable area
-                -- TODO show this only in Hour mode
-                , path
-                    [ stroke "#00000000"
-                    , fill "none"
-                    , strokeWidth "30px"
-                    , HA.attribute "vector-effect" "non-scaling-stroke"
-                    , d intendedPath
-                    ]
-                    []
-                ]
+                 -- invisible stroke for clickable area
+                 ]
+                    ++ (if mode == Hour then
+                            [ path
+                                [ stroke "#00000000"
+                                , fill "none"
+                                , strokeWidth "30px"
+                                , HA.attribute "vector-effect" "non-scaling-stroke"
+                                , d intendedPath
+                                ]
+                                []
+                            ]
+
+                        else
+                            []
+                       )
+                )
     in
     g [ id "trip-paths" ] <| map tripLine <| Dict.toList delayDict
 
@@ -197,6 +208,7 @@ view model now hisSeconds timeZone =
         <|
             map Tuple.first stations
     , tripLines
+        model.mode
         model.distanceMatrix
         model.direction
         hisSeconds

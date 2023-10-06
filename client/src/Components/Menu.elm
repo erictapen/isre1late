@@ -22,20 +22,20 @@ greyedOutButton str =
 view mode =
     [ greyedOutButton "ⓘ"
     , greyedOutButton ""
-    , case nextMode mode of
-        Just m ->
-            wrapButton <|
-                button
-                    [ class "menu-button", onClick (ModeSwitch m -1) ]
-                    [ text "+" ]
-
-        Nothing ->
-            greyedOutButton "+"
     , case previousMode mode of
         Just m ->
             wrapButton <|
                 button
                     [ class "menu-button", onClick (ModeSwitch m 1) ]
+                    [ text "+" ]
+
+        Nothing ->
+            greyedOutButton "+"
+    , case nextMode mode of
+        Just m ->
+            wrapButton <|
+                button
+                    [ class "menu-button", onClick (ModeSwitch m -1) ]
                     [ text "−" ]
 
         Nothing ->

@@ -121,13 +121,13 @@ tripLines mode distanceMatrix selectedDirection historicSeconds delayDict =
         tripLine ( tripId, delayRecords ) =
             let
                 intendedPath =
-                    "M "
-                        ++ (String.join " L " <|
+                    "M"
+                        ++ (String.join " L" <|
                                 map
                                     (Tuple.mapBoth
                                         fromFloat
                                         fromFloat
-                                        >> (\( x, y ) -> x ++ " " ++ y)
+                                        >> (\( x, y ) -> x ++ "," ++ y)
                                     )
                                 <|
                                     filterMap identity <|
@@ -153,10 +153,10 @@ tripLines mode distanceMatrix selectedDirection historicSeconds delayDict =
                     -- red for delay
                     , fill "hsl(0, 72%, 67%)"
                     , d <|
-                        "M "
-                            ++ (String.join " L " <|
+                        "M"
+                            ++ (String.join " L" <|
                                     map
-                                        (\( x, y ) -> fromFloat x ++ " " ++ fromFloat y)
+                                        (\( x, y ) -> fromFloat x ++ "," ++ fromFloat y)
                                     <|
                                         filterMap identity <|
                                             List.concat

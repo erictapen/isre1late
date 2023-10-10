@@ -152,6 +152,7 @@ init _ url key =
     , Cmd.batch
         [ rebuildSocket <| wsApiUrl
         , Task.perform CurrentTimeZone Time.here
+        , Task.perform CurrentTime Time.now
         , case modeFromUrl of
             Just (Trip tripId) ->
                 fetchTrip tripId

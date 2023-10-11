@@ -27,6 +27,7 @@ import Model
         , Mode(..)
         , ModeTransition
         , Model
+        , TutorialState(..)
         , buildDelayEventsMatrices
         , buildUrl
         , historicSeconds
@@ -64,6 +65,7 @@ import Svg.Loaders
 import Task
 import Time exposing (Posix, millisToPosix, posixToMillis)
 import Trip.View
+import Tutorial
 import Types
     exposing
         ( DelayRecord
@@ -137,6 +139,7 @@ init _ url key =
             { navigationKey = key
             , mode = Maybe.withDefault defaultMode modeFromUrl
             , modeTransition = { touchState = Nothing, progress = 0 }
+            , tutorialState = Geographic
             , delayRecords = Dict.empty
             , delayEvents = Nothing
             , selectedTrip = Ok []
@@ -448,11 +451,11 @@ view model =
                 [ div
                     [ id "app"
                     ]
-                    (case model.mode of
-                        Trip tripId ->
+                    (case ( model.tutorialState, model.mode ) of
+                        ( Finished, Trip tripId ) ->
                             Trip.View.view tripId model.selectedTrip
 
-                        _ ->
+                        ( Finished, _ ) ->
                             [ Components.Title.view model.mode model.modeTransition.progress
                             , div [ id "row1" ]
                                 [ Components.Diagram.view model now hisSeconds timeZone
@@ -469,6 +472,9 @@ view model =
                                 ]
                             , div [ id "row3" ] <| Components.Menu.view model.mode
                             ]
+
+                        ( tutorialState, _ ) ->
+                            Tutorial.view tutorialState model.distanceMatrix
                     )
                 ]
 

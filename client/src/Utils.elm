@@ -4,11 +4,13 @@
 
 module Utils exposing
     ( httpErrorToString
+    , maybe
     , onTouch
     , percentageStr
     , posixSecToSvg
     , posixToSec
     , posixToSvgQuotient
+    , removeNothings
     , touchCoordinates
     )
 
@@ -47,6 +49,16 @@ onTouch on =
 removeNothings : List (Maybe a) -> List a
 removeNothings =
     List.filterMap identity
+
+
+maybe : Bool -> a -> Maybe a
+maybe b value =
+    case b of
+        True ->
+            Just value
+
+        False ->
+            Nothing
 
 
 posixToSec : Posix -> Int

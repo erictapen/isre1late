@@ -11,6 +11,7 @@ module Model exposing
     , ModeTransition
     , Model
     , TouchState
+    , TutorialState(..)
     , buildDelayEventsMatrices
     , buildUrl
     , historicSeconds
@@ -45,6 +46,7 @@ type alias Model =
     { navigationKey : Browser.Navigation.Key
     , mode : Mode
     , modeTransition : ModeTransition
+    , tutorialState : TutorialState
     , delayRecords : Dict TripId (List DelayRecord)
     , delayEvents : Maybe ( DelayEventsMatrix, DelayEventsMatrix )
     , selectedTrip : Result Http.Error (List Stopover)
@@ -105,6 +107,13 @@ type alias ModeTransition =
     { touchState : Maybe TouchState
     , progress : Float
     }
+
+
+type TutorialState
+    = Geographic
+    | Location
+    | Time
+    | Finished
 
 
 {-| The amount of historic seconds going back from now into the past that are currently displayed.

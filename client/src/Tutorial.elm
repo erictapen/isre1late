@@ -93,8 +93,8 @@ pathRE1GeographicD =
 
 stationPosTutorial distanceMatrix sid =
     fromFloat <|
-        100
-            - 100
+        150
+            - 200
             * stationPos distanceMatrix sid
 
 
@@ -138,8 +138,8 @@ view tutorialState distanceMatrix =
             [ div [ id "row1", onClick <| SetTutorialState Location ]
                 [ svg
                     [ id "diagram"
-                    , viewBox "0 0 100 100"
-                    , preserveAspectRatio "xMaxYMid slice"
+                    , viewBox "0 -50 100 200"
+                    , preserveAspectRatio "xMaxYMid meet"
                     ]
                     [ brandenburgBerlinOutline
                     , path
@@ -210,7 +210,7 @@ view tutorialState distanceMatrix =
 
         Location ->
             [ div [ id "row1", onClick <| SetTutorialState Time ]
-                [ svg [ id "diagram", viewBox "0 0 100 100" ]
+                [ svg [ id "diagram", viewBox "0 -50 100 200" ]
                     [ path
                         [ id "path-re1"
                         , stroke "black"

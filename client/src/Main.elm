@@ -436,8 +436,8 @@ update msg model =
         GotTrip stopoverResult ->
             ( { model | selectedTrip = stopoverResult }, Cmd.none )
 
-        SkipTutorial ->
-            ( { model | tutorialState = Finished }, Cmd.none )
+        SetTutorialState tutorialState ->
+            ( { model | tutorialState = tutorialState }, Cmd.none )
 
 
 view : Model -> Browser.Document Msg

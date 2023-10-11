@@ -17,6 +17,7 @@ import Svg.Attributes as SA
         , dur
         , fill
         , from
+        , preserveAspectRatio
         , r
         , repeatCount
         , stroke
@@ -134,8 +135,12 @@ animateCY distanceMatrix y sid =
 view tutorialState distanceMatrix =
     case tutorialState of
         Geographic ->
-            [ div [ id "row1" ]
-                [ svg [ id "diagram", viewBox "0 0 100 100" ]
+            [ div [ id "row1", onClick <| SetTutorialState Location ]
+                [ svg
+                    [ id "diagram"
+                    , viewBox "0 0 100 100"
+                    , preserveAspectRatio "xMaxYMid slice"
+                    ]
                     [ brandenburgBerlinOutline
                     , path
                         [ id "path-re1"
@@ -191,18 +196,20 @@ view tutorialState distanceMatrix =
                                    )
                     ]
                 ]
-            , div [ id "row2" ]
+            , div
+                [ id "row2", style "text-align" "center" ]
+                [ text "The train line RE1 connects the german cities Magdeburg and Cottbus through Potsdam, Berlin and Eisenhüttenstadt." ]
+            , div [ id "row3" ]
                 [ button
                     [ id "skip-tutorial-button"
-                    , onClick SkipTutorial
+                    , onClick <| SetTutorialState Finished
                     ]
                     [ text "Skip introduction" ]
                 ]
-            , div [ id "row3" ] []
             ]
 
         Location ->
-            [ div [ id "row1" ]
+            [ div [ id "row1", onClick <| SetTutorialState Time ]
                 [ svg [ id "diagram", viewBox "0 0 100 100" ]
                     [ path
                         [ id "path-re1"
@@ -223,7 +230,7 @@ view tutorialState distanceMatrix =
             ]
 
         _ ->
-            [ div [ id "row1" ]
+            [ div [ id "row1", onClick <| SetTutorialState Finished ]
                 [ svg [ id "diagram", viewBox "0 0 100 100" ] []
                 , div [ class "station-legend" ] []
                 ]

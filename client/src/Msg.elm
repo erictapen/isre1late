@@ -6,7 +6,7 @@ module Msg exposing (Msg(..), TouchMsgType(..))
 
 import Browser exposing (UrlRequest(..))
 import Http
-import Model exposing (Mode)
+import Model exposing (Mode, TutorialState)
 import Time exposing (Posix)
 import Types exposing (DelayEvent, Stopover, TripId)
 
@@ -24,7 +24,7 @@ type Msg
     | GotDelayEvents (Result Http.Error (List DelayEvent))
     | OpenTrip TripId
     | GotTrip (Result Http.Error (List Stopover))
-    | SkipTutorial
+    | SetTutorialState TutorialState
 
 
 type TouchMsgType

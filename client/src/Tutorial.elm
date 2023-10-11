@@ -72,17 +72,20 @@ pathRE1GeographicD =
            )
 
 
+stationPosTutorial distanceMatrix sid =
+    fromFloat <|
+        100
+            - 100
+            * stationPos distanceMatrix sid
+
+
 pathRE1LinearD distanceMatrix =
     "M"
         ++ (String.join " L" <|
                 map
                     (\( sid, _ ) ->
                         "100,"
-                            ++ (fromFloat <|
-                                    100
-                                        - 100
-                                        * stationPos distanceMatrix sid
-                               )
+                            ++ stationPosTutorial distanceMatrix sid
                     )
                     stations
            )
@@ -112,7 +115,7 @@ view tutorialState distanceMatrix =
                     , g [] <|
                         removeNothings <|
                             (map
-                                (\( ( x, y ), ( _, station ) ) ->
+                                (\( ( x, y ), ( sid, station ) ) ->
                                     maybe station.important <|
                                         circle
                                             [ cx x
@@ -121,13 +124,27 @@ view tutorialState distanceMatrix =
                                             , stroke "none"
                                             , fill "black"
                                             ]
-                                            []
+                                            [ animate
+                                                [ attributeName "cx"
+                                                , dur "10s"
+                                                , repeatCount "indefinite"
+                                                , values <| x ++ ";" ++ "100"
+                                                ]
+                                                []
+                                            , animate
+                                                [ attributeName "cy"
+                                                , dur "10s"
+                                                , repeatCount "indefinite"
+                                                , values <| y ++ ";" ++ stationPosTutorial distanceMatrix sid
+                                                ]
+                                                []
+                                            ]
                                 )
                              <|
                                 map2 Tuple.pair geographicStations stations
                             )
                                 ++ (map
-                                        (\( ( x, y ), ( _, station ) ) ->
+                                        (\( ( x, y ), ( sid, station ) ) ->
                                             maybe (not station.important) <|
                                                 circle
                                                     [ cx x
@@ -136,7 +153,21 @@ view tutorialState distanceMatrix =
                                                     , stroke "none"
                                                     , fill "black"
                                                     ]
-                                                    []
+                                                    [ animate
+                                                        [ attributeName "cx"
+                                                        , dur "10s"
+                                                        , repeatCount "indefinite"
+                                                        , values <| x ++ ";" ++ "100"
+                                                        ]
+                                                        []
+                                                    , animate
+                                                        [ attributeName "cy"
+                                                        , dur "10s"
+                                                        , repeatCount "indefinite"
+                                                        , values <| y ++ ";" ++ stationPosTutorial distanceMatrix sid
+                                                        ]
+                                                        []
+                                                    ]
                                         )
                                     <|
                                         map2 Tuple.pair geographicStations stations

@@ -6,7 +6,23 @@ import List exposing (filterMap, map, map2)
 import Model exposing (DistanceMatrix, TutorialState(..), stationPos, stations)
 import String exposing (fromFloat)
 import Svg as S exposing (animate, circle, g, path, svg)
-import Svg.Attributes as SA exposing (attributeName, cx, cy, d, dur, fill, r, repeatCount, stroke, strokeWidth, values, viewBox)
+import Svg.Attributes as SA
+    exposing
+        ( attributeName
+        , cx
+        , cy
+        , d
+        , dur
+        , fill
+        , from
+        , r
+        , repeatCount
+        , stroke
+        , strokeWidth
+        , to
+        , values
+        , viewBox
+        )
 import Utils exposing (maybe, removeNothings)
 
 
@@ -84,7 +100,7 @@ pathRE1LinearD distanceMatrix =
         ++ (String.join " L" <|
                 map
                     (\( sid, _ ) ->
-                        "100,"
+                        "95,"
                             ++ stationPosTutorial distanceMatrix sid
                     )
                     stations
@@ -95,8 +111,9 @@ animateCX x =
     animate
         [ attributeName "cx"
         , dur "2s"
-        , repeatCount "indefinite"
-        , values <| x ++ ";" ++ "100"
+        , repeatCount "0"
+        , from x
+        , to "95"
         ]
         []
 
@@ -105,8 +122,9 @@ animateCY distanceMatrix y sid =
     animate
         [ attributeName "cy"
         , dur "2s"
-        , repeatCount "indefinite"
-        , values <| y ++ ";" ++ stationPosTutorial distanceMatrix sid
+        , repeatCount "0"
+        , from y
+        , to <| stationPosTutorial distanceMatrix sid
         ]
         []
 
@@ -122,13 +140,14 @@ view tutorialState distanceMatrix =
                         , stroke "black"
                         , strokeWidth "0.2px"
                         , fill "none"
-                        , d pathRE1GeographicD
+                        , d <| pathRE1LinearD distanceMatrix
                         ]
                         [ animate
                             [ attributeName "d"
                             , dur "2s"
-                            , repeatCount "indefinite"
-                            , values <| pathRE1GeographicD ++ ";\n" ++ pathRE1LinearD distanceMatrix
+                            , repeatCount "0"
+                            , from pathRE1GeographicD
+                            , to <| pathRE1LinearD distanceMatrix
                             ]
                             []
                         ]
@@ -138,8 +157,8 @@ view tutorialState distanceMatrix =
                                 (\( ( x, y ), ( sid, station ) ) ->
                                     maybe station.important <|
                                         circle
-                                            [ cx x
-                                            , cy y
+                                            [ cx "95"
+                                            , cy <| stationPosTutorial distanceMatrix sid
                                             , r dotRadius
                                             , stroke "none"
                                             , fill "black"
@@ -155,8 +174,8 @@ view tutorialState distanceMatrix =
                                         (\( ( x, y ), ( sid, station ) ) ->
                                             maybe (not station.important) <|
                                                 circle
-                                                    [ cx x
-                                                    , cy y
+                                                    [ cx "95"
+                                                    , cy <| stationPosTutorial distanceMatrix sid
                                                     , r "0.3px"
                                                     , stroke "none"
                                                     , fill "black"

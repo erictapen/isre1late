@@ -91,6 +91,26 @@ pathRE1LinearD distanceMatrix =
            )
 
 
+animateCX x =
+    animate
+        [ attributeName "cx"
+        , dur "2s"
+        , repeatCount "indefinite"
+        , values <| x ++ ";" ++ "100"
+        ]
+        []
+
+
+animateCY distanceMatrix y sid =
+    animate
+        [ attributeName "cy"
+        , dur "2s"
+        , repeatCount "indefinite"
+        , values <| y ++ ";" ++ stationPosTutorial distanceMatrix sid
+        ]
+        []
+
+
 view tutorialState distanceMatrix =
     case tutorialState of
         Geographic ->
@@ -106,7 +126,7 @@ view tutorialState distanceMatrix =
                         ]
                         [ animate
                             [ attributeName "d"
-                            , dur "10s"
+                            , dur "2s"
                             , repeatCount "indefinite"
                             , values <| pathRE1GeographicD ++ ";\n" ++ pathRE1LinearD distanceMatrix
                             ]
@@ -124,20 +144,8 @@ view tutorialState distanceMatrix =
                                             , stroke "none"
                                             , fill "black"
                                             ]
-                                            [ animate
-                                                [ attributeName "cx"
-                                                , dur "10s"
-                                                , repeatCount "indefinite"
-                                                , values <| x ++ ";" ++ "100"
-                                                ]
-                                                []
-                                            , animate
-                                                [ attributeName "cy"
-                                                , dur "10s"
-                                                , repeatCount "indefinite"
-                                                , values <| y ++ ";" ++ stationPosTutorial distanceMatrix sid
-                                                ]
-                                                []
+                                            [ animateCX x
+                                            , animateCY distanceMatrix y sid
                                             ]
                                 )
                              <|
@@ -153,20 +161,8 @@ view tutorialState distanceMatrix =
                                                     , stroke "none"
                                                     , fill "black"
                                                     ]
-                                                    [ animate
-                                                        [ attributeName "cx"
-                                                        , dur "10s"
-                                                        , repeatCount "indefinite"
-                                                        , values <| x ++ ";" ++ "100"
-                                                        ]
-                                                        []
-                                                    , animate
-                                                        [ attributeName "cy"
-                                                        , dur "10s"
-                                                        , repeatCount "indefinite"
-                                                        , values <| y ++ ";" ++ stationPosTutorial distanceMatrix sid
-                                                        ]
-                                                        []
+                                                    [ animateCX x
+                                                    , animateCY distanceMatrix y sid
                                                     ]
                                         )
                                     <|

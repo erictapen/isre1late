@@ -1,9 +1,11 @@
 module Tutorial exposing (view)
 
-import Html exposing (div)
-import Html.Attributes exposing (class, id)
+import Html exposing (button, div, text)
+import Html.Attributes exposing (class, id, style)
+import Html.Events exposing (onClick)
 import List exposing (filterMap, map, map2)
 import Model exposing (DistanceMatrix, TutorialState(..), stationPos, stations)
+import Msg exposing (Msg(..))
 import String exposing (fromFloat)
 import Svg as S exposing (animate, circle, g, path, svg)
 import Svg.Attributes as SA
@@ -190,8 +192,11 @@ view tutorialState distanceMatrix =
                     ]
                 ]
             , div [ id "row2" ]
-                [ div [] []
-                , div [ class "station-legend" ] []
+                [ button
+                    [ id "skip-tutorial-button"
+                    , onClick SkipTutorial
+                    ]
+                    [ text "Skip introduction" ]
                 ]
             , div [ id "row3" ] []
             ]

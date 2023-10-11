@@ -24,6 +24,7 @@ type Msg
     | GotDelayEvents (Result Http.Error (List DelayEvent))
     | OpenTrip TripId
     | GotTrip (Result Http.Error (List Stopover))
+    | SkipTutorial
 
 
 type TouchMsgType

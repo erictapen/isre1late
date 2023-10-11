@@ -35,7 +35,6 @@ import Model
         , nextMode
         , previousMode
         , stationNames
-        , stationPos
         , stations
         , trainPos
         , urlParser
@@ -436,6 +435,9 @@ update msg model =
 
         GotTrip stopoverResult ->
             ( { model | selectedTrip = stopoverResult }, Cmd.none )
+
+        SkipTutorial ->
+            ( { model | tutorialState = Finished }, Cmd.none )
 
 
 view : Model -> Browser.Document Msg

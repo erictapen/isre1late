@@ -195,6 +195,7 @@ view tutorialState distanceMatrix =
                                         map2 Tuple.pair geographicStations stations
                                    )
                     ]
+                , div [ class "station-legend", style "min-width" "0" ] []
                 ]
             , div
                 [ id "row2", style "text-align" "center" ]
@@ -219,10 +220,47 @@ view tutorialState distanceMatrix =
                         , d <| pathRE1LinearD distanceMatrix
                         ]
                         []
+                    , g [] <|
+                        removeNothings <|
+                            (map
+                                (\( ( x, y ), ( sid, station ) ) ->
+                                    maybe station.important <|
+                                        circle
+                                            [ cx "95"
+                                            , cy <| stationPosTutorial distanceMatrix sid
+                                            , r dotRadius
+                                            , stroke "none"
+                                            , fill "black"
+                                            ]
+                                            []
+                                )
+                             <|
+                                map2 Tuple.pair geographicStations stations
+                            )
+                                ++ (map
+                                        (\( ( x, y ), ( sid, station ) ) ->
+                                            maybe (not station.important) <|
+                                                circle
+                                                    [ cx "95"
+                                                    , cy <| stationPosTutorial distanceMatrix sid
+                                                    , r "0.3px"
+                                                    , stroke "none"
+                                                    , fill "black"
+                                                    ]
+                                                    []
+                                        )
+                                    <|
+                                        map2 Tuple.pair geographicStations stations
+                                   )
                     ]
                 , div [ class "station-legend" ] []
                 ]
-            , div [ id "row2" ]
+            , div
+                [ id "row2"
+                , style "min-width" "130px"
+                , style "transition-property" "min-width"
+                , style "transition-duration" "4s"
+                ]
                 [ div [] []
                 , div [ class "station-legend" ] []
                 ]

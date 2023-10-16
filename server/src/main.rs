@@ -67,7 +67,8 @@ fn main() {
     // Setup logging
     if systemd_journal_logger::connected_to_journal() {
         // If journald is available.
-        systemd_journal_logger::JournalLog::default()
+        systemd_journal_logger::JournalLog::new()
+            .unwrap()
             .with_syslog_identifier("isre1late".to_string())
             .install()
             .unwrap();

@@ -93,9 +93,24 @@ pub fn websocket_server(
                     websocket: &mut WebSocket<TcpStream>,
                     msg: DelayRecord,
                 ) -> Result<(), ()> {
-                    match websocket.write_message(Text(
+                    match websocket.write(Text(
                         serde_json::to_string(&msg).expect("This shouldn't fail."),
                     )) {
+                        Err(e) => {
+                            warn!(
+                                "{:?}: Couldn't queue message to subscriber: {}",
+                                std::thread::current().id(),
+                                e
+                            );
+                        }
+                        Ok(_) => {
+                            debug!(
+                                "{:?}: Queued message to subscriber successfully.",
+                                std::thread::current().id()
+                            );
+                        }
+                    }
+                    match websocket.flush() {
                         Err(e) => {
                             warn!(
                                 "{:?}: Couldn't send message to subscriber: {}",
@@ -150,8 +165,8 @@ pub fn websocket_server(
                         .close(None)
                         .unwrap_or_else(|_| warn!("Can't close websocket in a normal way."));
                     websocket
-                        .write_pending()
-                        .unwrap_or_else(|_| warn!("Couldn't write pending close frame."));
+                        .flush()
+                        .unwrap_or_else(|_| warn!("Couldn't flush pending close frame."));
                 });
             }
             Err(_) => {

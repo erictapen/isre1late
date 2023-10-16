@@ -42,9 +42,12 @@
             server = flake-utils.lib.mkApp { drv = self.packages.${system}.server; };
             default = server;
           };
-          checks.reuse = pkgs.runCommand "reuse-check" { } ''
-            ${pkgs.reuse}/bin/reuse --root ${self} lint && touch $out
-          '';
+          checks = {
+            reuse = pkgs.runCommand "reuse-check" { } ''
+              ${pkgs.reuse}/bin/reuse --root ${self} lint && touch $out
+            '';
+            inherit (self.packages."${system}") client server;
+          };
 
           devShells.default = pkgs.mkShell {
             buildInputs = with pkgs; [

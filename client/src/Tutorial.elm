@@ -118,7 +118,7 @@ animateCX x =
     animate
         [ attributeName "cx"
         , dur "2s"
-        , repeatCount "0"
+        , repeatCount "1"
         , from x
         , to "95"
         ]
@@ -129,7 +129,7 @@ animateCY distanceMatrix y sid =
     animate
         [ attributeName "cy"
         , dur "2s"
-        , repeatCount "0"
+        , repeatCount "1"
         , from y
         , to <| stationPosTutorial distanceMatrix sid
         ]
@@ -156,7 +156,7 @@ view tutorialState distanceMatrix =
                         [ animate
                             [ attributeName "d"
                             , dur "2s"
-                            , repeatCount "0"
+                            , repeatCount "1"
                             , from pathRE1GeographicD
                             , to <| pathRE1LinearD distanceMatrix
                             ]

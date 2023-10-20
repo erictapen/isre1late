@@ -177,3 +177,57 @@ h1 {
   justify-content: center;
   flex: 1;
 }
+
+#tutorial-progress-container {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+}
+
+.tutorial-progress {
+  background-image: -webkit-linear-gradient(left, black 0%, black 50%, white 50.01%, white 100%);
+  background-size: 200%;
+  background-position-y: 0;
+  background-repeat: no-repeat;
+  height: 1em;
+  flex-grow: 1;
+  display: flex;
+  margin: 0 5px;
+}
+
+.tutorial-progress.active {
+  animation-name: loading;
+  animation-duration: 5s;
+  animation-timing-function: linear;
+}
+
+@-webkit-keyframes loading {
+  0% { background-position-x: 100%; }
+  100% { background-position-x: 0; }
+}
+
+.tutorial-progress.passed {
+  background-position-x: 0;
+}
+
+.tutorial-progress.inactive {
+  background-position-x: 100%;
+}
+
+#tutorial-button {
+  position: absolute;
+}
+
+#tutorial-button.previous {
+  top: 0%;
+  left: 0%;
+  width: 50vw;
+  height: 100vh;
+}
+
+#tutorial-button.next {
+  top: 0%;
+  right: 0%;
+  width: 50vw;
+  height: 100vh;
+}

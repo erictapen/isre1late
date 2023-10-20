@@ -47,6 +47,7 @@ type alias Model =
     , mode : Mode
     , modeTransition : ModeTransition
     , tutorialState : TutorialState
+    , tutorialProgress : Float
     , delayRecords : Dict TripId (List DelayRecord)
     , delayEvents : Maybe ( DelayEventsMatrix, DelayEventsMatrix )
     , selectedTrip : Result Http.Error (List Stopover)
@@ -113,6 +114,7 @@ type TutorialState
     = Geographic
     | Location
     | Time
+    | Delay
     | Finished
 
 

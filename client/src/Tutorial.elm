@@ -2,8 +2,9 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
 
-module Tutorial exposing (view)
+module Tutorial exposing (next, subscriptions, view)
 
+import Browser.Events
 import Html exposing (button, div, img, text)
 import Html.Attributes exposing (class, id, src, style)
 import Html.Events exposing (onClick)
@@ -30,8 +31,120 @@ import Svg.Attributes as SA
         , values
         , viewBox
         )
+import Task
+import Time
 import Utils exposing (maybe, removeNothings)
 
 
+orderTutorialState tutorialState =
+    case tutorialState of
+        Geographic ->
+            1
+
+        Location ->
+            2
+
+        Time ->
+            3
+
+        Delay ->
+            4
+
+        Finished ->
+            5
+
+
+previous tutorialState =
+    case tutorialState of
+        Geographic ->
+            Geographic
+
+        Location ->
+            Geographic
+
+        Time ->
+            Location
+
+        Delay ->
+            Time
+
+        Finished ->
+            Finished
+
+
+next tutorialState =
+    case tutorialState of
+        Geographic ->
+            Location
+
+        Location ->
+            Time
+
+        Time ->
+            Delay
+
+        Delay ->
+            Finished
+
+        Finished ->
+            Finished
+
+
+subscriptions tutorialState =
+    if tutorialState /= Finished then
+        Browser.Events.onAnimationFrameDelta TimerTick
+
+    else
+        Sub.none
+
+
+tutorialImage tutorialState =
+    case tutorialState of
+        Geographic ->
+            "/assets/tutorial1.svg"
+
+        Location ->
+            "/assets/tutorial2.svg"
+
+        Time ->
+            "/assets/tutorial3.svg"
+
+        Delay ->
+            "/assets/tutorial4.svg"
+
+        _ ->
+            ""
+
+
 view tutorialState distanceMatrix =
-    [ img [ class "tutorial-image", src "/assets/tutorial1.svg" ] [] ]
+    let
+        progressClass progressElement =
+            if orderTutorialState tutorialState < orderTutorialState progressElement then
+                class "inactive"
+
+            else if tutorialState == progressElement then
+                class "active"
+
+            else
+                class "passed"
+    in
+    [ img [ class "tutorial-image", src <| tutorialImage tutorialState ] []
+    , div [ id "tutorial-progress-container" ]
+        [ div [ class "tutorial-progress", progressClass Geographic ] []
+        , div [ class "tutorial-progress", progressClass Location ] []
+        , div [ class "tutorial-progress", progressClass Time ] []
+        , div [ class "tutorial-progress", progressClass Delay ] []
+        ]
+    , div
+        [ id "tutorial-button"
+        , class "previous"
+        , onClick <| SetTutorialState <| previous tutorialState
+        ]
+        []
+    , div
+        [ id "tutorial-button"
+        , class "next"
+        , onClick <| SetTutorialState <| next tutorialState
+        ]
+        []
+    ]

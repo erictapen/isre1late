@@ -111,6 +111,7 @@ subscriptions model =
 
             _ ->
                 Sub.none
+        , Tutorial.subscriptions model.tutorialState
         ]
 
 
@@ -139,6 +140,7 @@ init _ url key =
             , mode = Maybe.withDefault defaultMode modeFromUrl
             , modeTransition = { touchState = Nothing, progress = 0 }
             , tutorialState = Geographic
+            , tutorialProgress = 0
             , delayRecords = Dict.empty
             , delayEvents = Nothing
             , selectedTrip = Ok []
@@ -437,7 +439,27 @@ update msg model =
             ( { model | selectedTrip = stopoverResult }, Cmd.none )
 
         SetTutorialState tutorialState ->
-            ( { model | tutorialState = tutorialState }, Cmd.none )
+            ( { model | tutorialState = tutorialState, tutorialProgress = 0 }
+            , Cmd.none
+            )
+
+        TimerTick delta ->
+            let
+                newProgress =
+                    model.tutorialProgress + delta
+            in
+            if newProgress > 5000 then
+                ( { model
+                    | tutorialProgress = 0
+                    , tutorialState = Tutorial.next model.tutorialState
+                  }
+                , Cmd.none
+                )
+
+            else
+                ( { model | tutorialProgress = newProgress }
+                , Cmd.none
+                )
 
 
 view : Model -> Browser.Document Msg

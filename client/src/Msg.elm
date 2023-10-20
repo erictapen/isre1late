@@ -25,6 +25,7 @@ type Msg
     | OpenTrip TripId
     | GotTrip (Result Http.Error (List Stopover))
     | SetTutorialState TutorialState
+    | TimerTick Float
 
 
 type TouchMsgType

@@ -2,7 +2,7 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
 
-module Tutorial exposing (next, subscriptions, view)
+module Tutorial exposing (animationDuration, next, subscriptions, view)
 
 import Browser.Events
 import Html exposing (button, div, img, text)
@@ -116,6 +116,24 @@ tutorialImage tutorialState =
             ""
 
 
+animationDuration tutorialState =
+    case tutorialState of
+        Geographic ->
+            5000
+
+        Location ->
+            5000
+
+        Time ->
+            5000
+
+        Delay ->
+            5000
+
+        Finished ->
+            0
+
+
 view tutorialState distanceMatrix =
     let
         progressClass progressElement =
@@ -130,10 +148,34 @@ view tutorialState distanceMatrix =
     in
     [ img [ class "tutorial-image", src <| tutorialImage tutorialState ] []
     , div [ id "tutorial-progress-container" ]
-        [ div [ class "tutorial-progress", progressClass Geographic ] []
-        , div [ class "tutorial-progress", progressClass Location ] []
-        , div [ class "tutorial-progress", progressClass Time ] []
-        , div [ class "tutorial-progress", progressClass Delay ] []
+        [ div
+            [ class "tutorial-progress"
+            , progressClass Geographic
+            , style "animation-duration"
+                ((fromFloat <| animationDuration tutorialState / 1000) ++ "s")
+            ]
+            []
+        , div
+            [ class "tutorial-progress"
+            , progressClass Location
+            , style "animation-duration"
+                ((fromFloat <| animationDuration tutorialState / 1000) ++ "s")
+            ]
+            []
+        , div
+            [ class "tutorial-progress"
+            , progressClass Time
+            , style "animation-duration"
+                ((fromFloat <| animationDuration tutorialState / 1000) ++ "s")
+            ]
+            []
+        , div
+            [ class "tutorial-progress"
+            , progressClass Delay
+            , style "animation-duration"
+                ((fromFloat <| animationDuration tutorialState / 1000) ++ "s")
+            ]
+            []
         ]
     , div
         [ id "tutorial-button"

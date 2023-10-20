@@ -197,7 +197,6 @@ h1 {
 
 .tutorial-progress.active {
   animation-name: loading;
-  animation-duration: 5s;
   animation-timing-function: linear;
 }
 

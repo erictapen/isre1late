@@ -448,7 +448,7 @@ update msg model =
                 newProgress =
                     model.tutorialProgress + delta
             in
-            if newProgress > 5000 then
+            if newProgress > Tutorial.animationDuration model.tutorialState then
                 ( { model
                     | tutorialProgress = 0
                     , tutorialState = Tutorial.next model.tutorialState

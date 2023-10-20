@@ -170,3 +170,10 @@ h1 {
   margin-left: 30vw;
   margin-right: 30vw;
 }
+
+.tutorial-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}

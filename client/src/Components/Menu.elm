@@ -25,7 +25,6 @@ greyedOutButton str =
 
 view mode =
     [ greyedOutButton "ⓘ"
-    , greyedOutButton ""
     , case previousMode mode of
         Just m ->
             wrapButton <|

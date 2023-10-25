@@ -5,9 +5,11 @@
 module Week.Constants exposing (rows, secondsPerColumn)
 
 
+{-| Three rows per station
+-}
 rows =
-    80
+    3 * 35
 
 
 secondsPerColumn =
-    3600 * 6
+    3600 * 3

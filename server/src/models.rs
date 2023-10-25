@@ -8,6 +8,7 @@ use diesel::prelude::*;
 use log::debug;
 use memuse::DynamicUsage;
 use serde::Serialize;
+use std::collections::HashMap;
 use time::OffsetDateTime;
 
 #[derive(Queryable, Insertable)]
@@ -42,7 +43,7 @@ pub struct DelayRecordWithID {
     pub delay: i64,
 }
 
-#[derive(Queryable, Insertable, Serialize, Debug, Clone)]
+#[derive(Queryable, Insertable, Serialize, Debug, Clone, PartialEq)]
 pub struct DelayRecord {
     pub fetched_json_id: i64,
     pub trip_id: String,
@@ -52,6 +53,35 @@ pub struct DelayRecord {
     pub next_station: i64,
     pub percentage_segment: f64,
     pub delay: i64,
+}
+
+impl DelayRecord {
+    /// Determines wether a DelayRecord might be redundand as compared to its predecessor as it
+    /// remains between the same two stations and doesn't change its delay.
+    ///
+    /// The return type is a bit fucked up, because we need to be able to signal the start of a trip.
+    /// None === Can be skipped
+    /// Some(None) === Cannot be skipped, as it's first in the trip.
+    /// Some(Some(DelayRecord)) === Both the old and the new one are relevant.
+    pub fn might_be_redundant(
+        &self,
+        latest_drs: &mut HashMap<String, DelayRecord>,
+    ) -> Option<Option<DelayRecord>> {
+        match latest_drs.insert(self.trip_id.clone(), self.clone()) {
+            // We always take first item in series
+            None => Some(None),
+            Some(latest_dr) => {
+                if self.delay == latest_dr.delay
+                    && self.previous_station == latest_dr.previous_station
+                    && self.next_station == latest_dr.next_station
+                {
+                    None
+                } else {
+                    Some(Some(latest_dr))
+                }
+            }
+        }
+    }
 }
 
 memuse::impl_no_dynamic_usage!(DelayRecord);

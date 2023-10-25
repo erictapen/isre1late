@@ -130,6 +130,7 @@ pub fn websocket_server(
                 }
 
                 {
+                    use std::collections::HashMap;
                     use std::time::Duration;
                     use time::OffsetDateTime;
 
@@ -145,9 +146,20 @@ pub fn websocket_server(
                             panic!("Unable to load data from delay_records: {}", e);
                         });
 
+                    let mut latest_delay_records: HashMap<String, DelayRecord> = HashMap::new();
+
                     for delay_record_with_id in old_delay_records {
-                        let _ =
-                            send_message(&mut websocket, DelayRecord::from(delay_record_with_id?));
+                        let delay_record = DelayRecord::from(delay_record_with_id?);
+                        match delay_record.might_be_redundant(&mut latest_delay_records) {
+                            None => {}
+                            Some(None) => {
+                                let _ = send_message(&mut websocket, delay_record);
+                            }
+                            Some(Some(prev_delay_record)) => {
+                                let _ = send_message(&mut websocket, prev_delay_record);
+                                let _ = send_message(&mut websocket, delay_record);
+                            }
+                        }
                     }
                 }
 

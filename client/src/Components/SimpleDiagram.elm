@@ -135,17 +135,9 @@ tripLines mode distanceMatrix selectedDirection historicSeconds delayDict =
                            )
             in
             g
-                ([ SA.title tripId
-                 , SA.id tripId
-                 ]
-                    ++ (if mode == Hour then
-                            [ Svg.Events.onClick <| Msg.OpenTrip tripId
-                            ]
-
-                        else
-                            []
-                       )
-                )
+                [ SA.title tripId
+                , SA.id tripId
+                ]
                 ([ -- The red area for delay
                    path
                     [ stroke "none"

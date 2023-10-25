@@ -166,16 +166,15 @@ init _ url key =
 
             Nothing ->
                 Browser.Navigation.pushUrl key <| buildUrl defaultMode
-        , fetchDelayEvents
         ]
     )
 
 
-fetchDelayEvents : Cmd Msg
-fetchDelayEvents =
+fetchDelayEvents : Posix -> Cmd Msg
+fetchDelayEvents now =
     Http.get
         { url = Url.Builder.absolute [ httpApiBaseUrl, "delay_events", "week" ] []
-        , expect = Http.expectJson GotDelayEvents decodeDelayEvents
+        , expect = Http.expectJson (GotDelayEvents now) decodeDelayEvents
         }
 
 
@@ -231,7 +230,15 @@ update msg model =
             ( model, sendMessage "" )
 
         CurrentTime now ->
-            ( { model | now = Just now }, Cmd.none )
+            ( { model | now = Just now }
+              -- If now wasn't set yet, we fetch the delay events once.
+            , case model.now of
+                Nothing ->
+                    fetchDelayEvents now
+
+                _ ->
+                    Cmd.none
+            )
 
         CurrentTimeZone zone ->
             ( { model | timeZone = Just zone }, Cmd.none )
@@ -408,13 +415,13 @@ update msg model =
             , Cmd.none
             )
 
-        GotDelayEvents httpResult ->
+        GotDelayEvents now httpResult ->
             ( case httpResult of
                 Ok delayEvents ->
                     { model
                         | delayEvents =
                             Just <|
-                                buildDelayEventsMatrices delayEvents model.now model.distanceMatrix
+                                buildDelayEventsMatrices delayEvents now model.distanceMatrix
                         , debugText = "DelayEvents received"
                     }
 

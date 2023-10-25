@@ -38,10 +38,6 @@ import Utils exposing (posixToSec)
 import Week.Constants
 
 
-type alias DelayPerSecond =
-    Int
-
-
 type alias Model =
     { navigationKey : Browser.Navigation.Key
     , mode : Mode
@@ -531,22 +527,26 @@ trainPos distanceMatrix from to percentageSegment =
             Nothing
 
 
+type alias DelayPerSecond =
+    Int
+
+
 type alias DelayEventsMatrix =
     Dict ( Int, Int ) DelayPerSecond
 
 
 {-| For now these matrices are intended to be used for the week mode
+First one is Eastwards, second one is Westwards
 -}
 buildDelayEventsMatrices :
     List DelayEvent
-    -> Maybe Posix
+    -> Posix
     -> DistanceMatrix
     -> ( DelayEventsMatrix, DelayEventsMatrix )
-buildDelayEventsMatrices delayEvents maybeNow distanceMatrix =
+buildDelayEventsMatrices delayEvents now distanceMatrix =
     let
-        -- TODO Make sure this is always something different than 0!
         nowSec =
-            Maybe.withDefault 0 <| Maybe.map posixToSec maybeNow
+            posixToSec now
 
         -- the row the event is placed in
         maybeTrainPos de =

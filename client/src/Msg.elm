@@ -21,7 +21,7 @@ type Msg
     | ToggleDirection
     | TouchMsg Int TouchMsgType ( Float, Float )
     | ModeSwitch Mode Float
-    | GotDelayEvents (Result Http.Error (List DelayEvent))
+    | GotDelayEvents Posix (Result Http.Error (List DelayEvent))
     | OpenTrip TripId
     | GotTrip (Result Http.Error (List Stopover))
     | SetTutorialState TutorialState

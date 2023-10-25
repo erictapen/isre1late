@@ -553,12 +553,15 @@ buildDelayEventsMatrices delayEvents now distanceMatrix =
             Maybe.map (\( yPos, direction, _ ) -> ( round <| yPos * Week.Constants.rows, direction ))
                 (trainPos distanceMatrix de.previous_station de.next_station de.percentage_segment)
 
+        -- Helper function insert a DelayEvent into a Matrix
         updateMatrix dict row de =
             Dict.update
                 ( (nowSec - de.time) // Week.Constants.secondsPerColumn, row )
                 (\i -> Just (Maybe.withDefault 0 i + de.delay * de.duration))
                 dict
 
+        -- Insert a DelayEvent into either the Westwards or the Eastwards
+        -- matrix (or none at all if we can't position it)
         updateMatrices :
             DelayEvent
             -> ( DelayEventsMatrix, DelayEventsMatrix )

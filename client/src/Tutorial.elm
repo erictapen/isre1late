@@ -146,7 +146,7 @@ view tutorialState distanceMatrix =
             else
                 class "passed"
     in
-    [ img [ class "tutorial-image", src <| tutorialImage tutorialState ] []
+    [ div [ class "tutorial-image-container" ] [ img [ class "tutorial-image", src <| tutorialImage tutorialState ] [] ]
     , div [ id "tutorial-progress-container" ]
         [ div
             [ class "tutorial-progress"

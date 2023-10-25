@@ -76,6 +76,9 @@
   .station-legend {
     min-width: 300px;
   }
+  .tutorial-image {
+    height: 80vh;
+  }
 }
 
 @media (max-width: 800px) {
@@ -181,8 +184,13 @@ h1 {
   margin-right: 30vw;
 }
 
-.tutorial-image {
+.tutorial-image-container {
   display: flex;
+  align-items: center;
+  flex-direction: row;
+}
+
+.tutorial-image {
   align-items: center;
   justify-content: center;
   flex: 1;
@@ -195,7 +203,7 @@ h1 {
 }
 
 .tutorial-progress {
-  background-image: -webkit-linear-gradient(left, black 0%, black 50%, white 50.01%, white 100%);
+  background-image: -webkit-linear-gradient(left, #555555 0%, #555555 50%, #eeeeee 50.01%, #eeeeee 100%);
   background-size: 200%;
   background-position-y: 0;
   background-repeat: no-repeat;

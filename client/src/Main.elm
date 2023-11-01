@@ -494,8 +494,8 @@ view model =
                                 ]
                             , div [ id "row2" ]
                                 -- TODO Render timeLegend for every Mode with different steps
-                                [ if model.mode == Hour && model.modeTransition.progress == 0 then
-                                    Components.TimeLegend.view hisSeconds timeZone now
+                                [ if model.modeTransition.progress == 0 then
+                                    Components.TimeLegend.view model.mode hisSeconds timeZone now
 
                                   else
                                     div [] []

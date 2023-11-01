@@ -1,5 +1,10 @@
 {
 
+      "CoderDennis/elm-time-format" = {
+        sha256 = "128cr4l28jqlkf8aaz6k41wcpszi99pz3ja7pnbjc43ij6fgjvsj";
+        version = "1.0.0";
+      };
+
       "NoRedInk/elm-json-decode-pipeline" = {
         sha256 = "1k241pjz1wj5rqv95f1j86msa0s0p6w4v8n0jn26aw6cbadw363b";
         version = "1.0.1";
@@ -63,6 +68,11 @@
       "elm/file" = {
         sha256 = "1rljcb41dl97myidyjih2yliyzddkr2m7n74x7gg46rcw4jl0ny8";
         version = "1.0.5";
+      };
+
+      "elm/regex" = {
+        sha256 = "0lijsp50w7n1n57mjg6clpn9phly8vvs07h0qh2rqcs0f1jqvsa2";
+        version = "1.0.0";
       };
 
       "elm/virtual-dom" = {

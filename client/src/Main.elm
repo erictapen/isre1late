@@ -86,7 +86,6 @@ import Utils
         , posixToSvgQuotient
         , touchCoordinates
         )
-import Week.View
 
 
 port sendMessage : String -> Cmd msg

@@ -44,8 +44,8 @@ import Utils
 
 {-| The vertical lines in the diagram.
 -}
-timeLines : Int -> Time.Zone -> Posix -> Svg Msg
-timeLines historicSeconds tz now =
+timeLines : Mode -> Int -> Time.Zone -> Posix -> Svg Msg
+timeLines mode historicSeconds tz now =
     let
         currentHourBegins =
             Time.toSecond tz now + Time.toMinute tz now * 60
@@ -73,10 +73,17 @@ timeLines historicSeconds tz now =
 
 {-| The horizontal lines in the diagram.
 -}
-stationLines : Float -> Float -> DistanceMatrix -> List StationId -> List (Svg Msg)
-stationLines x1Pos x2Pos distanceMatrix =
+stationLines : Int -> Posix -> DistanceMatrix -> List (Svg Msg)
+stationLines hisSeconds now distanceMatrix =
+    let
+        x1Pos =
+            posixSecToSvg (posixToSec now - hisSeconds)
+
+        x2Pos =
+            posixSecToSvg (posixToSec now)
+    in
     map
-        (\sid ->
+        (\( sid, _ ) ->
             line
                 [ x1 <| fromFloat x1Pos
                 , x2 <| fromFloat x2Pos
@@ -87,3 +94,4 @@ stationLines x1Pos x2Pos distanceMatrix =
                 ]
                 []
         )
+        stations

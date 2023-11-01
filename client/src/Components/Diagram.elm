@@ -7,7 +7,8 @@ module Components.Diagram exposing (view)
 import Components.SimpleDiagram
 import Html as H exposing (Html, button, div, h1, p, text)
 import Html.Attributes as HA exposing (class, id, style)
-import Model exposing (Direction(..), Mode(..))
+import Model exposing (Direction(..), Mode(..), Model)
+import Msg exposing (Msg)
 import String exposing (fromFloat, fromInt)
 import Svg as S exposing (Svg, g, line, path, svg, text_)
 import Svg.Attributes as SA
@@ -28,6 +29,7 @@ import Svg.Attributes as SA
         , y1
         , y2
         )
+import Time exposing (Posix)
 import Utils
     exposing
         ( httpErrorToString
@@ -40,6 +42,7 @@ import Utils
 import Week.View
 
 
+view : Model -> Posix -> Int -> Time.Zone -> Html Msg
 view model now hisSeconds timeZone =
     svg
         [ id "diagram"
@@ -61,7 +64,7 @@ view model now hisSeconds timeZone =
                 Components.SimpleDiagram.view model now hisSeconds timeZone
 
             Week ->
-                Week.View.view model.now <|
+                Week.View.view hisSeconds model.distanceMatrix now <|
                     Maybe.map
                         (case model.direction of
                             Eastwards ->

@@ -4,10 +4,11 @@
 
 module Week.View exposing (view)
 
+import Components.DiagramLines exposing (stationLines)
 import Dict
 import Html exposing (Html, div)
 import List exposing (map)
-import Model exposing (DelayEventsMatrix, DelayPerSecond)
+import Model exposing (DelayEventsMatrix, DelayPerSecond, DistanceMatrix)
 import Msg exposing (Msg(..))
 import String exposing (fromFloat, fromInt)
 import Svg as S exposing (Svg, g, rect)
@@ -44,11 +45,15 @@ heatMapTile now ( ( column, row ), delayPerSecond ) =
         []
 
 
-view : Maybe Posix -> Maybe DelayEventsMatrix -> List (Svg Msg)
-view maybeNow mM =
-    case ( mM, maybeNow ) of
-        ( Just m, Just now ) ->
-            map (heatMapTile now) <| Dict.toList m
+view : Int -> DistanceMatrix -> Posix -> Maybe DelayEventsMatrix -> List (Svg Msg)
+view hisSeconds distanceMatrix now mM =
+    case mM of
+        Just m ->
+            (map (heatMapTile now) <| Dict.toList m)
+                ++ stationLines
+                    hisSeconds
+                    now
+                    distanceMatrix
 
-        _ ->
+        Nothing ->
             []

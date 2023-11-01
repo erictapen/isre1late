@@ -8,7 +8,7 @@ import Components.DiagramLines exposing (stationLines, timeLines)
 import Dict exposing (Dict)
 import Html.Attributes as HA exposing (class, id, style)
 import List exposing (filterMap, head, indexedMap, map)
-import Model exposing (Direction(..), DistanceMatrix, Mode(..), stationPos, stations, trainPos)
+import Model exposing (Direction(..), DistanceMatrix, Mode(..), Model, stationPos, stations, trainPos)
 import Msg exposing (Msg(..), TouchMsgType(..))
 import String exposing (fromFloat, fromInt)
 import Svg as S exposing (Svg, g, line, path, svg, text_)
@@ -146,15 +146,14 @@ tripLines mode distanceMatrix selectedDirection historicSeconds delayDict =
     g [ id "trip-paths" ] <| map tripLine <| Dict.toList delayDict
 
 
+view : Model -> Posix -> Int -> Time.Zone -> List (Svg Msg)
 view model now hisSeconds timeZone =
-    [ timeLines hisSeconds timeZone now
+    [ timeLines model.mode hisSeconds timeZone now
     , g [ SA.id "station-lines" ] <|
         stationLines
-            (posixSecToSvg (posixToSec now - hisSeconds))
-            (posixSecToSvg (posixToSec now))
+            hisSeconds
+            now
             model.distanceMatrix
-        <|
-            map Tuple.first stations
     , tripLines
         model.mode
         model.distanceMatrix

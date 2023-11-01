@@ -4,6 +4,7 @@
 
 module Components.SimpleDiagram exposing (view)
 
+import Components.DiagramLines exposing (stationLines, timeLines)
 import Dict exposing (Dict)
 import Html.Attributes as HA exposing (class, id, style)
 import List exposing (filterMap, head, indexedMap, map)
@@ -41,51 +42,6 @@ import Utils
         , posixToSec
         , posixToSvgQuotient
         , touchCoordinates
-        )
-
-
-{-| The vertical lines in the diagram.
--}
-timeLines : Int -> Time.Zone -> Posix -> Svg Msg
-timeLines historicSeconds tz now =
-    let
-        currentHourBegins =
-            Time.toSecond tz now + Time.toMinute tz now * 60
-
-        nowSec =
-            posixToSec now
-
-        hourLine sec =
-            line
-                [ x1 <| fromFloat <| posixSecToSvg sec
-                , x2 <| fromFloat <| posixSecToSvg sec
-                , y1 "0"
-                , y2 "100"
-                , stroke "#dddddd"
-                , strokeWidth "1px"
-                , HA.attribute "vector-effect" "non-scaling-stroke"
-                ]
-                []
-    in
-    g [ SA.id "time-legend" ] <|
-        map hourLine <|
-            map (\i -> nowSec - currentHourBegins - i * 3600) <|
-                List.range 0 (historicSeconds // 3600)
-
-
-stationLines : Float -> Float -> DistanceMatrix -> List StationId -> List (Svg Msg)
-stationLines x1Pos x2Pos distanceMatrix =
-    map
-        (\sid ->
-            line
-                [ x1 <| fromFloat x1Pos
-                , x2 <| fromFloat x2Pos
-                , y1 <| percentageStr <| stationPos distanceMatrix sid
-                , y2 <| percentageStr <| stationPos distanceMatrix sid
-                , stroke "#dddddd"
-                , strokeWidth "0.2px"
-                ]
-                []
         )
 
 

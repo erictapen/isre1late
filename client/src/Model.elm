@@ -549,6 +549,7 @@ buildDelayEventsMatrices delayEvents now distanceMatrix =
             posixToSec now
 
         -- the row the event is placed in
+        -- TODO this needs to be able to produce multiple rows, especially for aggregated DelayEvents
         maybeTrainPos de =
             Maybe.map (\( yPos, direction, _ ) -> ( round <| yPos * Week.Constants.rows, direction ))
                 (trainPos distanceMatrix de.previous_station de.next_station de.percentage_segment)

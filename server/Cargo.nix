@@ -590,10 +590,10 @@ rec {
       };
       "cc" = rec {
         crateName = "cc";
-        version = "1.0.84";
+        version = "1.0.83";
         edition = "2018";
         crateBin = [];
-        sha256 = "0mn8wp0zr6f6z6cf4ppvf13y76i0ds5x0lqnla2092ddmy87r3hg";
+        sha256 = "1l643zidlb5iy1dskc5ggqs4wqa29a02f44piczqc8zcnsq4y5zi";
         authors = [
           "Alex Crichton <alex@alexcrichton.com>"
         ];
@@ -606,6 +606,8 @@ rec {
           }
         ];
         features = {
+          "jobserver" = [ "dep:jobserver" ];
+          "parallel" = [ "jobserver" ];
         };
       };
       "cfg-if 0.1.10" = rec {
@@ -1179,9 +1181,9 @@ rec {
       };
       "diesel" = rec {
         crateName = "diesel";
-        version = "2.1.3";
+        version = "2.1.4";
         edition = "2021";
-        sha256 = "0cwxqvwag055axclg1g7in6ygw0wav8s7nwfhghzq67ilqaa4s12";
+        sha256 = "1n1ihxd5zfqg94zy01zf85ml716fqmsivj7pxiw8qzzi8bwgrik2";
         dependencies = [
           {
             name = "bitflags";
@@ -1459,9 +1461,9 @@ rec {
       };
       "errno" = rec {
         crateName = "errno";
-        version = "0.3.6";
+        version = "0.3.7";
         edition = "2018";
-        sha256 = "0vp3dwidinw62hgx8ai5si3zldcwnq9x5cf6ra0iypsssq7fw63w";
+        sha256 = "1f4f7s0wngfxwh6a4kq3aws3i37xnzm3m4d86xw2lz3z9qcsfn7j";
         authors = [
           "Chris Wong <lambda.fairy@gmail.com>"
         ];
@@ -1981,9 +1983,9 @@ rec {
       };
       "h2" = rec {
         crateName = "h2";
-        version = "0.3.21";
+        version = "0.3.22";
         edition = "2018";
-        sha256 = "0cq8g5bgk3fihnqicy3g8gc3dpsalzqjg4bjyip9g4my26m27z4i";
+        sha256 = "0y41jlflvw8niifdirgng67zdmic62cjf5m2z69hzrpn5qr50qjd";
         authors = [
           "Carl Lerche <me@carllerche.com>"
           "Sean McArthur <sean@seanmonstar.com>"
@@ -2018,7 +2020,7 @@ rec {
           }
           {
             name = "indexmap";
-            packageId = "indexmap 1.9.3";
+            packageId = "indexmap 2.1.0";
             features = [ "std" ];
           }
           {
@@ -2033,7 +2035,7 @@ rec {
           {
             name = "tokio-util";
             packageId = "tokio-util";
-            features = [ "codec" ];
+            features = [ "codec" "io" ];
           }
           {
             name = "tracing";
@@ -3154,9 +3156,9 @@ rec {
       };
       "monostate" = rec {
         crateName = "monostate";
-        version = "0.1.9";
+        version = "0.1.10";
         edition = "2021";
-        sha256 = "1vp8434xj6yh61pas6zxz8hd8q8s698yq3bi3aqwcgh9i2p71wqm";
+        sha256 = "1503h7bwdgkg6w6mkv3bm86nmrqdr3h998ism7nz03ga40wf2174";
         authors = [
           "David Tolnay <dtolnay@gmail.com>"
         ];
@@ -3182,9 +3184,9 @@ rec {
       };
       "monostate-impl" = rec {
         crateName = "monostate-impl";
-        version = "0.1.9";
+        version = "0.1.10";
         edition = "2021";
-        sha256 = "1kmx5m9qjh3ahplh445lzg9d59ssffn2x0mc1j06lgallp01f5rp";
+        sha256 = "0g23ij5jp7007dxl4md79a6jziwqdryxi6x07pnrnhfs6jlq472k";
         procMacro = true;
         authors = [
           "David Tolnay <dtolnay@gmail.com>"
@@ -4973,9 +4975,9 @@ rec {
       };
       "rocket" = rec {
         crateName = "rocket";
-        version = "0.5.0-rc.4";
+        version = "0.5.0";
         edition = "2021";
-        sha256 = "00ad0kb16yxwa8w20q6ax3wyffqk9vv0y5b2bwri703hav4k9bl5";
+        sha256 = "0l4i93dai7pyzlkvdjkqg2g7ni1r6749cwx4nrrhsrr6rdybaywy";
         authors = [
           "Sergio Benitez <sb@sergio.bz>"
         ];
@@ -5143,9 +5145,9 @@ rec {
       };
       "rocket_codegen" = rec {
         crateName = "rocket_codegen";
-        version = "0.5.0-rc.4";
+        version = "0.5.0";
         edition = "2021";
-        sha256 = "1s6fz4h4xxiilwjqggibcnm07f2mr63827fz0gyy392llmbgqvl9";
+        sha256 = "0k6hdf9s9y73kzj89qs688gnfjj1sl4imp6pdjz22pzpmdk808x2";
         procMacro = true;
         authors = [
           "Sergio Benitez <sb@sergio.bz>"
@@ -5199,9 +5201,9 @@ rec {
       };
       "rocket_http" = rec {
         crateName = "rocket_http";
-        version = "0.5.0-rc.4";
+        version = "0.5.0";
         edition = "2021";
-        sha256 = "068pkxg66sbbbzz5nw77g2q2i0rpw4gzk90cl0bkfldbgcvvgfd1";
+        sha256 = "17iq208zf9rfxdnx8hfjxnn51074cc9li99yjigzwnfhjhv6d89p";
         authors = [
           "Sergio Benitez <sb@sergio.bz>"
         ];
@@ -5311,9 +5313,9 @@ rec {
       };
       "rocket_sync_db_pools" = rec {
         crateName = "rocket_sync_db_pools";
-        version = "0.1.0-rc.4";
+        version = "0.1.0";
         edition = "2021";
-        sha256 = "0wwadbgq63vpqjsnbqfd02bgmcrmrvmw8vac4zn09xw1wcwwyfc5";
+        sha256 = "1zs2dvdkmk6ndygpjr2bgjj5b3vsh5zyja23mjnhk5fp3rr34gyq";
         authors = [
           "Sergio Benitez <sb@sergio.bz>"
         ];
@@ -5373,9 +5375,9 @@ rec {
       };
       "rocket_sync_db_pools_codegen" = rec {
         crateName = "rocket_sync_db_pools_codegen";
-        version = "0.1.0-rc.4";
+        version = "0.1.0";
         edition = "2021";
-        sha256 = "0x8697w5vid8q7xrsf97l9dj7frr7y6y1jciwqwnk60zfa1w9k3v";
+        sha256 = "0s7fjnwyv37ki78ncjf4x2vzv4vhcxbrjp5iiv1714y7bn991j2w";
         procMacro = true;
         authors = [
           "Sergio Benitez <sb@sergio.bz>"
@@ -5424,9 +5426,9 @@ rec {
       };
       "rustix" = rec {
         crateName = "rustix";
-        version = "0.38.21";
+        version = "0.38.24";
         edition = "2021";
-        sha256 = "18q2mx7gnnl1238psb1r0avdw00l8y0jxkxgimyhmmg50q2nnhib";
+        sha256 = "0d72f5q2csk5mff87jrzlfgpxv44c2f8s0m183f9r920qgb83ncs";
         authors = [
           "Dan Gohman <dev@sunfishcode.online>"
           "Jakub Konka <kubkon@jakubkonka.com>"
@@ -6415,9 +6417,9 @@ rec {
       };
       "systemd-journal-logger" = rec {
         crateName = "systemd-journal-logger";
-        version = "2.1.0";
+        version = "2.1.1";
         edition = "2021";
-        sha256 = "1fjqm770is21d75jknxgrxvy7pl8c1qyvkwk2y6sxa7pzmxw6rgv";
+        sha256 = "0ajv58qsqvai4a3yvk6zx0nva8r9nf9sfvfrq55abwi3sy6q9wxm";
         authors = [
           "Sebastian Wiesner <sebastian@swsnr.de>"
         ];

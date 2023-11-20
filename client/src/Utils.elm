@@ -3,7 +3,8 @@
 
 
 module Utils exposing
-    ( httpErrorToString
+    ( getViewportHeight
+    , httpErrorToString
     , maybe
     , onTouch
     , percentageStr
@@ -14,10 +15,12 @@ module Utils exposing
     , touchCoordinates
     )
 
+import Browser.Dom
 import Html as H
 import Html.Events.Extra.Touch as Touch
 import Http exposing (Error(..))
 import String exposing (fromFloat)
+import Task exposing (Task)
 import Time exposing (Posix, posixToMillis)
 
 
@@ -112,3 +115,8 @@ httpErrorToString error =
 
         BadBody errorMessage ->
             errorMessage
+
+
+getViewportHeight : Task x Float
+getViewportHeight =
+    Task.map (.viewport >> .height) Browser.Dom.getViewport

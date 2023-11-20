@@ -57,10 +57,10 @@ stationLegend distanceMatrix selectedDirection =
 view distanceMatrix direction =
     div
         [ class "station-legend"
-        , onTouch "touchstart" (\event -> TouchMsg 0 Start <| touchCoordinates event)
-        , onTouch "touchmove" (\event -> TouchMsg 0 Move <| touchCoordinates event)
-        , onTouch "touchend" (\event -> TouchMsg 0 End <| touchCoordinates event)
-        , onTouch "touchcancel" (\event -> TouchMsg 0 Cancel <| touchCoordinates event)
+        , onTouch "touchstart" (\event -> TouchMsgTitle 0 Start <| touchCoordinates event)
+        , onTouch "touchmove" (\event -> TouchMsgTitle 0 Move <| touchCoordinates event)
+        , onTouch "touchend" (\event -> TouchMsgTitle 0 End <| touchCoordinates event)
+        , onTouch "touchcancel" (\event -> TouchMsgTitle 0 Cancel <| touchCoordinates event)
         ]
     <|
         stationLegend distanceMatrix direction <|

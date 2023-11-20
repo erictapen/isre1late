@@ -7,6 +7,7 @@ port module Main exposing (main)
 import Browser exposing (UrlRequest(..))
 import Browser.Events exposing (onAnimationFrameDelta)
 import Browser.Navigation
+import Components.BottomSheet
 import Components.Diagram
 import Components.Menu
 import Components.StationLegend
@@ -79,7 +80,8 @@ import Url.Builder
 import Url.Parser as UP
 import Utils
     exposing
-        ( httpErrorToString
+        ( getViewportHeight
+        , httpErrorToString
         , onTouch
         , posixSecToSvg
         , posixToSec
@@ -138,6 +140,8 @@ init _ url key =
             { navigationKey = key
             , mode = Maybe.withDefault defaultMode modeFromUrl
             , modeTransition = { touchState = Nothing, progress = 0 }
+            , viewportHeight = 0
+            , infoState = { visible = False, dragPos = 0 }
             , tutorialState = Geographic
             , tutorialProgress = 0
             , delayRecords = Dict.empty
@@ -156,6 +160,7 @@ init _ url key =
         [ rebuildSocket <| wsApiUrl
         , Task.perform CurrentTimeZone Time.here
         , Task.perform CurrentTime Time.now
+        , Task.perform ViewportHeight getViewportHeight
         , case modeFromUrl of
             Just (Trip tripId) ->
                 fetchTrip tripId
@@ -255,7 +260,7 @@ update msg model =
             , Cmd.none
             )
 
-        TouchMsg touchId touchType ( _, y ) ->
+        TouchMsgTitle touchId touchType ( _, y ) ->
             let
                 oldModeTransition =
                     model.modeTransition
@@ -414,6 +419,46 @@ update msg model =
             , Cmd.none
             )
 
+        TouchMsgBottomSheet touchType ( _, y ) ->
+            let
+                oldInfoState =
+                    model.infoState
+
+                defaultHeight =
+                    0.5 * model.viewportHeight
+
+                minimumHeight =
+                    0.3 * model.viewportHeight
+            in
+            case touchType of
+                Start ->
+                    ( model, Cmd.none )
+
+                Move ->
+                    ( { model | infoState = { oldInfoState | dragPos = y } }, Cmd.none )
+
+                End ->
+                    ( { model
+                        | infoState =
+                            if model.viewportHeight - oldInfoState.dragPos < minimumHeight then
+                                { visible = False, dragPos = defaultHeight }
+
+                            else
+                                { visible = True, dragPos = defaultHeight }
+                      }
+                    , Cmd.none
+                    )
+
+                Cancel ->
+                    ( { model
+                        | infoState =
+                            { oldInfoState
+                                | dragPos = defaultHeight
+                            }
+                      }
+                    , Cmd.none
+                    )
+
         GotDelayEvents now httpResult ->
             ( case httpResult of
                 Ok delayEvents ->
@@ -467,6 +512,14 @@ update msg model =
                 , Cmd.none
                 )
 
+        SetInfoState v ->
+            ( { model | infoState = { dragPos = model.viewportHeight * 0.5, visible = v } }
+            , Task.perform ViewportHeight getViewportHeight
+            )
+
+        ViewportHeight height ->
+            ( { model | viewportHeight = height }, Cmd.none )
+
 
 view : Model -> Browser.Document Msg
 view model =
@@ -501,6 +554,10 @@ view model =
                                 , div [ class "station-legend" ] []
                                 ]
                             , div [ id "row3" ] <| Components.Menu.view model.mode
+                            , Components.BottomSheet.view
+                                model.infoState
+                                model.mode
+                                model.viewportHeight
                             ]
 
                         ( tutorialState, _ ) ->

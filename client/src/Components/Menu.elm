@@ -24,7 +24,10 @@ greyedOutButton str =
 
 
 view mode =
-    [ greyedOutButton "ⓘ"
+    [ wrapButton <|
+        button
+            [ class "menu-button", onClick (SetInfoState True) ]
+            [ text "ⓘ" ]
     , case previousMode mode of
         Just m ->
             wrapButton <|

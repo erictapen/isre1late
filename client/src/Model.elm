@@ -7,6 +7,7 @@ module Model exposing
     , DelayPerSecond
     , Direction(..)
     , DistanceMatrix
+    , InfoState
     , Mode(..)
     , ModeTransition
     , Model
@@ -42,6 +43,8 @@ type alias Model =
     { navigationKey : Browser.Navigation.Key
     , mode : Mode
     , modeTransition : ModeTransition
+    , viewportHeight : Float
+    , infoState : InfoState
     , tutorialState : TutorialState
     , tutorialProgress : Float
     , delayRecords : Dict TripId (List DelayRecord)
@@ -112,6 +115,12 @@ type TutorialState
     | Time
     | Delay
     | Finished
+
+
+type alias InfoState =
+    { visible : Bool
+    , dragPos : Float
+    }
 
 
 {-| The amount of historic seconds going back from now into the past that are currently displayed.

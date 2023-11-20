@@ -18,14 +18,17 @@ type Msg
     | CurrentTime Posix
     | AnimationFrame Float
     | CurrentTimeZone Time.Zone
+    | ViewportHeight Float
     | ToggleDirection
-    | TouchMsg Int TouchMsgType ( Float, Float )
+    | TouchMsgTitle Int TouchMsgType ( Float, Float )
+    | TouchMsgBottomSheet TouchMsgType ( Float, Float )
     | ModeSwitch Mode Float
     | GotDelayEvents Posix (Result Http.Error (List DelayEvent))
     | OpenTrip TripId
     | GotTrip (Result Http.Error (List Stopover))
     | SetTutorialState TutorialState
     | TimerTick Float
+    | SetInfoState Bool
 
 
 type TouchMsgType

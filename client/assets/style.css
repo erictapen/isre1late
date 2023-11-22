@@ -97,15 +97,19 @@ body {
   font-style: normal;
 }
 
-h1 {
-  position: absolute;
-  left: 10%;
-  z-index: 1;
+#app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-#app {
-  margin-top: 10vh;
-  margin-bottom: 5vh;
+#title {
+  flex: 1;
+  flex-basis: 10vh;
+  z-index: 1;
+  margin-left: 1em;
+  display: flex;
+  align-items: center;
 }
 
 .menu-container {
@@ -138,13 +142,14 @@ h1 {
 }
 
 #row2 {
-  height: 5vh;
+  flex: auto;
   display: flex;
   flex-flow: row;
 }
 
 #row3 {
-  height: 10vh;
+  flex: 1;
+  flex-basis: 10vh;
   display: flex;
   flex-flow: row;
 }

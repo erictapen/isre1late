@@ -111,7 +111,7 @@ h1 {
 .menu-container {
   display: flex;
   flex: 1;
-  justify-content: center;
+  flex-direction: column;
 }
 
 .menu-button {
@@ -123,6 +123,11 @@ h1 {
   font-family: "Noto Sans Symbols 2";
   border: none;
   background: none;
+  align-self: center;
+}
+
+.menu-button-label {
+  align-self: center;
 }
 
 #row1 {

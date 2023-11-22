@@ -7,25 +7,9 @@ module Components.Title exposing (..)
 import Html exposing (Html, div, h1, text)
 import Html.Attributes exposing (style)
 import List exposing (filterMap, map)
-import Model exposing (Mode(..), nextMode, previousMode)
+import Model exposing (Mode(..), modeString, nextMode, previousMode)
 import Msg exposing (Msg)
 import String exposing (fromFloat, fromInt)
-
-
-modeString : Mode -> String
-modeString mode =
-    case mode of
-        Trip _ ->
-            "Trip"
-
-        Hour ->
-            "Hour"
-
-        Day ->
-            "Day"
-
-        Week ->
-            "Week"
 
 
 view : Mode -> Float -> Html Msg

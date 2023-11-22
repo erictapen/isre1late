@@ -17,6 +17,7 @@ module Model exposing
     , buildUrl
     , historicSeconds
     , initDistanceMatrix
+    , modeString
     , nextMode
     , previousMode
     , stationNames
@@ -64,6 +65,22 @@ type Mode
     | Hour
     | Day
     | Week
+
+
+modeString : Mode -> String
+modeString mode =
+    case mode of
+        Trip _ ->
+            "Trip"
+
+        Hour ->
+            "Hour"
+
+        Day ->
+            "Day"
+
+        Week ->
+            "Week"
 
 
 {-| Trip isn't reachable through this

@@ -59,7 +59,7 @@ view mode =
     , wrapButton
         (button
             [ class "menu-button", onClick ToggleDirection ]
-            [ text "⮀" ]
+            [ text "⇅" ]
         )
-        "Toggle direction"
+        "Direction"
     ]

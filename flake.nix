@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 {
-  description = "Is RE1 late?";
+  description = "How late is RE1?";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -127,7 +127,7 @@
             };
 
             systemd.services.isre1late = {
-              description = "Is RE1 late?";
+              description = "How late is RE1?";
               after = [ "network.target" "postgresql.service" ];
               requires = [ "postgresql.service" ];
               wantedBy = [ "multi-user.target" ];

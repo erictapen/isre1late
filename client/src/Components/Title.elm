@@ -4,12 +4,17 @@
 
 module Components.Title exposing (..)
 
-import Html exposing (Html, div, h1, text)
+import Char
+import Html exposing (Html, div, h1, span, text)
 import Html.Attributes exposing (style)
 import List exposing (filterMap, map)
 import Model exposing (Mode(..), modeString, nextMode, previousMode)
 import Msg exposing (Msg)
 import String exposing (fromFloat, fromInt)
+
+
+thinsp =
+    String.fromChar (Char.fromCode 8201)
 
 
 view : Mode -> Float -> Html Msg
@@ -38,7 +43,11 @@ view currentMode progress =
                             , style "left" "3%"
                             , style "opacity" <| fromFloat <| 1 - (abs pos * (1 / maxPos))
                             ]
-                            [ text <| "Is RE1 late this " ++ modeString mode ++ "?"
+                            [ text "How late is "
+                            , span [ style "background" "#e2001a", style "color" "white" ]
+                                [ text <| thinsp ++ thinsp ++ "RE1" ++ thinsp ++ thinsp
+                                ]
+                            , text <| " this " ++ modeString mode ++ "?"
                             ]
 
                 _ ->

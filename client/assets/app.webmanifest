@@ -1,6 +1,6 @@
 {
-   "name": "Is RE1 late?",
-   "short_name": "isre1late",
+   "name": "How late is RE1?",
+   "short_name": "RE1",
    "start_url": "/",
    "display": "standalone",
    "id": "isre1late.erictapen.name",

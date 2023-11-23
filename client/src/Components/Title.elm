@@ -6,7 +6,7 @@ module Components.Title exposing (..)
 
 import Char
 import Html exposing (Html, div, h1, span, text)
-import Html.Attributes exposing (style, id)
+import Html.Attributes exposing (id, style)
 import List exposing (filterMap, map)
 import Model exposing (Mode(..), modeString, nextMode, previousMode)
 import Msg exposing (Msg)

@@ -27,35 +27,27 @@ greyedOutButton str =
         ""
 
 
-view mode =
-    [ wrapButton
+modeButton m currentMode =
+    wrapButton
         (button
-            [ class "menu-button", onClick (SetInfoState True) ]
-            [ text "ⓘ" ]
+            [ class "menu-button"
+            , onClick (ModeSwitch m 1)
+            , style "font-weight" <|
+                if m == currentMode then
+                    "800"
+
+                else
+                    "500"
+            ]
+            [ text <| modeString m ]
         )
-        "Info"
-    , case previousMode mode of
-        Just m ->
-            wrapButton
-                (button
-                    [ class "menu-button", onClick (ModeSwitch m 1) ]
-                    [ text "+" ]
-                )
-                (modeString m)
+        ""
 
-        Nothing ->
-            greyedOutButton "+"
-    , case nextMode mode of
-        Just m ->
-            wrapButton
-                (button
-                    [ class "menu-button", onClick (ModeSwitch m -1) ]
-                    [ text "−" ]
-                )
-                (modeString m)
 
-        Nothing ->
-            greyedOutButton "−"
+view mode =
+    [ modeButton Week mode
+    , modeButton Day mode
+    , modeButton Hour mode
     , wrapButton
         (button
             [ class "menu-button", onClick ToggleDirection ]

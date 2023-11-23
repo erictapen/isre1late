@@ -1060,9 +1060,9 @@ rec {
       };
       "data-encoding" = rec {
         crateName = "data-encoding";
-        version = "2.4.0";
+        version = "2.5.0";
         edition = "2018";
-        sha256 = "023k3dk8422jgbj7k72g63x51h1mhv91dhw1j4h205vzh6fnrrn2";
+        sha256 = "1rcbnwfmfxhlshzbn3r7srm3azqha3mn33yxyqxkzz2wpqcjm5ky";
         authors = [
           "Julien Cretin <git@ia0.eu>"
         ];
@@ -1618,9 +1618,9 @@ rec {
       };
       "form_urlencoded" = rec {
         crateName = "form_urlencoded";
-        version = "1.2.0";
+        version = "1.2.1";
         edition = "2018";
-        sha256 = "0ljn0kz23nr9yf3432k656k178nh4jqryfji9b0jw343dz7w2ax6";
+        sha256 = "0milh8x7nl4f450s3ddhg57a3flcv6yq8hlkyk6fyr3mcb128dp1";
         authors = [
           "The rust-url developers"
         ];
@@ -2436,9 +2436,9 @@ rec {
       };
       "idna" = rec {
         crateName = "idna";
-        version = "0.4.0";
+        version = "0.5.0";
         edition = "2018";
-        sha256 = "0z4i1dhqk83bbv230pp1c31dqdlnscvqxvc85n40ihgvgfqdc83x";
+        sha256 = "1xhjrcjqq0l5bpzvdgylvpkgk94panxgsirzhjnnqfdgc4a9nkb3";
         authors = [
           "The rust-url developers"
         ];
@@ -3553,9 +3553,9 @@ rec {
       };
       "openssl" = rec {
         crateName = "openssl";
-        version = "0.10.59";
+        version = "0.10.60";
         edition = "2018";
-        sha256 = "0cycy2jwkspjdrirf05pqkqil7j5jj0dzzkj86nidyyq7k87l9bs";
+        sha256 = "0068ywx6whs572jb9ny9dzgni853kyb5mz52ybwgfn5ilb1wd93r";
         authors = [
           "Steven Fackler <sfackler@gmail.com>"
         ];
@@ -3632,10 +3632,10 @@ rec {
       };
       "openssl-sys" = rec {
         crateName = "openssl-sys";
-        version = "0.9.95";
+        version = "0.9.96";
         edition = "2018";
         links = "openssl";
-        sha256 = "1ydalsw746wy9w03zz8k9pvfyh3y64w301f2g6ajfq53342i7920";
+        sha256 = "13w336l4am9mw2krfa3padasd299sjqvq4ncfxb8pnk0p9qw04iq";
         build = "build/main.rs";
         authors = [
           "Alex Crichton <alex@alexcrichton.com>"
@@ -3864,9 +3864,9 @@ rec {
       };
       "percent-encoding" = rec {
         crateName = "percent-encoding";
-        version = "2.3.0";
+        version = "2.3.1";
         edition = "2018";
-        sha256 = "152slflmparkh27hprw62sph8rv77wckzhwl2dhqk6bf563lfalv";
+        sha256 = "0gi8wgx0dcy8rnv1kywdv98lwcx67hz0a0zwpib5v2i08r88y573";
         authors = [
           "The rust-url developers"
         ];
@@ -5426,9 +5426,9 @@ rec {
       };
       "rustix" = rec {
         crateName = "rustix";
-        version = "0.38.24";
+        version = "0.38.25";
         edition = "2021";
-        sha256 = "0d72f5q2csk5mff87jrzlfgpxv44c2f8s0m183f9r920qgb83ncs";
+        sha256 = "0bmjv6s6gnwyan65a9pvvhydzbkpfil17848amcj5v8z9wnvr6fw";
         authors = [
           "Dan Gohman <dev@sunfishcode.online>"
           "Jakub Konka <kubkon@jakubkonka.com>"
@@ -5729,9 +5729,9 @@ rec {
       };
       "serde" = rec {
         crateName = "serde";
-        version = "1.0.192";
+        version = "1.0.193";
         edition = "2018";
-        sha256 = "00ghhaabyrnr2cn504lckyqzh3fwr8k7pxnhhardr1djhj2a18mw";
+        sha256 = "129b0j67594f8qg5cbyi3nyk31y97wrqihi026mba34dwrsrkp95";
         authors = [
           "Erick Tryzelaar <erick.tryzelaar@gmail.com>"
           "David Tolnay <dtolnay@gmail.com>"
@@ -5763,9 +5763,9 @@ rec {
       };
       "serde_derive" = rec {
         crateName = "serde_derive";
-        version = "1.0.192";
+        version = "1.0.193";
         edition = "2015";
-        sha256 = "1hgvm47ffd748sx22z1da7mgcfjmpr60gqzkff0a9yn9przj1iyn";
+        sha256 = "1lwlx2k7wxr1v160kpyqjfabs37gm1yxqg65383rnyrm06jnqms3";
         procMacro = true;
         authors = [
           "Erick Tryzelaar <erick.tryzelaar@gmail.com>"
@@ -7676,9 +7676,9 @@ rec {
       };
       "url" = rec {
         crateName = "url";
-        version = "2.4.1";
+        version = "2.5.0";
         edition = "2018";
-        sha256 = "1rbsx1nvz5ardf0x815639z1bxbbgjjjhj0mmnfaqzr5327m6fql";
+        sha256 = "0cs65961miawncdg2z20171w0vqrmraswv2ihdpd8lxp7cp31rii";
         authors = [
           "The rust-url developers"
         ];

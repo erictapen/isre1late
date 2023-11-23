@@ -9,6 +9,7 @@ import Browser.Events exposing (onAnimationFrameDelta)
 import Browser.Navigation
 import Components.BottomSheet
 import Components.Diagram
+import Components.InfoButton
 import Components.Menu
 import Components.StationLegend
 import Components.TimeLegend
@@ -540,12 +541,12 @@ view model =
 
                         ( Finished, _ ) ->
                             [ Components.Title.view model.mode model.modeTransition.progress
+                            , Components.InfoButton.view model.infoState
                             , div [ id "row1" ]
                                 [ Components.Diagram.view model now hisSeconds timeZone
                                 , Components.StationLegend.view model.distanceMatrix model.direction
                                 ]
                             , div [ id "row2" ]
-                                -- TODO Render timeLegend for every Mode with different steps
                                 [ if model.modeTransition.progress == 0 then
                                     Components.TimeLegend.view model.mode hisSeconds timeZone now
 

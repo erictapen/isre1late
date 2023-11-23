@@ -106,10 +106,19 @@ body {
 #title {
   flex: 1;
   flex-basis: 10vh;
-  z-index: 1;
   margin-left: 1em;
   display: flex;
   align-items: center;
+  font-size: 0.75em;
+}
+
+#info-button {
+  position: absolute;
+  top: 2rem;
+  right: 1rem;
+  font-size: 2em;
+  border-radius: 2em;
+  border: none;
 }
 
 .menu-container {

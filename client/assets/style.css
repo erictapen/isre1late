@@ -118,7 +118,7 @@ body {
 
 #info-button {
   position: absolute;
-  top: 2rem;
+  top: 1.9rem;
   right: 1rem;
   font-size: 2em;
   border-radius: 2em;
@@ -157,7 +157,8 @@ body {
   flex: auto;
   display: flex;
   flex-flow: row;
-  margin-top: 1em;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
 }
 
 #row3 {

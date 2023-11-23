@@ -148,4 +148,6 @@ fn main() {
     {
         crate::web_api::webserver(&db_url, args.flag_listen, args.flag_port).unwrap();
     }
+
+    // TODO use sd-notify to signal the service manager that all processes are up and running.
 }

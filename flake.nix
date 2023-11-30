@@ -121,7 +121,7 @@
               ensureUsers = [
                 {
                   name = "isre1late";
-                  ensurePermissions."DATABASE isre1late" = "ALL PRIVILEGES";
+                  ensureDBOwnership = true;
                 }
               ];
             };

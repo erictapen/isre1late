@@ -88,8 +88,8 @@
       ) // {
       nixosModules.default = { config, pkgs, lib, ... }:
         let
-          server = self.packages.${config.nixpkgs.localSystem.system}.server;
-          client = self.packages.${config.nixpkgs.localSystem.system}.client;
+          server = self.packages.${pkgs.stdenv.hostPlatform.system}.server;
+          client = self.packages.${pkgs.stdenv.hostPlatform.system}.client;
           inherit (lib) mkEnableOption mkOption mkIf types;
           cfg = config.services.isre1late;
         in

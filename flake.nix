@@ -65,7 +65,6 @@
               (python3.withPackages (ps: with ps; [
                 psycopg2
               ]))
-              qgis
               websocat
             ] ++
 

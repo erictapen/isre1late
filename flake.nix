@@ -8,11 +8,9 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    # We needed latest crate2nix for now.
-    crate2nix.url = "github:nix-community/crate2nix";
   };
 
-  outputs = { self, nixpkgs, flake-utils, crate2nix }:
+  outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachSystem
       [ "x86_64-linux" "aarch64-linux" ]
       (system:
@@ -61,7 +59,7 @@
               pkg-config
               openssl
               postgresql
-              crate2nix.packages."${system}".default
+              crate2nix
               reuse
               (python3.withPackages (ps: with ps; [
                 psycopg2

@@ -63,7 +63,7 @@ pub fn validate_hafas_schema(db: &mut PgConnection) -> Result<(), Box<dyn std::e
                             return;
                         }
                     };
-                    match crate::transport_rest_vbb_v6::deserialize(&body.as_ref()) {
+                    match crate::transport_rest_vbb_v6::deserialize(body.as_ref()) {
                         Ok(_) => {}
                         Err(err) => {
                             // error!("Couldn't deserialize: {}", body.unwrap());

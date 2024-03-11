@@ -14,7 +14,7 @@ use std::thread::sleep;
 use std::time::{Duration, Instant};
 use time::OffsetDateTime;
 
-const TRIPS_PATH: &'static str = "/trips";
+const TRIPS_PATH: &str = "/trips";
 
 fn fetch_json_and_store_in_db(
     db: &mut PgConnection,
@@ -25,8 +25,8 @@ fn fetch_json_and_store_in_db(
 
     let response_text = reqwest::blocking::get(url.clone())?.text()?;
     let fetched_json = FetchedJson {
-        fetched_at: fetched_at,
-        url: url,
+        fetched_at,
+        url,
         body: response_text.clone(),
     };
     match &diesel::insert_into(fetched_json::table)

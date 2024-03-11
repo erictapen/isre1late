@@ -4,7 +4,7 @@
 
 use crate::cli_utils::progress_style;
 use crate::models::{DelayEvent, DelayRecord, DelayRecordWithID};
-use bytefmt;
+
 use diesel::pg::PgConnection;
 use indicatif::ProgressBar;
 use log::{debug, info};
@@ -36,9 +36,7 @@ pub fn update_caches(
         trip_id_map.len().to_formatted_string(&Locale::en),
         bytefmt::format(usage)
     );
-    Ok(CacheState {
-        trip_id_map: trip_id_map,
-    })
+    Ok(CacheState { trip_id_map })
 }
 
 pub fn update_delay_records(
@@ -66,7 +64,7 @@ pub fn update_delay_records(
 
     let todo = u64::try_from(bodies_count - latest_fetched_json_id).unwrap_or(0);
 
-    if todo <= 0 {
+    if todo == 0 {
         return Ok(());
     }
 
@@ -250,7 +248,7 @@ pub fn delay_events_from_delay_record(
                 to_id: new_row_id,
                 trip_id: trip_id.clone(),
                 time: old.time + ((new.time - old.time) / 2),
-                duration: duration,
+                duration,
                 previous_station: old.previous_station,
                 next_station: old.next_station,
                 percentage_segment: old.percentage_segment
@@ -277,7 +275,7 @@ pub fn delay_events_from_delay_record(
                 v
             };
             assert!(
-                ratio >= 0.0 && ratio <= 1.0,
+                (0.0..=1.0).contains(&ratio),
                 "{:?} --- {:?}: {}",
                 old,
                 new,

@@ -28,7 +28,7 @@ mod ws_api;
 
 /// I gave up on giving validate-hafas-schema an extra argument where one could just validate one
 /// id. Docopt won here.
-const USAGE: &'static str = "
+const USAGE: &str = "
 Usage: isre1late-server --port <port> --ws-port <wsport>
        isre1late-server validate-hafas-schema
        isre1late-server run-db-migrations
@@ -51,7 +51,7 @@ struct CliArgs {
     cmd_run_db_migrations: bool,
 }
 
-fn run_db_migrations(db: &mut PgConnection) -> () {
+fn run_db_migrations(db: &mut PgConnection) {
     info!("Running migrations...");
     let migrations_run = db
         .run_pending_migrations(MIGRATIONS)

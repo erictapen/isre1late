@@ -55,6 +55,7 @@
               nodejs
               cargo
               rustc
+              clippy
               rustfmt
               diesel-cli
               pkg-config

@@ -11,7 +11,7 @@ use serde_with::DisplayFromStr;
 use time::OffsetDateTime;
 
 /// Sometimes the nginx server itself returns an error.
-const BAD_GATEWAY_FRAGMENT: &'static str = "502 Bad Gateway";
+const BAD_GATEWAY_FRAGMENT: &str = "502 Bad Gateway";
 
 /// Wrapper function that allows us to deserialize empty strings.
 pub fn deserialize(json: &str) -> Result<HafasMsg, serde_json::Error> {

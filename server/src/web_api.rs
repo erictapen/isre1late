@@ -77,7 +77,7 @@ async fn trip(conn: DbConn, trip_id: String) -> Result<Json<Vec<Stopover>>, Stat
     .await
     .map_err(|_| rocket::http::Status::InternalServerError)
     .and_then(|json_strs| {
-        let json_str = json_strs.get(0).ok_or(rocket::http::Status::NotFound)?;
+        let json_str = json_strs.first().ok_or(rocket::http::Status::NotFound)?;
         match crate::transport_rest_vbb_v6::deserialize(json_str) {
             Ok(HafasMsg::TripOverview(TripOverview { trip, .. })) => {
                 let mut stopovers = Vec::new();
@@ -113,7 +113,7 @@ pub fn webserver(
     let rt = tokio::runtime::Runtime::new()?;
 
     let config = rocket::Config {
-        port: port,
+        port,
         address: listen,
         ..rocket::Config::debug_default()
     };

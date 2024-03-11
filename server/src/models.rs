@@ -190,12 +190,12 @@ pub fn delay_record_from_trip_overview(
 
     if let (Some(previous_station), Some(next_station)) = (previous_station, next_station) {
         Some(DelayRecord {
-            fetched_json_id: fetched_json_id,
+            fetched_json_id,
             trip_id: trip.id,
             time: current_time,
-            previous_station: previous_station,
-            next_station: next_station,
-            percentage_segment: percentage_segment,
+            previous_station,
+            next_station,
+            percentage_segment,
             delay: delay.unwrap_or(0),
         })
     } else {

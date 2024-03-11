@@ -45,7 +45,7 @@ pub fn websocket_server(
 
             if let Some(query_str) = request.uri().query() {
                 debug!("query_str: {}", query_str);
-                match serde_qs::from_str(&query_str) {
+                match serde_qs::from_str(query_str) {
                     Err(e) => {
                         error!("{}", e);
                     }

@@ -79,8 +79,9 @@ stationLines hisSeconds now distanceMatrix =
         x1Pos =
             posixSecToSvg (posixToSec now - hisSeconds)
 
+        -- We overdraw half an hour, so that the Hour view can show the future
         x2Pos =
-            posixSecToSvg (posixToSec now)
+            posixSecToSvg <| (posixToSec now) + 1800
     in
     map
         (\( sid, _ ) ->

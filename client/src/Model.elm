@@ -148,8 +148,9 @@ historicSeconds model =
     let
         modeSecs mode =
             case mode of
+                -- We need some space to display an extra half hour of the future.
                 Hour ->
-                    3600
+                    3600 + 1800
 
                 Day ->
                     3600 * 24

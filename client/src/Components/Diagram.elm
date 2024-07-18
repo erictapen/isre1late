@@ -4,7 +4,7 @@
 
 module Components.Diagram exposing (view)
 
-import Components.SimpleDiagram
+import Components.MareyDiagram
 import Html as H exposing (Html, button, div, h1, p, text)
 import Html.Attributes as HA exposing (class, id, style)
 import Model exposing (Direction(..), Mode(..), Model)
@@ -58,10 +58,10 @@ view model now hisSeconds timeZone =
         ]
         (case model.mode of
             Hour ->
-                Components.SimpleDiagram.view model now hisSeconds timeZone
+                Components.MareyDiagram.view model now hisSeconds timeZone
 
             Day ->
-                Components.SimpleDiagram.view model now hisSeconds timeZone
+                Components.MareyDiagram.view model now hisSeconds timeZone
 
             Week ->
                 Week.View.view hisSeconds model.distanceMatrix now <|

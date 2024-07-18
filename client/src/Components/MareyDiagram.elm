@@ -2,7 +2,7 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
 
-module Components.SimpleDiagram exposing (view)
+module Components.MareyDiagram exposing (view)
 
 import Components.DiagramLines exposing (stationLines, timeLines)
 import Dict exposing (Dict)

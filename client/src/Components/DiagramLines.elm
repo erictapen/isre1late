@@ -2,14 +2,14 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
 
-module Components.DiagramLines exposing (stationLines, timeLines)
+module Components.DiagramLines exposing (nowLine, stationLines, timeLines)
 
 import Html.Attributes as HA
 import List exposing (map)
 import Model exposing (Direction(..), DistanceMatrix, Mode(..), stationPos, stations, trainPos)
 import Msg exposing (Msg)
 import String exposing (fromFloat, fromInt)
-import Svg as S exposing (Svg, g, line, path, svg, text_)
+import Svg as S exposing (Svg, g, line, path, svg, text, text_)
 import Svg.Attributes as SA
     exposing
         ( d
@@ -18,6 +18,7 @@ import Svg.Attributes as SA
         , height
         , preserveAspectRatio
         , stroke
+        , strokeDasharray
         , strokeWidth
         , viewBox
         , width
@@ -71,6 +72,31 @@ timeLines mode historicSeconds tz now =
                 List.range 0 (historicSeconds // 3600)
 
 
+{-| The vertical dotted line in the diagram that indicates the current moment.
+-}
+nowLine : Mode -> Posix -> Svg Msg
+nowLine mode now =
+    let
+        nowSec =
+            posixToSec now
+    in
+    if mode == Hour then
+        line
+            [ x1 <| fromFloat <| posixSecToSvg nowSec
+            , x2 <| fromFloat <| posixSecToSvg nowSec
+            , y1 "0"
+            , y2 "100"
+            , stroke "#000000"
+            , strokeWidth "1px"
+            , strokeDasharray "10"
+            , HA.attribute "vector-effect" "non-scaling-stroke"
+            ]
+            []
+
+    else
+        S.text ""
+
+
 {-| The horizontal lines in the diagram.
 -}
 stationLines : Int -> Posix -> DistanceMatrix -> List (Svg Msg)
@@ -81,7 +107,7 @@ stationLines hisSeconds now distanceMatrix =
 
         -- We overdraw half an hour, so that the Hour view can show the future
         x2Pos =
-            posixSecToSvg <| (posixToSec now) + 1800
+            posixSecToSvg <| posixToSec now + 1800
     in
     map
         (\( sid, _ ) ->

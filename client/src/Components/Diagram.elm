@@ -53,7 +53,17 @@ view model now hisSeconds timeZone =
                     (posixToSec now - hisSeconds)
                 )
                 ++ " 0 "
-                ++ (fromFloat <| ((toFloat <| hisSeconds) + (if model.mode == Hour then 1800 else 0)) / posixToSvgQuotient)
+                ++ (fromFloat <|
+                        ((toFloat <| hisSeconds)
+                            + (if model.mode == Hour then
+                                1800
+
+                               else
+                                0
+                              )
+                        )
+                            / posixToSvgQuotient
+                   )
                 ++ " 100"
         ]
         (case model.mode of

@@ -10,11 +10,22 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+    }:
     flake-utils.lib.eachSystem
-      [ "x86_64-linux" "aarch64-linux" ]
-      (system:
-        let pkgs = nixpkgs.legacyPackages.${system}; in
+      [
+        "x86_64-linux"
+        "aarch64-linux"
+      ]
+      (
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
         {
           packages = rec {
             server =
@@ -26,14 +37,12 @@
               inherit pkgs;
               inherit icons;
             };
-            icons = pkgs.runCommand "icons"
-              { nativeBuildInputs = [ pkgs.imagemagick ]; }
-              ''
-                ${import ./client/icons.nix pkgs}/bin/generate-icons.sh ${./client/icon.svg}
+            icons = pkgs.runCommand "icons" { nativeBuildInputs = [ pkgs.imagemagick ]; } ''
+              ${import ./client/icons.nix pkgs}/bin/generate-icons.sh ${./client/icon.svg}
 
-                mkdir -p $out
-                cp -R . $out
-              '';
+              mkdir -p $out
+              cp -R . $out
+            '';
             default = server;
           };
           apps = rec {
@@ -48,47 +57,60 @@
           };
 
           devShells.default = pkgs.mkShell {
-            buildInputs = with pkgs; [
-              # Server
-              nodejs
-              cargo
-              rustc
-              clippy
-              rustfmt
-              diesel-cli
-              pkg-config
-              openssl
-              postgresql
-              crate2nix
-              reuse
-              (python3.withPackages (ps: with ps; [
-                psycopg2
-              ]))
-              websocat
-            ] ++
+            buildInputs =
+              with pkgs;
+              [
+                # Server
+                nodejs
+                cargo
+                rustc
+                clippy
+                rustfmt
+                diesel-cli
+                pkg-config
+                openssl
+                postgresql
+                crate2nix
+                reuse
+                (python3.withPackages (ps: with ps; [ psycopg2 ]))
+                websocat
+              ]
+              ++
 
-            # Client
-            (with pkgs.elmPackages; [
-              elm
-              elm-format
-              elm-test
-              elm-json
-              elm2nix
-              (python3.withPackages (ps: with ps; [ requests ]))
-              (import ./client/nginx.nix pkgs)
-            ]);
+                # Client
+                (with pkgs.elmPackages; [
+                  elm
+                  elm-format
+                  elm-test
+                  elm-json
+                  elm2nix
+                  (python3.withPackages (ps: with ps; [ requests ]))
+                  (import ./client/nginx.nix pkgs)
+                ]);
             RUST_LOG = "info";
             DATABASE_URL = "postgres://localhost/isre1late?host=/run/postgresql";
             PGDATABASE = "isre1late";
             HAFAS_BASE_URL = "https://v6.vbb.transport.rest";
           };
         }
-      ) // {
-      nixosModules.default = { config, pkgs, lib, ... }:
+      )
+    // {
+      nixosModules.default =
+        {
+          config,
+          pkgs,
+          lib,
+          ...
+        }:
         let
           server = self.packages.${pkgs.stdenv.hostPlatform.system}.server;
           client = self.packages.${pkgs.stdenv.hostPlatform.system}.client;
-          inherit (lib) mkEnableOption mkOption mkIf types;
+          inherit (lib)
+            mkEnableOption
+            mkOption
+            mkIf
+            types
+            ;
           cfg = config.services.isre1late;
         in
         {
@@ -126,7 +148,10 @@
 
             systemd.services.isre1late = {
               description = "How late is RE1?";
-              after = [ "network.target" "postgresql.service" ];
+              after = [
+                "network.target"
+                "postgresql.service"
+              ];
               requires = [ "postgresql.service" ];
               wantedBy = [ "multi-user.target" ];
               environment = {

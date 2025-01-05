@@ -90,6 +90,7 @@
             RUST_LOG = "info";
             DATABASE_URL = "postgres://localhost/isre1late?host=/run/postgresql";
             PGDATABASE = "isre1late";
+            PGUSER = "isre1late";
             HAFAS_BASE_URL = "https://v6.vbb.transport.rest";
           };
         }

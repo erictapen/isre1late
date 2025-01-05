@@ -6,6 +6,7 @@ use crate::cli_utils::progress_style;
 use crate::models::{DelayEvent, DelayRecord, DelayRecordWithID};
 
 use diesel::pg::PgConnection;
+use diesel::pg::PgRowByRowLoadingMode;
 use indicatif::ProgressBar;
 use log::{debug, info};
 use memuse::DynamicUsage;
@@ -176,7 +177,7 @@ pub fn update_delay_events(
 
     let delay_records_iter = delay_records::dsl::delay_records
         .then_order_by(delay_records::fetched_json_id.asc())
-        .load::<DelayRecordWithID>(db1)?;
+        .load_iter::<DelayRecordWithID, PgRowByRowLoadingMode>(db1)?;
 
     // TODO This is going to grow over the entirety of the db, and is already taking a huge portion of
     // the RAM!
@@ -187,7 +188,7 @@ pub fn update_delay_events(
 
     let mut chunk = Vec::new();
     for new_delay_record_with_id in delay_records_iter {
-        let new_delay_record = DelayRecord::from(new_delay_record_with_id);
+        let new_delay_record = DelayRecord::from(new_delay_record_with_id?);
 
         let des = delay_events_from_delay_record(&mut trip_id_map, &new_delay_record);
 

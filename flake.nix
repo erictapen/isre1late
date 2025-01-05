@@ -32,7 +32,9 @@
               let
                 crates = import ./server/Cargo.nix { inherit pkgs; };
               in
-              crates.workspaceMembers.isre1late-server.build;
+              crates.workspaceMembers.isre1late-server.build.override {
+                runTests = true;
+              };
             client = import ./client {
               inherit pkgs;
               inherit icons;

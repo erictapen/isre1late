@@ -36,8 +36,7 @@
                 runTests = true;
               };
             client = import ./client {
-              inherit pkgs;
-              inherit icons;
+              inherit pkgs icons;
             };
             icons = pkgs.runCommand "icons" { nativeBuildInputs = [ pkgs.imagemagick ]; } ''
               ${import ./client/icons.nix pkgs}/bin/generate-icons.sh ${./client/icon.svg}
@@ -72,6 +71,7 @@
                 pkg-config
                 openssl
                 postgresql
+                libpq
                 crate2nix
                 reuse
                 (python3.withPackages (ps: with ps; [ psycopg2 ]))

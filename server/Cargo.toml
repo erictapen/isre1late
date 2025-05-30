@@ -34,6 +34,10 @@ num-format = "*"
 memuse = "*"
 bytefmt = "*"
 
+# This isn't only needed indirectly, but is necessary to fix a nix build failure
+# https://github.com/NixOS/nixpkgs/pull/359659#issuecomment-2661028035
+pq-sys = { version = "*", features = [ "pkg-config" ] }
+
 [dependencies.bus]
 version = "*"
 git = "https://github.com/agausmann/bus"

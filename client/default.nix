@@ -51,7 +51,7 @@ let
       '';
     };
 in mkDerivation {
-  name = "elm-app-0.1.0";
+  name = "isre1late-elm-app-0.1.0";
   srcs = ./elm-srcs.nix;
   src = ./.;
   targets = ["Main"];

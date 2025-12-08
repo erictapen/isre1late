@@ -153,9 +153,9 @@
               description = "How late is RE1?";
               after = [
                 "network.target"
-                "postgresql.service"
+                "postgresql.target"
               ];
-              requires = [ "postgresql.service" ];
+              requires = [ "postgresql.target" ];
               wantedBy = [ "multi-user.target" ];
               environment = {
                 DATABASE_URL = "postgres://localhost/isre1late?host=/run/postgresql";

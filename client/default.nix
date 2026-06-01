@@ -22,7 +22,7 @@ let
       inherit name src;
 
       buildInputs = [ elmPackages.elm ]
-        ++ lib.optional outputJavaScript nodePackages.uglify-js;
+        ++ lib.optional outputJavaScript uglify-js;
 
       buildPhase = pkgs.elmPackages.fetchElmDeps {
         elmPackages = import srcs;

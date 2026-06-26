@@ -10,3 +10,4 @@ result*
 doc/
 data/
 .nginx/
+.pre-commit-config.yaml

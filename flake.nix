@@ -7,12 +7,15 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
+    pre-commit-hooks.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
-    {
+    inputs@{
       self,
       nixpkgs,
+      ...
     }:
     let
       forEachSystem =
@@ -65,10 +68,19 @@
           pkgs = nixpkgsFor.${system};
         in
         {
-          reuse = pkgs.runCommand "reuse-check" { } ''
-            ${pkgs.reuse}/bin/reuse --root ${self} lint && touch $out
-          '';
           inherit (self.packages."${system}") client server;
+          pre-commit-check = inputs.pre-commit-hooks.lib.${system}.run {
+            src = ./.;
+            hooks = {
+              nixfmt.enable = true;
+              rustfmt = {
+                enable = true;
+                settings.manifest-path = "server/Cargo.toml";
+              };
+              elm-format.enable = true;
+            };
+          };
+
         }
       );
 
@@ -76,9 +88,11 @@
         system:
         let
           pkgs = nixpkgsFor.${system};
+          inherit (self.checks.${system}.pre-commit-check) shellHook enabledPackages;
         in
         {
           default = pkgs.mkShell {
+            inherit shellHook;
             buildInputs =
               with pkgs;
               [
@@ -87,7 +101,6 @@
                 cargo
                 rustc
                 clippy
-                rustfmt
                 diesel-cli
                 pkg-config
                 openssl
@@ -103,13 +116,12 @@
                 # Client
                 (with pkgs.elmPackages; [
                   elm
-                  elm-format
-                  elm-test
                   elm-json
                   elm2nix
                   (python3.withPackages (ps: with ps; [ requests ]))
                   (import ./client/nginx.nix pkgs)
-                ]);
+                ])
+              ++ enabledPackages;
             RUST_LOG = "info";
             DATABASE_URL = "postgres://localhost/isre1late?host=/run/postgresql";
             PGDATABASE = "isre1late";

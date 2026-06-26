@@ -57,9 +57,10 @@ fn run_db_migrations(db: &mut PgConnection) {
 }
 
 fn train_zstd_dict(db: &mut PgConnection) {
-    let fetched_json: Vec<FetchedJson> = diesel::sql_query("SELECT * FROM fetched_json TABLESAMPLE BERNOULLI(0.01) LIMIT 1000")
-        .get_results(db)
-        .unwrap();
+    let fetched_json: Vec<FetchedJson> =
+        diesel::sql_query("SELECT * FROM fetched_json TABLESAMPLE BERNOULLI(0.01) LIMIT 1000")
+            .get_results(db)
+            .unwrap();
 
     let samples: Vec<String> = fetched_json.into_iter().map(|f| f.body).collect();
 

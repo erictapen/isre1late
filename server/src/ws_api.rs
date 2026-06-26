@@ -94,7 +94,9 @@ pub fn websocket_server(
                     msg: DelayRecord,
                 ) -> Result<(), ()> {
                     match websocket.write(Text(
-                        serde_json::to_string(&msg).expect("This shouldn't fail.").into(),
+                        serde_json::to_string(&msg)
+                            .expect("This shouldn't fail.")
+                            .into(),
                     )) {
                         Err(e) => {
                             warn!(

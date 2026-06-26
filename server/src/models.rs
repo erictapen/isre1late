@@ -20,7 +20,7 @@ pub struct SelectFetchedJson {
     pub body: String,
 }
 
-#[derive(Queryable, Insertable)]
+#[derive(Queryable, Insertable, QueryableByName)]
 #[diesel(table_name = fetched_json)]
 pub struct FetchedJson {
     pub fetched_at: OffsetDateTime,

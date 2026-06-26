@@ -894,6 +894,19 @@ rec {
         ];
         dependencies = [
           {
+            name = "jobserver";
+            packageId = "jobserver";
+            optional = true;
+            usesDefaultFeatures = false;
+          }
+          {
+            name = "libc";
+            packageId = "libc";
+            optional = true;
+            usesDefaultFeatures = false;
+            target = { target, features }: (target."unix" or false);
+          }
+          {
             name = "shlex";
             packageId = "shlex";
           }
@@ -904,6 +917,7 @@ rec {
             "dep:jobserver"
           ];
         };
+        resolvedDefaultFeatures = [ "parallel" ];
       };
       "cfg-if 0.1.10" = rec {
         crateName = "cfg-if";
@@ -5194,6 +5208,11 @@ rec {
             name = "urlencoding";
             packageId = "urlencoding";
           }
+          {
+            name = "zstd";
+            packageId = "zstd";
+            features = [ "zdict_builder" ];
+          }
         ];
 
       };
@@ -5208,6 +5227,29 @@ rec {
         features = {
           "no-panic" = [ "dep:no-panic" ];
         };
+      };
+      "jobserver" = rec {
+        crateName = "jobserver";
+        version = "0.1.34";
+        edition = "2021";
+        sha256 = "0cwx0fllqzdycqn4d6nb277qx5qwnmjdxdl0lxkkwssx77j3vyws";
+        authors = [
+          "Alex Crichton <alex@alexcrichton.com>"
+        ];
+        dependencies = [
+          {
+            name = "getrandom";
+            packageId = "getrandom 0.3.3";
+            target = { target, features }: (target."windows" or false);
+            features = [ "std" ];
+          }
+          {
+            name = "libc";
+            packageId = "libc";
+            target = { target, features }: (target."unix" or false);
+          }
+        ];
+
       };
       "js-sys" = rec {
         crateName = "js-sys";
@@ -18299,6 +18341,126 @@ rec {
           }
         ];
 
+      };
+      "zstd" = rec {
+        crateName = "zstd";
+        version = "0.13.3";
+        edition = "2018";
+        sha256 = "12n0h4w9l526li7jl972rxpyf012jw3nwmji2qbjghv9ll8y67p9";
+        authors = [
+          "Alexandre Bury <alexandre.bury@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "zstd-safe";
+            packageId = "zstd-safe";
+            usesDefaultFeatures = false;
+            features = [ "std" ];
+          }
+        ];
+        features = {
+          "arrays" = [ "zstd-safe/arrays" ];
+          "bindgen" = [ "zstd-safe/bindgen" ];
+          "debug" = [ "zstd-safe/debug" ];
+          "default" = [
+            "legacy"
+            "arrays"
+            "zdict_builder"
+          ];
+          "experimental" = [ "zstd-safe/experimental" ];
+          "fat-lto" = [ "zstd-safe/fat-lto" ];
+          "legacy" = [ "zstd-safe/legacy" ];
+          "no_asm" = [ "zstd-safe/no_asm" ];
+          "pkg-config" = [ "zstd-safe/pkg-config" ];
+          "thin" = [ "zstd-safe/thin" ];
+          "thin-lto" = [ "zstd-safe/thin-lto" ];
+          "zdict_builder" = [ "zstd-safe/zdict_builder" ];
+          "zstdmt" = [ "zstd-safe/zstdmt" ];
+        };
+        resolvedDefaultFeatures = [
+          "arrays"
+          "default"
+          "legacy"
+          "zdict_builder"
+        ];
+      };
+      "zstd-safe" = rec {
+        crateName = "zstd-safe";
+        version = "7.2.4";
+        edition = "2018";
+        sha256 = "179vxmkzhpz6cq6mfzvgwc99bpgllkr6lwxq7ylh5dmby3aw8jcg";
+        libName = "zstd_safe";
+        authors = [
+          "Alexandre Bury <alexandre.bury@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "zstd-sys";
+            packageId = "zstd-sys";
+            usesDefaultFeatures = false;
+          }
+        ];
+        features = {
+          "bindgen" = [ "zstd-sys/bindgen" ];
+          "debug" = [ "zstd-sys/debug" ];
+          "default" = [
+            "legacy"
+            "arrays"
+            "zdict_builder"
+          ];
+          "experimental" = [ "zstd-sys/experimental" ];
+          "fat-lto" = [ "zstd-sys/fat-lto" ];
+          "legacy" = [ "zstd-sys/legacy" ];
+          "no_asm" = [ "zstd-sys/no_asm" ];
+          "pkg-config" = [ "zstd-sys/pkg-config" ];
+          "seekable" = [ "zstd-sys/seekable" ];
+          "std" = [ "zstd-sys/std" ];
+          "thin" = [ "zstd-sys/thin" ];
+          "thin-lto" = [ "zstd-sys/thin-lto" ];
+          "zdict_builder" = [ "zstd-sys/zdict_builder" ];
+          "zstdmt" = [ "zstd-sys/zstdmt" ];
+        };
+        resolvedDefaultFeatures = [
+          "arrays"
+          "legacy"
+          "std"
+          "zdict_builder"
+        ];
+      };
+      "zstd-sys" = rec {
+        crateName = "zstd-sys";
+        version = "2.0.16+zstd.1.5.7";
+        edition = "2018";
+        links = "zstd";
+        sha256 = "0j1pd2iaqpvaxlgqmmijj68wma7xwdv9grrr63j873yw5ay9xqci";
+        libName = "zstd_sys";
+        authors = [
+          "Alexandre Bury <alexandre.bury@gmail.com>"
+        ];
+        buildDependencies = [
+          {
+            name = "cc";
+            packageId = "cc";
+            features = [ "parallel" ];
+          }
+          {
+            name = "pkg-config";
+            packageId = "pkg-config";
+          }
+        ];
+        features = {
+          "bindgen" = [ "dep:bindgen" ];
+          "default" = [
+            "legacy"
+            "zdict_builder"
+            "bindgen"
+          ];
+        };
+        resolvedDefaultFeatures = [
+          "legacy"
+          "std"
+          "zdict_builder"
+        ];
       };
     };
 

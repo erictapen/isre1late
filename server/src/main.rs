@@ -7,9 +7,9 @@ extern crate serde_with;
 
 use self::models::*;
 use crate::models::DelayRecord;
+use clap::{Parser, Subcommand};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
-use clap::{Parser, Subcommand};
 use log::{error, info};
 
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
@@ -28,11 +28,11 @@ mod ws_api;
 #[derive(Parser, Debug)]
 struct CliArgs {
     #[arg(long)]
-    flag_port: u16,
+    port: u16,
     #[arg(long)]
-    flag_ws_port: u16,
+    ws_port: u16,
     #[arg(short, long)]
-    flag_listen: std::net::IpAddr,
+    listen: std::net::IpAddr,
     #[command(subcommand)]
     command: Option<CliCommand>,
 }
@@ -40,7 +40,8 @@ struct CliArgs {
 #[derive(Clone, Debug, Subcommand)]
 enum CliCommand {
     ValidateHafasSchema,
-    RunDbMigrations
+    RunDbMigrations,
+    TrainZstdDict,
 }
 
 fn run_db_migrations(db: &mut PgConnection) {
@@ -52,6 +53,34 @@ fn run_db_migrations(db: &mut PgConnection) {
         "Ran {} pending migrations: {:?}",
         migrations_run.len(),
         migrations_run
+    );
+}
+
+fn train_zstd_dict(db: &mut PgConnection) {
+    let fetched_json: Vec<FetchedJson> = diesel::sql_query("SELECT * FROM fetched_json TABLESAMPLE BERNOULLI(0.01) LIMIT 1000")
+        .get_results(db)
+        .unwrap();
+
+    let samples: Vec<String> = fetched_json.into_iter().map(|f| f.body).collect();
+
+    let sample_len = samples.len();
+
+    println!("{} Samples available", sample_len);
+
+    let dict_data = zstd::dict::from_samples(&samples, 50 * 1024 * 1024).unwrap();
+    let dict = zstd::dict::CDict::create(&dict_data, 22);
+
+    let mut compressor = zstd::bulk::Compressor::with_dictionary(22, &dict_data).unwrap();
+
+    let compression_ratios = samples
+        .into_iter()
+        .map(|s| (s.len(), compressor.compress(&s.into_bytes()).unwrap().len()))
+        .map(|(uncompressed, compressed)| uncompressed as f64 / compressed as f64);
+
+    let compression_ratio = compression_ratios.sum::<f64>() / sample_len as f64;
+    println!(
+        "On {} samples achieved an average compression ratio of {}",
+        sample_len, compression_ratio
     );
 }
 
@@ -89,6 +118,9 @@ fn main() {
         } else if let Some(CliCommand::RunDbMigrations) = args.command {
             // We already ran the migrations above.
             std::process::exit(0);
+        } else if let Some(CliCommand::TrainZstdDict) = args.command {
+            train_zstd_dict(&mut db);
+            std::process::exit(0);
         }
     }
 
@@ -124,19 +156,14 @@ fn main() {
         let mut db: PgConnection = PgConnection::establish(&(db_url.clone()))
             .unwrap_or_else(|_| panic!("Error connecting to {}", db_url));
         std::thread::spawn(move || {
-            crate::ws_api::websocket_server(
-                &mut db,
-                bus_read_handle,
-                args.flag_listen,
-                args.flag_ws_port,
-            )
-            .unwrap();
+            crate::ws_api::websocket_server(&mut db, bus_read_handle, args.listen, args.ws_port)
+                .unwrap();
         });
     }
 
     // Start webserver
     {
-        crate::web_api::webserver(&db_url, args.flag_listen, args.flag_port).unwrap();
+        crate::web_api::webserver(&db_url, args.listen, args.port).unwrap();
     }
 
     // TODO use sd-notify to signal the service manager that all processes are up and running.

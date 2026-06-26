@@ -9,9 +9,8 @@ use self::models::*;
 use crate::models::DelayRecord;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
-use docopt::Docopt;
+use clap::{Parser, Subcommand};
 use log::{error, info};
-use serde::Deserialize;
 
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
@@ -26,29 +25,22 @@ mod schema;
 mod web_api;
 mod ws_api;
 
-/// I gave up on giving validate-hafas-schema an extra argument where one could just validate one
-/// id. Docopt won here.
-const USAGE: &str = "
-Usage: isre1late-server --port <port> --ws-port <wsport>
-       isre1late-server validate-hafas-schema
-       isre1late-server run-db-migrations
-       isre1late-server --help
-
-Options:
-    -h, --help           Show this message.
-    --port <port>        TCP port on which the webserver listens. [default: 8080]
-    --ws-port <wsport>   TCP port on which the websocket server listens. [default: 8081]
-    -l, --listen IP      IP address to listen on, e.g. ::. [default: ::1]
-
-";
-
-#[derive(Deserialize)]
+#[derive(Parser, Debug)]
 struct CliArgs {
+    #[arg(long)]
     flag_port: u16,
+    #[arg(long)]
     flag_ws_port: u16,
+    #[arg(short, long)]
     flag_listen: std::net::IpAddr,
-    cmd_validate_hafas_schema: bool,
-    cmd_run_db_migrations: bool,
+    #[command(subcommand)]
+    command: Option<CliCommand>,
+}
+
+#[derive(Clone, Debug, Subcommand)]
+enum CliCommand {
+    ValidateHafasSchema,
+    RunDbMigrations
 }
 
 fn run_db_migrations(db: &mut PgConnection) {
@@ -78,9 +70,7 @@ fn main() {
         simple_logger::SimpleLogger::new().env().init().unwrap();
     }
 
-    let args: CliArgs = Docopt::new(USAGE)
-        .and_then(|d| d.deserialize())
-        .unwrap_or_else(|e| e.exit());
+    let args = CliArgs::parse();
 
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
@@ -90,13 +80,13 @@ fn main() {
 
         run_db_migrations(&mut db);
 
-        if args.cmd_validate_hafas_schema {
+        if let Some(CliCommand::ValidateHafasSchema) = args.command {
             crate::cli_utils::validate_hafas_schema(&mut db).unwrap_or_else(|e| {
                 error!("{}", e);
                 std::process::exit(1);
             });
             std::process::exit(0);
-        } else if args.cmd_run_db_migrations {
+        } else if let Some(CliCommand::RunDbMigrations) = args.command {
             // We already ran the migrations above.
             std::process::exit(0);
         }

@@ -21,7 +21,7 @@ serde_json = "*"
 serde_with = "*"
 serde_qs = "*"
 monostate = "*"
-docopt = "*"
+clap = { version = "*", features = [ "derive" ] }
 log = "*"
 time = { version = "*", features = [ "serde-well-known", "local-offset" ] }
 urlencoding = "*"

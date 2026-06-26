@@ -6,6 +6,6 @@
 
 sudo -u postgres psql -c "DROP DATABASE isre1late;"
 
-sudo systemctl restart postgresql.service
+sudo systemctl restart postgresql.target
 
-unzstd --stdout isre1late.sql.zstd | pv | psql
+unzstd --stdout ~/backup/hetzner6/var/backup/postgresql/isre1late.sql.zstd | pv | psql

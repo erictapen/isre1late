@@ -7,57 +7,78 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
   };
 
   outputs =
     {
       self,
       nixpkgs,
-      flake-utils,
     }:
-    flake-utils.lib.eachSystem
-      [
-        "x86_64-linux"
-        "aarch64-linux"
-      ]
-      (
+    let
+      forEachSystem =
+        f:
+        nixpkgs.lib.genAttrs [
+          "x86_64-linux"
+          "aarch64-linux"
+          "x86_64-darwin"
+          "aarch64-darwin"
+        ] f;
+      nixpkgsFor = forEachSystem (
+        system:
+        import nixpkgs {
+          inherit system;
+        }
+      );
+    in
+
+    {
+      packages = forEachSystem (
         system:
         let
-          pkgs = nixpkgs.legacyPackages.${system};
+          pkgs = nixpkgsFor.${system};
         in
         {
-          packages = rec {
-            server =
-              let
-                crates = import ./server/Cargo.nix { inherit pkgs; };
-              in
-              crates.workspaceMembers.isre1late-server.build.override {
-                runTests = true;
-              };
-            client = import ./client {
-              inherit pkgs icons;
+          server =
+            let
+              crates = import ./server/Cargo.nix { inherit pkgs; };
+            in
+            crates.workspaceMembers.isre1late-server.build.override {
+              runTests = true;
             };
-            icons = pkgs.runCommand "icons" { nativeBuildInputs = [ pkgs.imagemagick ]; } ''
-              ${import ./client/icons.nix pkgs}/bin/generate-icons.sh ${./client/icon.svg}
+          client = import ./client {
+            inherit pkgs;
+            inherit (self.packages.${system}) icons;
+          };
+          icons = pkgs.runCommand "icons" { nativeBuildInputs = [ pkgs.imagemagick ]; } ''
+            ${import ./client/icons.nix pkgs}/bin/generate-icons.sh ${./client/icon.svg}
 
-              mkdir -p $out
-              cp -R . $out
-            '';
-            default = server;
-          };
-          apps = rec {
-            server = flake-utils.lib.mkApp { drv = self.packages.${system}.server; };
-            default = server;
-          };
-          checks = {
-            reuse = pkgs.runCommand "reuse-check" { } ''
-              ${pkgs.reuse}/bin/reuse --root ${self} lint && touch $out
-            '';
-            inherit (self.packages."${system}") client server;
-          };
+            mkdir -p $out
+            cp -R . $out
+          '';
+          default = self.packages.${system}.server;
+        }
+      );
 
-          devShells.default = pkgs.mkShell {
+      checks = forEachSystem (
+        system:
+        let
+          pkgs = nixpkgsFor.${system};
+        in
+        {
+          reuse = pkgs.runCommand "reuse-check" { } ''
+            ${pkgs.reuse}/bin/reuse --root ${self} lint && touch $out
+          '';
+          inherit (self.packages."${system}") client server;
+        }
+      );
+
+      devShells = forEachSystem (
+        system:
+        let
+          pkgs = nixpkgsFor.${system};
+        in
+        {
+          default = pkgs.mkShell {
             buildInputs =
               with pkgs;
               [
@@ -96,8 +117,8 @@
             HAFAS_BASE_URL = "https://v6.vbb.transport.rest";
           };
         }
-      )
-    // {
+      );
+
       nixosModules.default =
         {
           config,

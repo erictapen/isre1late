@@ -199,6 +199,7 @@
                 Type = "simple";
                 ExecStart = ''
                   ${server}/bin/isre1late-server \
+                    --listen '::1' \
                     --port ${builtins.toString cfg.port} \
                     --ws-port ${builtins.toString cfg.websocketPort}
                 '';
